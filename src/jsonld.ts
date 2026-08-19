@@ -31,10 +31,16 @@ const dt = (v: unknown): string | null => {
   return m[2] ? `${m[1]}T${m[2]}` : (m[1] ?? null);
 };
 
+/**
+ * Markup without a stated currency yields no money field. Defaulting to INR
+ * would invent the one detail that makes the number mean anything, on the one
+ * path where `ground()` cannot check the work.
+ */
 const money = (amount: unknown, currency: unknown): Money | null => {
   const a = typeof amount === 'number' ? amount : Number(str(amount));
-  if (!Number.isFinite(a)) return null;
-  return { amount: a, currency: str(currency) ?? 'INR', raw: `${str(currency) ?? ''}${a}`.trim() };
+  const code = str(currency);
+  if (!Number.isFinite(a) || !code) return null;
+  return { amount: a, currency: code, raw: `${code} ${a}` };
 };
 
 type FieldMap = Record<string, (node: unknown) => unknown>;

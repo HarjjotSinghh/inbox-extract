@@ -1,7 +1,7 @@
 import * as ids from '../parse/ids.ts';
 import { dateFromLabel, dateFromPattern } from '../parse/locate.ts';
 import { cleanTitle, first, labelValue, mapFound } from '../parse/text.ts';
-import { DELIVERY_STATUS, SCHEMA } from '../schema.ts';
+import { SCHEMA } from '../schema.ts';
 import { Draft, senderBrand, type Extractor, type ExtractorContext } from './base.ts';
 
 const REQUIRED = ['carrier', 'trackingId', 'item', 'expectedDelivery', 'orderId'] as const;
@@ -10,6 +10,8 @@ export const shipment: Extractor = {
   category: 'shipment',
   schemaType: SCHEMA.parcelDelivery,
   required: REQUIRED,
+  strongAnchor: [['trackingId']],
+  softAnchor: [['trackingId'], ['orderId', 'item']],
 
   run({ doc }: ExtractorContext) {
     const d = new Draft();
@@ -45,13 +47,11 @@ export const shipment: Extractor = {
 
     const delivered = doc.match('shipment.delivered', /\b(?:has been|was)\s+(delivered)\b/i);
     const inTransit = doc.match('shipment.inTransit', /\b(shipped|dispatched|in transit|on the way|out for delivery)\b/i);
-    if (delivered) d.derive('deliveryStatus', DELIVERY_STATUS.delivered, delivered, 'shipment.status');
-    else if (inTransit) d.derive('deliveryStatus', DELIVERY_STATUS.inTransit, inTransit, 'shipment.status');
+    // schema.org expects a DeliveryEvent here, not an enumeration member, so a
+    // plain token is emitted rather than a schema.org URI that would not validate.
+    if (delivered) d.derive('deliveryStatus', 'delivered', delivered, 'shipment.status');
+    else if (inTransit) d.derive('deliveryStatus', 'in-transit', inTransit, 'shipment.status');
 
-    return d.finish({
-      required: REQUIRED,
-      anchorStrong: d.has('trackingId'),
-      anchorSatisfied: d.has('trackingId') || (d.has('orderId') && d.has('item')),
-    });
+    return d.finish({ required: REQUIRED });
   },
 };

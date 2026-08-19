@@ -1,6 +1,7 @@
 import { CANDIDATE_FLOOR, classify, type CategoryScore } from './classify.ts';
 import { scoreAbstention, scoreResult } from './confidence.ts';
 import type { ExtractorContext, ExtractorOutput } from './extractors/base.ts';
+import { hasAnchor } from './extractors/base.ts';
 import { extractorFor } from './extractors/registry.ts';
 import { ground } from './ground.ts';
 import { readJsonLd } from './jsonld.ts';
@@ -12,10 +13,19 @@ import type { Category, Email, ExtractOptions, ExtractionResult, Method } from '
 const MAX_CANDIDATES = 3;
 /** Promo score above which a result without a hard identifier is rejected. */
 const PROMO_VETO = 0.6;
+/**
+ * Above this, the email reads as an inducement even though an extractor found
+ * its anchor — "Pay ₹799 before 30 Sep and enjoy double data" carries an
+ * amount, a date and a subscriber number, and is still not a bill. Showing a
+ * fabricated bill in a bills-due surface is worse than missing a real one.
+ */
+const PROMO_HARD_VETO = 0.85;
 
 interface Attempt {
   candidate: CategoryScore;
   output: ExtractorOutput;
+  /** Evaluated against the data that survived grounding, not before it. */
+  anchorStrong: boolean;
   droppedCount: number;
   decision: number;
 }
@@ -63,18 +73,21 @@ export function extract(email: Email, options: ExtractOptions = {}): ExtractionR
     if (!output) continue;
 
     const report = ground(doc, output.data, output.provenance);
-    // Grounding can delete fields, so `missing` is recomputed after the check.
+    // Grounding can delete fields, so everything derived from `data` — the
+    // missing list and both anchors — is computed after the check, not before.
     const missing = extractor.required.filter((f) => !Object.hasOwn(output.data, f));
     const requiredFound = extractor.required.length - missing.length;
     output.missing = missing;
 
-    if (!output.anchorSatisfied) continue;
+    if (!hasAnchor(output.data, extractor.softAnchor)) continue;
+    const anchorStrong = hasAnchor(output.data, extractor.strongAnchor);
 
     attempts.push({
       candidate,
       output: { ...output, requiredFound },
+      anchorStrong,
       droppedCount: report.dropped.length,
-      decision: candidate.score + (output.anchorStrong ? 1 : 0.35) + requiredFound * 0.05,
+      decision: candidate.score + (anchorStrong ? 1 : 0.35) + requiredFound * 0.05,
     });
   }
 
@@ -84,8 +97,10 @@ export function extract(email: Email, options: ExtractOptions = {}): ExtractionR
   if (!best) return abstain(doc, ranked, promo.score, promo.promoHits, 'no-anchor');
 
   // A blast can occasionally satisfy a soft anchor. A hard identifier is the
-  // one thing marketing never carries, so it is what overrides a promo verdict.
-  if (promo.score >= PROMO_VETO && !best.output.anchorStrong) {
+  // one thing marketing never carries, so it is what overrides a promo verdict —
+  // up to the point where the offer framing is overwhelming, which no amount of
+  // anchor rescues.
+  if (promo.score >= PROMO_HARD_VETO || (promo.score >= PROMO_VETO && !best.anchorStrong)) {
     return abstain(doc, ranked, promo.score, promo.promoHits, 'promo-veto');
   }
 
@@ -96,7 +111,7 @@ function assemble(best: Attempt, promoScore: number, method: Method, ranked: Cat
   const extractor = extractorFor(best.candidate.category);
   const { score, confidence } = scoreResult({
     lexical: best.candidate.score,
-    anchorStrong: best.output.anchorStrong,
+    anchorStrong: best.anchorStrong,
     requiredFound: best.output.requiredFound,
     requiredTotal: best.output.requiredTotal,
     promoScore,
@@ -197,5 +212,3 @@ function abstain(
     method: 'none',
   };
 }
-
-export type { Category };

@@ -2,7 +2,7 @@
 
 Structured extraction from transactional email — the thing Gmail does when it turns a booking confirmation into a card.
 
-The brief named five categories. The second attached fixture (`data/fixtures.bills.json`) asked for three more — credit-card, bill, shipment — so this repo covers those nine, plus `flight` (the worked example) and `none`.
+The brief named five categories. The second attached fixture (`data/fixtures.bills.json`) asked for three more — credit-card, bill, shipment — so this repo covers those eight, plus `flight` (the worked example) and `none`.
 
 ```
 extract(email) -> { category, schemaType, data, confidence, missing }
@@ -19,14 +19,14 @@ Design rationale, schema mapping and known gaps: **[DECISIONS.md](DECISIONS.md)*
 
 ## Run it
 
-Needs **Node 22.6+** (24 recommended) and nothing else. The extractor has **zero runtime dependencies** — dev dependencies are only TypeScript and Vitest.
+Needs **Node 22.6+** (24 recommended) and nothing else. The extractor has **zero runtime dependencies** — dev dependencies are only TypeScript, Vitest and `@types/node`.
 
 ```bash
 git clone https://github.com/HarjjotSinghh/inbox-extract.git && cd inbox-extract
 node --experimental-strip-types src/cli.ts data/fixtures.bills.json data/fixtures.commerce.json --today 2026-09-15
 ```
 
-That prints a summary and writes results to `out/`. No `npm install` required — Node runs the TypeScript directly.
+That prints a summary and writes results to `out/`. No `npm install` required — Node runs the TypeScript directly. On Node 22.x you will also see `ExperimentalWarning: Type Stripping`; that is Node reporting its own flag, not a problem with the run. Verified on v22.6.0 and v24.18.0.
 
 `data/fixtures.commerce.json` is the attached `emails.json` (food, subscription, event, refund, medical, plus the flight reference and the movie-ticket promo). `data/fixtures.bills.json` is the second attachment (credit-card, bill, shipment). Output for both is in `out/`. Always pass `--today 2026-09-15` (or `--out` to a scratch dir) so a trial run does not overwrite the committed artifacts with your machine's date.
 
@@ -42,7 +42,7 @@ npm install && npm run verify
 |---|---|
 | `npm run extract -- <file.json>` | run the extractor over a fixture file |
 | `npm run eval` | score against `data/gold.json`; exits non-zero on a misfiled promo or an ungrounded field |
-| `npm test` | 49 unit and contract tests |
+| `npm test` | 78 tests: contract, abstention, vendor variation, parsers, adversarial regressions, LLM trust boundary |
 | `npm run demo` | rebuild `demo/index.html` |
 | `npm run typecheck` | `tsc --noEmit` |
 
@@ -69,7 +69,7 @@ fieldPrecision               100.0%    perfectCards        100.0%
 
 Both promo decoys return `none`. `flight-ref` reproduces the reference output in the brief exactly — that is asserted as a test, not eyeballed.
 
-Fourteen emails is a smoke test, not an evaluation; see the last section of [DECISIONS.md](DECISIONS.md).
+Fourteen scored cases over 13 distinct emails (the flight reference appears in both fixture files) is a smoke test, not an evaluation; see the last section of [DECISIONS.md](DECISIONS.md).
 
 **Scaling to senders I have never seen:** extraction is generic and verification is strict — a vendor-agnostic label layer plus an LLM fallback both feed the same gate that deletes any field it cannot find verbatim in the email, so an unfamiliar sender costs recall, never precision.
 

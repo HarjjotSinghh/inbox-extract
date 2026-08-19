@@ -154,6 +154,11 @@ function stripQuotes(s: string): string {
  * offset indexes into: subject first (subject lines carry the strongest signal),
  * then body.
  */
+/** Coerce anything a mail store might hand us into a string we can scan. */
+function asText(v: unknown): string {
+  return typeof v === 'string' ? v : typeof v === 'number' || typeof v === 'boolean' ? String(v) : '';
+}
+
 export class Doc {
   readonly email: Email;
   readonly subject: string;
@@ -164,24 +169,23 @@ export class Doc {
   readonly bodyOffset: number;
 
   constructor(email: Email) {
-    this.email = email;
-    const rawBody = email.html ?? email.body ?? '';
+    // Callers pass whatever their mail store handed them; a null message or a
+    // numeric body should abstain, not throw.
+    const safe: Email = email && typeof email === 'object' ? email : {};
+    this.email = safe;
+    const rawBody = asText(safe.html) || asText(safe.body);
     const jsonld = rawBody && isHtml(rawBody) ? extractJsonLd(rawBody) : [];
     const bodyText = collapse(rawBody && isHtml(rawBody) ? htmlToText(rawBody) : rawBody);
-    const subject = collapse(decodeEntities(email.subject ?? ''));
+    const subject = collapse(decodeEntities(asText(safe.subject)));
 
     this.subject = subject;
     this.body = bodyText;
     this.text = subject ? `${subject}\n\n${bodyText}` : bodyText;
     this.bodyOffset = subject ? subject.length + 2 : 0;
-    this.sender = parseSender(email.from);
+    this.sender = parseSender(asText(safe.from));
     this.jsonld = jsonld;
   }
 
-  /** True when the span sits in the subject line rather than the body. */
-  inSubject(start: number): boolean {
-    return this.bodyOffset > 0 && start < this.subject.length;
-  }
 
   private haystack(source: SourceKind): string {
     return source === 'sender' ? this.sender.raw : this.text;
@@ -223,8 +227,4 @@ export class Doc {
     return re.test(this.text);
   }
 
-  count(re: RegExp): number {
-    const flags = re.flags.includes('g') ? re.flags : `${re.flags}g`;
-    return [...this.text.matchAll(new RegExp(re.source, flags))].length;
-  }
 }

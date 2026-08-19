@@ -10,41 +10,44 @@ import { Draft, senderBrand, type Extractor, type ExtractorContext } from './bas
 const REQUIRED = ['merchant', 'orderId', 'items', 'total', 'status', 'eta'] as const;
 
 /**
- * Line items from the two forms vendors actually use:
- *   "1x Chicken Biryani (₹320), 1x Coke (₹60)"
- *   "Chicken Biryani x 1, Coke x 1"
- * Prices are attached only when the email states them per item.
+ * Line items.
+ *
+ * Segments are split first, then each is read independently — an earlier
+ * version bailed out of the fallback as soon as *any* segment matched the
+ * "2x Coke" shape, so "Chicken Biryani, 2x Coke, Paneer Tikka" silently
+ * became a one-item order. Quantity is attached only where it is written.
  */
+function parseOneItem(segment: string): LineItem | null {
+  const priced = /\(([^)]*\d[^)]*)\)\s*$/.exec(segment);
+  const price = priced?.[1] ? findAllMoney(priced[1])[0]?.value : undefined;
+  const core = (priced ? segment.slice(0, priced.index) : segment).trim();
+
+  let quantity: number | undefined;
+  let name = core;
+
+  const leading = /^(\d+)\s*[x×]\s+(.+)$/i.exec(core);
+  const trailing = /^(.+?)\s+[x×]\s*(\d+)$/i.exec(core);
+  const parens = /^\((\d+)\)\s*(.+)$/.exec(core);
+  const qtyLabel = /^qty\.?\s*[:\s]\s*(\d+)\s+(.+)$/i.exec(core);
+
+  if (leading) { quantity = Number(leading[1]); name = leading[2] ?? core; }
+  else if (parens) { quantity = Number(parens[1]); name = parens[2] ?? core; }
+  else if (qtyLabel) { quantity = Number(qtyLabel[1]); name = qtyLabel[2] ?? core; }
+  else if (trailing) { quantity = Number(trailing[2]); name = trailing[1] ?? core; }
+
+  const cleaned = cleanTitle(name);
+  if (!cleaned || cleaned.length > 80) return null;
+  return { name: cleaned, ...(quantity ? { quantity } : {}), ...(price ? { price } : {}) };
+}
+
 function parseItems(span: Found<string> | null): Found<LineItem[]> | null {
   if (!span) return null;
-  const items: LineItem[] = [];
-
-  const leading = /(\d+)\s*[x×]\s*([^(,;]+?)\s*(?:\(([^)]+)\))?(?=\s*[,;]|$)/gi;
-  for (const m of span.value.matchAll(leading)) {
-    const name = cleanTitle(m[2] ?? '');
-    if (!name) continue;
-    const price = m[3] ? findAllMoney(m[3])[0]?.value : undefined;
-    items.push({ name, quantity: Number(m[1]), ...(price ? { price } : {}) });
-  }
-
-  if (items.length === 0) {
-    const trailing = /([^,;(]+?)\s*[x×]\s*(\d+)\s*(?:\(([^)]+)\))?(?=\s*[,;]|$)/gi;
-    for (const m of span.value.matchAll(trailing)) {
-      const name = cleanTitle(m[1] ?? '');
-      if (!name) continue;
-      const price = m[3] ? findAllMoney(m[3])[0]?.value : undefined;
-      items.push({ name, quantity: Number(m[2]), ...(price ? { price } : {}) });
-    }
-  }
-
-  // A bare comma-separated list is still a list; quantity is simply not stated.
-  if (items.length === 0) {
-    for (const part of span.value.split(/\s*[,;]\s*/)) {
-      const name = cleanTitle(part);
-      if (name && name.length <= 80) items.push({ name });
-    }
-  }
-
+  const items = span.value
+    .split(/\s*[,;\n]\s*/)
+    .map((seg) => seg.trim())
+    .filter(Boolean)
+    .map(parseOneItem)
+    .filter((i): i is LineItem => i !== null);
   return items.length ? { ...span, value: items, rule: `${span.rule}>items` } : null;
 }
 
@@ -52,6 +55,8 @@ export const food: Extractor = {
   category: 'food',
   schemaType: SCHEMA.order,
   required: REQUIRED,
+  strongAnchor: [['orderId']],
+  softAnchor: [['orderId'], ['merchant', 'total']],
 
   run({ doc }: ExtractorContext) {
     const d = new Draft();
@@ -65,7 +70,7 @@ export const food: Extractor = {
     d.set('platform', senderBrand(doc, 'food.platform.sender'));
 
     d.set('orderId', ids.orderId(doc));
-    d.set('items', parseItems(labelValue(doc, 'food.items', ['Items', 'Item', 'Order details', 'Your order'])));
+    d.set('items', parseItems(labelValue(doc, 'food.items', ['Items', 'Item', 'Order details', 'Your order'], { multiline: true })));
 
     d.set('total', first(
       moneyFromLabel(doc, 'food.total', ['Grand total', 'Order total', 'Bill total', 'Total amount', 'Total', 'Amount paid'], {
@@ -99,10 +104,6 @@ export const food: Extractor = {
 
     d.set('deliveryAddress', mapFound(labelValue(doc, 'food.address', ['Delivering to', 'Delivery address', 'Deliver to', 'Shipping to']), 'clean', cleanTitle));
 
-    return d.finish({
-      required: REQUIRED,
-      anchorStrong: d.has('orderId'),
-      anchorSatisfied: d.has('orderId') || (d.has('merchant') && d.has('total')),
-    });
+    return d.finish({ required: REQUIRED });
   },
 };

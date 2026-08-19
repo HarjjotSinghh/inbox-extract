@@ -17,6 +17,8 @@ export const flight: Extractor = {
   category: 'flight',
   schemaType: SCHEMA.flightReservation,
   required: REQUIRED,
+  strongAnchor: [['reservationId', 'flightNumber'], ['reservationId', 'departureAirport']],
+  softAnchor: [['flightNumber'], ['reservationId', 'departureAirport'], ['reservationId', 'arrivalAirport']],
 
   run({ doc }: ExtractorContext) {
     const d = new Draft();
@@ -83,12 +85,6 @@ export const flight: Extractor = {
 
     d.set('seat', doc.match('flight.seat', /\bseats?\s*(?:no\.?|number)?\s*[:#]?\s*(\d{1,3}[A-Z])\b/i));
 
-    return d.finish({
-      required: REQUIRED,
-      // A flight number in "book 6E 202 this weekend" is not a booking.
-      // The PNR is the thing marketing does not have.
-      anchorStrong: d.has('reservationId'),
-      anchorSatisfied: d.has('reservationId') || d.has('flightNumber'),
-    });
+    return d.finish({ required: REQUIRED });
   },
 };

@@ -12,6 +12,8 @@ export const subscription: Extractor = {
   category: 'subscription',
   schemaType: LOCAL.subscriptionRenewal,
   required: REQUIRED,
+  strongAnchor: [['renewalDate', 'status']],
+  softAnchor: [['service', 'renewalDate'], ['service', 'amount']],
 
   run({ doc }: ExtractorContext) {
     const d = new Draft();
@@ -59,10 +61,6 @@ export const subscription: Extractor = {
 
     d.set('paymentMethodLast4', ids.cardLast4(doc));
 
-    return d.finish({
-      required: REQUIRED,
-      anchorStrong: d.has('renewalDate') && d.has('status'),
-      anchorSatisfied: d.has('service') && (d.has('renewalDate') || d.has('amount')),
-    });
+    return d.finish({ required: REQUIRED });
   },
 };

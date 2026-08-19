@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { Doc, extract, ground } from '../src/index.ts';
 import type { Provenance } from '../src/types.ts';
@@ -30,12 +31,23 @@ describe('grounding drops anything not present in the email', () => {
     expect(data.carrier).toBeUndefined();
   });
 
-  it('every field emitted on the fixtures carries a quote found in the email', () => {
-    const r = extract(email, { today: '2026-09-15' });
-    const haystack = `${email.from}\n${email.subject}\n${email.body}`.replace(/\s+/g, ' ');
-    for (const [field, p] of Object.entries(r.provenance ?? {})) {
-      expect(haystack.includes(p.quote.replace(/\s+/g, ' ')), `${field}: ${p.quote}`).toBe(true);
+  it('every field emitted on every fixture carries a quote found in that email', () => {
+    // Previously this asserted against a single hardcoded email while claiming
+    // fixture-wide coverage. It now actually reads the fixtures.
+    const files = ['data/fixtures.bills.json', 'data/fixtures.commerce.json'];
+    let checked = 0;
+    for (const file of files) {
+      const fixture = JSON.parse(readFileSync(file, 'utf8')) as { cases: any[] };
+      for (const c of fixture.cases) {
+        const r = extract(c, { today: '2026-09-15' });
+        const haystack = `${c.from ?? ''}\n${c.subject ?? ''}\n${c.body ?? ''}`.replace(/\s+/g, ' ');
+        for (const [field, p] of Object.entries(r.provenance ?? {})) {
+          expect(haystack.includes(p.quote.replace(/\s+/g, ' ')), `${c.id}.${field}: ${p.quote}`).toBe(true);
+          checked += 1;
+        }
+      }
     }
+    expect(checked).toBeGreaterThan(60);
   });
 });
 

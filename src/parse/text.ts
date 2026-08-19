@@ -31,6 +31,23 @@ export function valueEnd(text: string, from: number): number {
   return text.length;
 }
 
+/**
+ * End of a value that may span lines: stops at a blank line or at the next
+ * "Label:" line, so an item list survives but the field after it is not eaten.
+ */
+export function valueEndMultiline(text: string, from: number): number {
+  let end = valueEnd(text, from);
+  while (end < text.length && text[end] === '\n') {
+    const lineStart = end + 1;
+    const nl = text.indexOf('\n', lineStart);
+    const line = text.slice(lineStart, nl < 0 ? text.length : nl);
+    if (!line.trim()) break;
+    if (/^\s*[A-Z][\w &/'-]{1,24}\s*:/.test(line)) break;
+    end = valueEnd(text, lineStart);
+  }
+  return end;
+}
+
 function labelPattern(label: string): string {
   return label
     .trim()
@@ -52,6 +69,11 @@ function labelPattern(label: string): string {
  * resolves HDFC's "Statement date ... Payment due date" correctly.
  */
 export interface LabelOptions {
+  /**
+   * Let the value run past a newline. Item lists are routinely written one per
+   * line; stopping at the first newline silently truncates them to one item.
+   */
+  multiline?: boolean;
   /**
    * Longer phrases this label must not be read out of.
    *
@@ -92,7 +114,8 @@ export function labelValue(
       const labelStart = m.index + m[0].indexOf(m[1] ?? '');
       if (blocked.some(([s, e]) => labelStart >= s && labelStart < e)) continue;
       const valueStart = m.index + m[0].length;
-      const raw = doc.text.slice(valueStart, valueEnd(doc.text, valueStart));
+      const stop = opts.multiline ? valueEndMultiline : valueEnd;
+      const raw = doc.text.slice(valueStart, stop(doc.text, valueStart));
       const trimmed = raw.replace(/[\s,;]+$/, '');
       if (!trimmed) continue;
       return found(trimmed, trimmed, valueStart, `${rule}:label(${label})`);

@@ -15,16 +15,23 @@ export interface ExtractorOutput {
   partial: string[];
   warnings: string[];
   notes: Record<string, string>;
-  /**
-   * A category-defining identifier was found verbatim (PNR, booking id,
-   * tracking id, card last-4...). Strong anchors are what separate a real
-   * booking from a blast that merely talks about bookings.
-   */
-  anchorStrong: boolean;
-  /** Enough evidence to build a usable card, even without a hard identifier. */
-  anchorSatisfied: boolean;
   requiredFound: number;
   requiredTotal: number;
+}
+
+/**
+ * Field sets that constitute an anchor, as an OR of ANDs: the anchor holds if
+ * every field of any one inner set survived extraction.
+ *
+ * Declaring this on the extractor rather than computing it inside `run()` means
+ * one definition per category, evaluated against the data that actually
+ * survived grounding — and it is the same definition the LLM fallback consults,
+ * instead of inventing a third one.
+ */
+export type AnchorSets = readonly (readonly string[])[];
+
+export function hasAnchor(data: Record<string, unknown>, sets: AnchorSets): boolean {
+  return sets.some((set) => set.length > 0 && set.every((f) => Object.hasOwn(data, f)));
 }
 
 export interface Extractor {
@@ -32,6 +39,13 @@ export interface Extractor {
   schemaType: string;
   /** Absent required fields are reported in `missing`, never invented. */
   required: readonly string[];
+  /**
+   * The category-defining evidence a marketing blast cannot fake — a PNR beside
+   * a flight number, a tracking id, a card last-4 beside a figure that is owed.
+   */
+  strongAnchor: AnchorSets;
+  /** Enough to build a usable card without a hard identifier. */
+  softAnchor: AnchorSets;
   run(ctx: ExtractorContext): ExtractorOutput | null;
 }
 
@@ -99,11 +113,7 @@ export class Draft {
     return required.filter((f) => !this.has(f));
   }
 
-  finish(opts: {
-    required: readonly string[];
-    anchorStrong: boolean;
-    anchorSatisfied?: boolean;
-  }): ExtractorOutput {
+  finish(opts: { required: readonly string[] }): ExtractorOutput {
     const missing = this.missingFrom(opts.required);
     return {
       data: this.data,
@@ -112,8 +122,6 @@ export class Draft {
       partial: this.partial,
       warnings: this.warnings,
       notes: this.notes,
-      anchorStrong: opts.anchorStrong,
-      anchorSatisfied: opts.anchorSatisfied ?? (opts.anchorStrong || missing.length < opts.required.length),
       requiredFound: opts.required.length - missing.length,
       requiredTotal: opts.required.length,
     };

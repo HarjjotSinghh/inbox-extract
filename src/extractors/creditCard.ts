@@ -16,6 +16,8 @@ export const creditCard: Extractor = {
   category: 'credit-card',
   schemaType: SCHEMA.invoice,
   required: REQUIRED,
+  strongAnchor: [['cardLast4', 'totalDue'], ['cardLast4', 'minDue']],
+  softAnchor: [['cardLast4', 'totalDue'], ['cardLast4', 'minDue'], ['cardLast4', 'dueDate']],
 
   run({ doc, today, dueSoonDays }: ExtractorContext) {
     const d = new Draft();
@@ -49,12 +51,6 @@ export const creditCard: Extractor = {
       }
     }
 
-    return d.finish({
-      required: REQUIRED,
-      // A card last-4 tied to statement figures is the thing a marketing blast
-      // about the same card never has. A date alone is not a figure.
-      anchorStrong: d.has('cardLast4') && (d.has('totalDue') || d.has('minDue')),
-      anchorSatisfied: d.has('cardLast4') && (d.has('totalDue') || d.has('dueDate') || d.has('statementDate')),
-    });
+    return d.finish({ required: REQUIRED });
   },
 };

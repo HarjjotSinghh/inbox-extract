@@ -19,6 +19,19 @@ function isMoney(v: unknown): v is Money {
   return typeof v === 'object' && v !== null && 'amount' in v && 'currency' in v && 'raw' in v;
 }
 
+/**
+ * Checking that `raw` sits inside the quote is not enough: `amount` is a parsed
+ * number, and a parser bug can put a figure in `amount` that `raw` does not
+ * support. Re-deriving the number from `raw` closes that gap, so "no field is
+ * invented" holds for the value and not merely for the span.
+ */
+function amountMatchesRaw(m: Money): boolean {
+  const digits = /(\d[\d,\u00a0\u202f\u2009]*(?:\.\d{1,2})?)/.exec(m.raw)?.[1];
+  if (!digits) return false;
+  const reparsed = Number(digits.replace(/[,\u00a0\u202f\u2009]/g, ''));
+  return Number.isFinite(reparsed) && reparsed === m.amount;
+}
+
 function valueStrings(value: unknown): string[] {
   if (typeof value === 'string') return [value];
   if (typeof value === 'number') return [String(value)];
@@ -75,6 +88,18 @@ export function ground(
       p.start = at;
       p.end = at + p.quote.length;
       report.repaired.push(field);
+    }
+
+    // Money is checked even when derived: the number is the whole point.
+    const value = data[field];
+    if (isMoney(value) && !amountMatchesRaw(value)) {
+      delete data[field];
+      delete provenance[field];
+      report.dropped.push({
+        field,
+        reason: `amount ${value.amount} is not derivable from raw ${JSON.stringify(value.raw)}`,
+      });
+      continue;
     }
 
     if (p.derived) continue; // a normalisation of a verified quote

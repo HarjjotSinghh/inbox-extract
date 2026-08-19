@@ -45,12 +45,15 @@ function firstValid(
 }
 
 export function pnr(doc: Doc): Found<string> | null {
-  // A PNR is an alphanumeric locator. Letters-only English words ("inside")
-  // from "booking ref inside" are not.
+  // Airlines use a 6-character alphanumeric locator; Indian Railways uses a
+  // 10-digit numeric one. Requiring a letter excluded every IRCTC ticket, so
+  // the test is "contains a digit" — which still rejects the English word
+  // "inside" from a promo's "booking ref inside", and the coupon guards in
+  // firstValid still reject "SUMMER1".
   return firstValid(doc, 'id.pnr', [
-    /\bPNR\s*(?:no\.?|number)?\s*[:#-]?\s*([A-Z0-9]{5,8})\b/i,
-    /\bbooking\s*ref(?:erence)?\s*(?:no\.?|number)?\s*[:#-]?\s*([A-Z0-9]{5,8})\b/i,
-  ], (s) => hasDigit(s) && /[A-Z]/i.test(s));
+    /\bPNR\s*(?:no\.?|number)?\s*[:#-]?\s*([A-Z0-9]{5,10})\b/i,
+    /\bbooking\s*ref(?:erence)?\s*(?:no\.?|number)?\s*[:#-]?\s*([A-Z0-9]{5,10})\b/i,
+  ], hasDigit);
 }
 
 export function orderId(doc: Doc): Found<string> | null {

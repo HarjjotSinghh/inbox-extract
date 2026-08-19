@@ -136,6 +136,3 @@ export function daysBetween(fromISO: string, toISO: string): number | null {
   return Math.round((b - a) / 86_400_000);
 }
 
-export function isValidISODate(s: string | undefined | null): boolean {
-  return !!s && /^\d{4}-\d{2}-\d{2}$/.test(s.slice(0, 10)) && Number.isFinite(Date.parse(`${s.slice(0, 10)}T00:00:00Z`));
-}

@@ -13,6 +13,8 @@ export const medical: Extractor = {
   category: 'medical',
   schemaType: SCHEMA.reservation,
   required: REQUIRED,
+  strongAnchor: [['appointmentId']],
+  softAnchor: [['appointmentId'], ['provider', 'dateTime']],
 
   run({ doc }: ExtractorContext) {
     const d = new Draft();
@@ -56,10 +58,6 @@ export const medical: Extractor = {
     d.set('appointmentId', ids.appointmentId(doc));
     d.set('platform', senderBrand(doc, 'medical.platform.sender'));
 
-    return d.finish({
-      required: REQUIRED,
-      anchorStrong: d.has('appointmentId'),
-      anchorSatisfied: d.has('appointmentId') || (d.has('provider') && d.has('dateTime')),
-    });
+    return d.finish({ required: REQUIRED });
   },
 };

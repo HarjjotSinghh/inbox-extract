@@ -2,17 +2,23 @@
 
 How this works, what I chose, and what I left out.
 
+**The short version — the brief's five questions, one line each:**
+
+| | |
+|---|---|
+| **Detecting the category** | Classification proposes, extraction disposes. Weighted wording signals shortlist up to three categories; each runs its own extractor, and a category is only assigned if that extractor finds the field that *defines* it. A promo has nothing to extract, so it gets no card. |
+| **Mapping to a schema** | Real schema.org vocabulary wherever one fits (`FlightReservation`, `EventReservation`, `Order`, `ParcelDelivery`, `Invoice`), a namespaced `inbox:` type only where schema.org genuinely has none. Full table [below](#category--schemaorg-type). |
+| **Missing fields** | Three states, not two: present, `partial` (found but under-specified, like an ETA with no date), or `missing`. Nothing is completed by guessing — `ground()` deletes any field that cannot be traced to a span in the email. |
+| **Different vendors** | Four layers, cheapest first: the sender's own JSON-LD → vendor-agnostic label scanning → category-specific structure → an optional LLM fallback, all funnelling through the same verification gate. |
+| **What I skipped** | MIME/attachments, non-English, timezones, thread-level entity resolution, and a large enough eval set for the accuracy numbers to mean anything. Detail [below](#what-i-skipped-and-why). |
+
+**Scaling to hundreds of unseen senders:** extraction is generic and verification is strict — a vendor-agnostic label layer plus an LLM fallback both feed the same gate that deletes any field it cannot find verbatim in the email, so an unfamiliar sender costs recall, never precision.
+
+If you read one more section, make it [What an adversarial pass found](#what-an-adversarial-pass-found) — nine real defects and what they say about the design.
+
 ---
 
-## Scaling to hundreds of senders I've never seen
-
-**Extraction is generic and verification is strict: a vendor-agnostic label layer plus an LLM fallback both feed the same gate that deletes any field it cannot find verbatim in the email — so an unfamiliar sender costs recall, never precision.**
-
-The rest of this document is how that sentence is implemented.
-
----
-
-## The two things the brief said actually matter
+## The two properties I optimised for
 
 ### 1. A marketing blast that looks like a booking must come back `none`
 
@@ -20,16 +26,19 @@ The rule is: **classification proposes, extraction disposes.**
 
 The classifier picks up to three plausible categories from weighted wording signals. Each one then *runs its own extractor*, and a category is only assigned if that extractor found the field that defines it — an **anchor**. If nothing anchors, the answer is `none`.
 
-| category | anchor |
+| category | strong anchor (declared on the extractor) |
 |---|---|
-| flight | PNR (a flight number in an offer is not a booking) |
-| event | booking/reservation id, or event name + start time + venue |
-| food | order id, or merchant + total |
-| shipment | tracking id, or order id + item |
-| refund | amount + outcome (refunded/cancelled) |
-| medical | appointment id, or provider + date-time |
-| credit-card | card last-4 **and** a statement figure or due date |
-| bill | amount **and** a due date **and** an account number (amount+date alone is what cashback blasts carry) |
+| flight | PNR **and** a flight number or departure airport — a PNR alone is also what an IRCTC train ticket has |
+| event | booking / reservation id |
+| food | order id |
+| shipment | tracking id |
+| refund | order id **and** amount |
+| medical | appointment id |
+| subscription | renewal date **and** renewing-vs-trial status |
+| credit-card | card last-4 **and** a figure that is owed — a statement *date* alone is not one |
+| bill | amount **and** due date **and** account number — amount+date alone is what cashback blasts carry |
+
+Each extractor also declares a weaker `softAnchor` (e.g. event name + time + venue, when no booking id is present) that is enough to build a card but not enough to survive a promo veto. Both are declared as data on the extractor and evaluated **after** grounding, against the fields that actually survived — so a field deleted by the verifier cannot prop up an anchor, and the LLM fallback consults the same definition instead of inventing its own.
 
 This is what makes "Flat 50% off movie tickets this weekend!" fall through. It talks like a booking — cinema, tickets, weekend — but it has no booking id, no seats, no venue, no show time. There is nothing to extract, so there is no card. The same structure handles promos I have never seen, because it tests for the *presence of a transaction* rather than for the *absence of known promo words*.
 
@@ -41,7 +50,7 @@ A promo lexicon exists as well (`% off`, `use code`, `pre-approved`, `T&C apply`
 
 Enforced structurally, not by discipline.
 
-Inside the extractors there is **no way to write a field without a `Found<T>`** — a value bundled with the exact substring it came from and that substring's offsets. Before anything is returned, `src/ground.ts` re-checks every field:
+Inside the extractors there is **no way to write a field without a `Found<T>` or an explicit derivation from one** (`Draft.set` and `Draft.derive` are the only two writers of `data` in the codebase) — a value bundled with the exact substring it came from and that substring's offsets. Before anything is returned, `src/ground.ts` re-checks every field:
 
 1. the quote must still exist verbatim at its recorded offsets in the email (offsets are repaired if the text shifted; if the quote is absent entirely, the field is deleted);
 2. unless the value is an explicit **derivation** of the quote, the value must be recoverable from that quote.
@@ -88,11 +97,11 @@ Gmail's markup pipeline understands `FlightReservation`, `EventReservation`, `Lo
 | bill | `Invoice` | exact fit |
 | credit-card | `Invoice` | `minimumPaymentDue`, `totalPaymentDue`, `paymentDueDate` and `accountId` are literally Invoice properties — a card statement is a richer bill |
 | medical | `Reservation` | schema.org has **no** medical-appointment type; `Reservation` is the real parent of the whole family, so it is honest rather than invented |
-| subscription | `inbox:SubscriptionRenewal` | schema.org has **no** subscription type. Forcing it into `Invoice` would imply money already payable, which a renewal notice is not. Namespaced so a consumer can never mistake it for standard vocabulary |
+| subscription | `inbox:SubscriptionRenewal` | schema.org has no type that models a subscription *renewal notice*. `MediaSubscription` is the closest real type, but it carries only `authenticator` and `expectsAcceptanceOf` — no amount, renewal date or status — and `Subscription` is a `PriceComponentTypeEnumeration` member, not a type. Forcing it into `Invoice` would imply money already payable, which a renewal notice is not. Namespaced so a consumer can never mistake it for standard vocabulary |
 
 Alongside the brief's field names I emit the standard enum URIs too — `paymentStatus: PaymentPastDue`, `orderStatus: OrderInTransit` — so a consumer that already understands those URIs can read them. The card itself is the brief's shape, not schema.org JSON-LD. Where the brief's prose and the fixture's `targetSchemas` disagree (venue/clinic → `location`, booking ID → `reservationId`), I followed the fixture.
 
-One naming note: schema.org marks `carrier` as superseded by `provider` on `ParcelDelivery`. The brief names `carrier`, and so does every consumer of this data in practice, so `carrier` is what I emit.
+Two vocabulary notes. schema.org marks `carrier` as superseded by `provider` on `ParcelDelivery`; the brief names `carrier`, and so does every consumer of this data in practice, so `carrier` is what I emit. And `ParcelDelivery.deliveryStatus` expects a `DeliveryEvent`, not an enumeration member — so that field carries a plain `"in-transit"` / `"delivered"` token rather than a schema.org URI that would not validate.
 
 ---
 
@@ -152,13 +161,52 @@ Four layers, cheapest and most reliable first:
 - **Non-English and Hinglish.** The lexicons are English. For an India-first product this is the first gap I would close, and it is mostly lexicon work rather than architecture.
 - **Timezones.** No fixture states one. If a sender ever does, the current shape would need an offset.
 - **Thread-level entity resolution.** "Order confirmed" → "Shipped" → "Delivered" are three emails about one order and should collapse into one card with a status timeline. That is a store-level concern, not an `extract(email)` concern, but it is the obvious next thing to build.
-- **A larger adversarial set.** Promo rejection is currently measured on **two** emails. 100% on n=2 is not a strong claim, and I would rather say so than round it up. The honest next step is a few hundred labelled emails per category so the numbers mean something.
+- **A larger adversarial set.** Promo rejection is currently measured on **two** emails. 100% on n=2 is not a strong claim. The honest next step is a few hundred labelled emails per category so the numbers mean something.
 
 ---
 
+## What an adversarial pass found
+
+Everything above describes the design. This describes what happened when I
+attacked it with ~70 synthetic emails written specifically to break it, which is
+the part I would want to read.
+
+Nine real defects, all now fixed and pinned by tests in `tests/redteam.test.ts`
+and `tests/llm.test.ts`:
+
+| defect | what it did |
+|---|---|
+| **Money digit-smear** | `Bill amount: ₹1,842 214 units consumed` was read as **₹18,42,214**. The digit character class allowed a plain space, so a figure absorbed the next number. It reported `confidence: "high"` with clean provenance |
+| **Promo footers deleted real transactions** | A genuine Swiggy order ending in "Get 50% off your next order. T&C apply. Unsubscribe" returned `none`. Most Indian commerce mail carries that footer |
+| **An inducement extracted as a bill** | "Pay ₹799 before 30 Sep and enjoy double data" has an amount, a due date and a subscriber number — it satisfied the bill anchor and produced a card for money nobody owes |
+| **Credit-limit marketing as a statement** | A card last-4 plus a statement date was enough to anchor, so "your credit limit has been increased" became a `credit-card` |
+| **Item lists truncated** | `Items: Chicken Biryani, 2x Coke, Paneer Tikka` yielded one item. Any segment matching the "2x Coke" shape suppressed the fallback for the others |
+| **Paid bills scored overdue** | "We have received your payment" with a past due date returned `overdue`, because only the opposite contradiction was checked |
+| **Numeric PNRs rejected** | IRCTC uses a 10-digit numeric PNR; the rule required a letter, so every Indian Railways ticket was missed |
+| **Crashes on malformed input** | `extract(null)` and a numeric `body` threw instead of abstaining |
+| **The LLM path bypassed the grounding gate** | Model-proposed fields were checked by a weaker local matcher that accepted `"123"` out of `"Order #12345"`, and a promoted result kept the abstention's `reason` |
+
+The money bug is the one worth dwelling on, because it defeated the very
+mechanism this document spends most of its length describing. `ground()` checked
+that `Money.raw` appeared in its quote, and `raw` was smeared identically — so a
+fabricated number passed the anti-hallucination check with a perfect audit
+trail. The structural guarantee ("nothing is emitted without a span") held
+exactly as designed and was **not sufficient**, because it verified the span and
+not the value. `ground()` now re-derives the number from `raw` and drops any
+amount that does not reconcile.
+
+Two things I would take from that if I were reading this as the reviewer. First,
+the abstention knob failed in *both* directions at once — the promo veto that
+let an upsell through was the same one deleting real orders — so tuning it
+against promos alone would have made the recall problem worse invisibly. Second,
+every one of these returned `confidence: "high"`. A calibrated-sounding
+confidence score is worth nothing until something adversarial has tried to move
+it, which is the argument for building the eval harness before trusting any of
+the numbers in it.
+
 ## Numbers
 
-`npm run eval`, against `data/gold.json` (hand-transcribed from the email bodies, not copied from my own output):
+`npm run eval`, against `data/gold.json` (hand-transcribed from the email bodies, not copied from my own output). 78 tests pass; `tsc --noEmit` is clean:
 
 ```
 cases                        14
@@ -175,6 +223,6 @@ additionalFieldsBeyondGold   17
 
 Promo misfiles and ungrounded quotes fail the process. Wrong values vs gold are printed and currently still exit 0.
 
-`additionalFieldsBeyondGold` are grounded fields beyond what the brief listed — `lateFee`, `unitsConsumed`, `availableCredit`, `screen`, `deliveryAddress`, `platform`, `paymentMethodLast4`, plus the schema.org enums. They are reported separately rather than folded into the score, since scoring myself on fields I chose to add would be meaningless.
+`additionalFieldsBeyondGold` are grounded fields beyond what the brief listed — `lateFee`, `unitsConsumed`, `availableCredit`, `screen`, `deliveryAddress`, `platform`, `paymentMethodLast4`, `merchant`, `provider`, plus the schema.org enums. They are reported separately rather than folded into the score, since scoring myself on fields I chose to add would be meaningless.
 
-The caveat worth repeating: 14 emails is a smoke test, not an evaluation. What the harness is really buying at this size is the **regression gate** and the **independent grounding audit** — the accuracy percentages only start to mean something at a few hundred labelled emails.
+At this size the harness buys a **regression gate** and an **independent grounding audit**, not accuracy numbers — those start to mean something at a few hundred labelled emails.

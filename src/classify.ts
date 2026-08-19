@@ -52,6 +52,10 @@ const PROMO: Signal[] = [
   { re: /\bunsubscribe\b/i, w: 0.6, label: 'unsubscribe' },
   { re: /\bearn\s+(?:up\s+to\s+)?\d/i, w: 0.9, label: 'earn' },
   { re: /\bno\s+cost\s+emi\b|\binstant\s+discount\b/i, w: 1.2, label: 'finance-offer' },
+  // "Pay ₹799 before 30 Sep and enjoy double data" — a conditional inducement.
+  // A real bill states what is owed; it never promises a reward for paying.
+  { re: /\b(?:pay|recharge|spend|shop|book|order)\b[^.\n]{0,60}?\band\s+(?:get|enjoy|earn|receive|win|save)\b/i, w: 1.8, label: 'pay-and-get' },
+  { re: /\bis\s+about\s+to\s+get\s+better\b|\bgood\s+news[!,]/i, w: 1.0, label: 'upsell-framing' },
   { re: /\bin\s+your\s+cart\b|\bleft\s+(?:something|items?)\s+in\s+your\s+cart\b/i, w: 1.8, label: 'abandoned-cart' },
   { re: /\bhow\s+was\s+your\s+(?:order|booking|appointment)\b|\brate\s+(?:it|your\s+order)\b/i, w: 1.6, label: 'csat' },
 ];
@@ -62,8 +66,12 @@ const PROMO: Signal[] = [
  * not mistaken for a blast.
  */
 const TRANSACTIONAL: Signal[] = [
-  { re: /\byour\s+(?:order|booking|reservation|appointment|statement|bill|refund|package|parcel|shipment|membership|subscription)\b/i, w: 1.4, label: 'your-thing' },
-  { re: /\b(?:is|has been|was)\s+(?:confirmed|shipped|dispatched|delivered|processed|cancelled|canceled|refunded|booked)\b/i, w: 1.6, label: 'settled-verb' },
+  // "Your Swiggy order", "Your HDFC Bank statement" — a brand routinely sits
+  // between the pronoun and the noun, and the literal form missed all of them.
+  { re: /\byour\s+(?:[\w.&-]+\s+){0,2}(?:order|booking|reservation|appointment|statement|bill|refund|package|parcel|shipment|membership|subscription|ticket)\b/i, w: 1.4, label: 'your-thing' },
+  { re: /\b(?:is|has been|was)\s+(?:confirmed|shipped|dispatched|delivered|processed|cancelled|canceled|refunded|booked|ready)\b/i, w: 1.6, label: 'settled-verb' },
+  { re: /\b(?:is\s+)?on\s+the\s+way\b|\bout\s+for\s+delivery\b|\barriving\s+(?:today|tomorrow)\b/i, w: 1.5, label: 'in-progress-verb' },
+  { re: /\bwe\s+have\s+received\s+your\s+payment\b|\bpayment\s+received\b|\bthank\s+you\s+for\s+your\s+payment\b/i, w: 1.6, label: 'payment-received' },
   { re: /\bwe(?:'| ha)ve\s+(?:processed|received|shipped|refunded|issued)\b/i, w: 1.6, label: 'we-have-done' },
   { re: /\b(?:total\s+)?amount\s+due\b|\bpayment\s+due\s+date\b|\bdue\s+date\b/i, w: 1.5, label: 'due-date' },
   { re: /\b(?:tracking|booking|appointment|reservation|order|confirmation)\s*(?:id|no\.?|number)\b/i, w: 1.8, label: 'identifier-label' },
@@ -178,6 +186,32 @@ const SENDER_CATEGORY: Array<{ re: RegExp; category: Exclude<Category, 'none'>; 
 ];
 
 const SUBJECT_MULTIPLIER = 1.4;
+/**
+ * Promo wording inside a footer counts for far less than the same wording in
+ * the message itself. Most genuine Indian commerce mail ships with "Get 20% off
+ * your next order / T&C apply / Unsubscribe" stapled to the bottom, and taking
+ * that at face value threw away real orders.
+ */
+const FOOTER_MULTIPLIER = 0.3;
+
+/** Index in `body` where a boilerplate footer starts, or body.length if none. */
+export function footerStart(body: string): number {
+  const re = /\n[ \t]*(?:[-–—_*=]{3,}|unsubscribe\b|this\s+is\s+an\s+automated|to\s+stop\s+receiving)/gi;
+  for (const m of body.matchAll(re)) {
+    if (m.index != null && m.index > body.length * 0.5) return m.index;
+  }
+
+  // Footers are not always on their own line. A trailing paragraph carrying
+  // unsubscribe or T&C boilerplate is a footer wherever it sits.
+  const lastBreak = body.lastIndexOf('\n\n');
+  if (lastBreak > body.length * 0.35) {
+    const tail = body.slice(lastBreak);
+    if (/\bunsubscribe\b|\bT&Cs?\s*apply\b|\bterms\s+(?:and|&)\s+conditions\s+apply\b/i.test(tail)) {
+      return lastBreak;
+    }
+  }
+  return body.length;
+}
 const NORMALISER = 3.5;
 
 function scoreSignals(doc: Doc, signals: Signal[]): { raw: number; hits: string[] } {
@@ -203,7 +237,25 @@ function scoreSignals(doc: Doc, signals: Signal[]): { raw: number; hits: string[
  * `tests/contract.test.ts`, which strips the sender and still expects 'none'.
  */
 export function assessPromo(doc: Doc): PromoAssessment {
-  const promo = scoreSignals(doc, PROMO);
+  const cut = footerStart(doc.body);
+  const main = doc.body.slice(0, cut);
+  const footer = doc.body.slice(cut);
+
+  const promo = { raw: 0, hits: [] as string[] };
+  for (const sig of PROMO) {
+    const inSubject = sig.re.test(doc.subject);
+    const inMain = sig.re.test(main);
+    const inFooter = footer ? sig.re.test(footer) : false;
+    if (!inSubject && !inMain && !inFooter) continue;
+    const weight = inSubject
+      ? sig.w * SUBJECT_MULTIPLIER
+      : inMain
+        ? sig.w
+        : sig.w * FOOTER_MULTIPLIER;
+    promo.raw += weight;
+    promo.hits.push(inSubject ? `${sig.label}@subject` : inMain ? sig.label : `${sig.label}@footer`);
+  }
+
   const txn = scoreSignals(doc, TRANSACTIONAL);
 
   const local = doc.sender.localPart ?? '';

@@ -32,19 +32,11 @@ export const ORDER_STATUS = {
   delivered: 'https://schema.org/OrderDelivered',
   returned: 'https://schema.org/OrderReturned',
   cancelled: 'https://schema.org/OrderCancelled',
-  paymentDue: 'https://schema.org/OrderPaymentDue',
-  problem: 'https://schema.org/OrderProblem',
 } as const;
 
 export const PAYMENT_STATUS = {
   due: 'https://schema.org/PaymentDue',
   pastDue: 'https://schema.org/PaymentPastDue',
   complete: 'https://schema.org/PaymentComplete',
-  declined: 'https://schema.org/PaymentDeclined',
-  automaticallyApplied: 'https://schema.org/PaymentAutomaticallyApplied',
 } as const;
 
-export const DELIVERY_STATUS = {
-  inTransit: 'https://schema.org/OrderInTransit',
-  delivered: 'https://schema.org/OrderDelivered',
-} as const;

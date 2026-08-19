@@ -1,7 +1,7 @@
 import * as ids from '../parse/ids.ts';
 import { dateFromLabel, dateFromPattern, moneyFromLabel, moneyFromPattern } from '../parse/locate.ts';
 import { cleanTitle, first, labelValue, mapFound } from '../parse/text.ts';
-import { SCHEMA } from '../schema.ts';
+import { PAYMENT_STATUS, SCHEMA } from '../schema.ts';
 import { billStatus, paymentStatusUrl } from '../status.ts';
 import { Draft, senderBrand, type Extractor, type ExtractorContext } from './base.ts';
 
@@ -17,6 +17,8 @@ export const bill: Extractor = {
   category: 'bill',
   schemaType: SCHEMA.invoice,
   required: REQUIRED,
+  strongAnchor: [['amount', 'dueDate', 'account']],
+  softAnchor: [['amount', 'dueDate'], ['amount', 'account']],
 
   run({ doc, today, dueSoonDays }: ExtractorContext) {
     const d = new Draft();
@@ -43,7 +45,18 @@ export const bill: Extractor = {
       d.derive('dueDate', due.value.value, due, 'bill.dueDate');
       if (due.value.ambiguous) d.warn('Numeric date could be read day-first or month-first; day-first assumed.');
 
-      const status = billStatus(due.value.value, today, dueSoonDays);
+      // An email confirming payment must not be scored against its due date;
+      // the arithmetic would call every paid bill overdue.
+      const paid = doc.match(
+        'bill.paid',
+        /\b(payment\s+received|we\s+have\s+received\s+your\s+payment|thank\s+you\s+for\s+your\s+payment|successfully\s+paid|payment\s+successful)\b/i,
+      );
+      if (paid) {
+        d.derive('status', 'paid', paid, 'bill.status.paid');
+        d.derive('paymentStatus', PAYMENT_STATUS.complete, paid, 'bill.paymentStatus');
+      }
+
+      const status = paid ? null : billStatus(due.value.value, today, dueSoonDays);
       if (status) {
         d.derive('status', status, due, `bill.status(today=${today},dueSoonDays=${dueSoonDays})`);
         d.derive('paymentStatus', paymentStatusUrl(status), due, 'bill.paymentStatus');
@@ -54,7 +67,7 @@ export const bill: Extractor = {
         if (saysOverdue && status !== 'overdue') {
           d.warn(`Email states the bill is overdue, but the due date ${due.value.value} is not before ${today}.`);
         }
-      } else {
+      } else if (!paid) {
         d.warn('Due date found but no reference date supplied, so status could not be computed.');
       }
     }
@@ -63,12 +76,6 @@ export const bill: Extractor = {
     d.set('unitsConsumed', mapFound(labelValue(doc, 'bill.units', ['Units consumed', 'Consumption', 'Usage']), 'clean', cleanTitle));
     d.set('billingPeriod', mapFound(labelValue(doc, 'bill.period', ['Billing period', 'Bill period', 'Billing cycle']), 'clean', cleanTitle));
 
-    return d.finish({
-      required: REQUIRED,
-      // Amount + due date is what every telco cashback blast also carries.
-      // The account number is the thing marketing does not have.
-      anchorStrong: d.has('amount') && d.has('dueDate') && d.has('account'),
-      anchorSatisfied: d.has('amount') && (d.has('dueDate') || d.has('account')),
-    });
+    return d.finish({ required: REQUIRED });
   },
 };

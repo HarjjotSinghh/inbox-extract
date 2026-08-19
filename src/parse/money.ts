@@ -12,9 +12,9 @@ const SYMBOL_TO_ISO: Record<string, string> = {
 
 const UNIT = /lakh|lac|crore/i;
 const PREFIXED =
-  /(₹|Rs\.?|INR|US\$|\$|€|£|¥|AED|SGD|AUD|CAD|USD|EUR|GBP|JPY)\s*(\d[\d,  ]*(?:\.\d{1,2})?)(?:\s*(lakh|lac|crore)s?)?(?!\s*%)/i;
+  /(₹|Rs\.?|INR|US\$|\$|€|£|¥|AED|SGD|AUD|CAD|USD|EUR|GBP|JPY)\s*(\d[\d,\u00a0\u202f\u2009]*(?:\.\d{1,2})?)(?:\s*(lakh|lac|crore)s?)?(?!\s*%)/i;
 const SUFFIXED =
-  /(\d[\d,  ]*(?:\.\d{1,2})?)\s*(?:(lakh|lac|crore)s?\s+)?(INR|USD|EUR|GBP|AED|SGD|AUD|CAD|JPY|rupees?)\b/i;
+  /(\d[\d,\u00a0\u202f\u2009]*(?:\.\d{1,2})?)\s*(?:(lakh|lac|crore)s?\s+)?(INR|USD|EUR|GBP|AED|SGD|AUD|CAD|JPY|rupees?)\b/i;
 
 function scale(amount: number, unit: string | undefined): number {
   if (!unit) return amount;
@@ -25,12 +25,17 @@ function scale(amount: number, unit: string | undefined): number {
 }
 
 /**
+ * Separators allowed inside one figure: commas and the no-break/thin spaces
+ * some locales use. A plain space is deliberately excluded — "₹1,842 214 units
+ * consumed" is an amount followed by an unrelated number, and joining them
+ * would fabricate ₹18,42,214 out of a ₹1,842 bill.
+ *
  * Indian digit grouping ("1,81,550") and Western grouping ("18,450.00") both
  * reduce to the same thing once separators are dropped, so no locale guess is
  * needed. Anything with two decimal places keeps them.
  */
 export function parseAmount(numeric: string): number | null {
-  const cleaned = numeric.replace(/[,  ]/g, '');
+  const cleaned = numeric.replace(/[,\u00a0\u202f\u2009]/g, '');
   if (!/^\d+(?:\.\d{1,2})?$/.test(cleaned)) return null;
   const n = Number(cleaned);
   return Number.isFinite(n) ? n : null;

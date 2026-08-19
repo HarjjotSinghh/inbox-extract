@@ -1,7 +1,8 @@
 import { scoreResult } from '../confidence.ts';
+import { hasAnchor } from '../extractors/base.ts';
 import { extractorFor } from '../extractors/registry.ts';
+import { ground } from '../ground.ts';
 import { Doc } from '../normalize.ts';
-import { looksLikeCoupon } from '../parse/ids.ts';
 import { extract } from '../pipeline.ts';
 import type { Email, ExtractOptions, ExtractionResult, Provenance } from '../types.ts';
 import { buildUserMessage, SYSTEM, TOOL } from './prompt.ts';
@@ -24,31 +25,21 @@ export async function extractAsync(email: Email, options: ExtractOptions = {}): 
   const base = extract(email, options);
   if (!options.llm) return base;
 
-  const apiKey = options.llmApiKey ?? process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return { ...base, warnings: [...(base.warnings ?? []), 'LLM fallback requested but ANTHROPIC_API_KEY is not set; rules-only result returned.'] };
-  }
   if (!needsFallback(base)) return base;
 
-  const doc = new Doc(email);
-  let reply: LlmReply;
-  try {
-    reply = await callClaude(doc, base, apiKey, options.llmModel ?? DEFAULT_MODEL);
-  } catch (err) {
-    return { ...base, warnings: [...(base.warnings ?? []), `LLM fallback failed: ${String(err)}; rules-only result returned.`] };
+  const apiKey = options.llmApiKey ?? process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return { ...base, warnings: [...(base.warnings ?? []), 'LLM fallback would have run here, but ANTHROPIC_API_KEY is not set; rules-only result returned.'] };
   }
 
-  return merge(doc, base, reply);
-}
-
-const STRONG_ID_FIELDS = ['reservationId', 'trackingId', 'orderId', 'appointmentId', 'account'] as const;
-
-function llmAnchorStrong(data: Record<string, unknown>): boolean {
-  if (typeof data.cardLast4 === 'string' && /^\d{4}$/.test(data.cardLast4)) return true;
-  return STRONG_ID_FIELDS.some((k) => {
-    const v = data[k];
-    return typeof v === 'string' && /\d/.test(v) && !looksLikeCoupon(v);
-  });
+  const doc = new Doc(email);
+  try {
+    const reply = await callClaude(doc, base, apiKey, options.llmModel ?? DEFAULT_MODEL);
+    return merge(doc, base, reply);
+  } catch (err) {
+    const detail = err instanceof Error ? err.message.slice(0, 120) : 'unknown error';
+    return { ...base, warnings: [...(base.warnings ?? []), `LLM fallback failed (${detail}); rules-only result returned.`] };
+  }
 }
 
 function needsFallback(r: ExtractionResult): boolean {
@@ -79,11 +70,24 @@ async function callClaude(doc: Doc, base: ExtractionResult, apiKey: string, mode
     }),
   });
 
-  if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
+  // The upstream body is not echoed into user-facing warnings.
+  if (!res.ok) throw new Error(`Anthropic API returned ${res.status}`);
   const body = (await res.json()) as { content?: Array<{ type: string; name?: string; input?: unknown }> };
   const call = body.content?.find((c) => c.type === 'tool_use' && c.name === TOOL.name);
   if (!call?.input) throw new Error('model returned no tool call');
   return call.input as LlmReply;
+}
+
+/**
+ * A value must sit on token boundaries inside its quote. Plain substring
+ * matching accepts `"123"` inside `"Order #12345"`, which would let a truncated
+ * identifier through and then read as a valid anchor.
+ */
+function containsToken(haystack: string, needle: string): boolean {
+  const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const left = /^\w/.test(needle) ? '\\b' : '';
+  const right = /\w$/.test(needle) ? '\\b' : '';
+  return new RegExp(`${left}${escaped}${right}`).test(haystack);
 }
 
 /** Whitespace-tolerant verbatim search; anything not found is discarded. */
@@ -96,7 +100,8 @@ function locate(haystack: string, needle: string): { start: number; end: number;
   return m?.index == null ? null : { start: m.index, end: m.index + m[0].length, quote: m[0] };
 }
 
-function merge(doc: Doc, base: ExtractionResult, reply: LlmReply): ExtractionResult {
+/** Exported so the trust boundary can be tested without a network or a key. */
+export function merge(doc: Doc, base: ExtractionResult, reply: LlmReply): ExtractionResult {
   if (reply.category === 'none') {
     return base.category === 'none'
       ? { ...base, reason: base.reason ?? reply.reason }
@@ -113,11 +118,16 @@ function merge(doc: Doc, base: ExtractionResult, reply: LlmReply): ExtractionRes
   let accepted = 0;
 
   for (const field of reply.fields ?? []) {
-    if (!field?.name || !field.value) continue;
+    // Tool output is network data; the schema is a request, not a guarantee.
+    if (typeof field?.name !== 'string' || typeof field.value !== 'string' || typeof field.quote !== 'string') {
+      if (typeof field?.name === 'string') rejected.push(field.name);
+      continue;
+    }
+    if (!field.name || !field.value) continue;
     if (Object.hasOwn(data, field.name)) continue; // rules win
 
     const at = locate(doc.text, field.quote);
-    if (!at || !locate(at.quote, field.value)) {
+    if (!at || !containsToken(at.quote, field.value)) {
       rejected.push(field.name);
       continue;
     }
@@ -126,10 +136,15 @@ function merge(doc: Doc, base: ExtractionResult, reply: LlmReply): ExtractionRes
     accepted += 1;
   }
 
-  // Adopting a category on model say-so alone is exactly the promo failure mode,
-  // so an LLM-only category needs a grounded identifier to stand — a real one,
-  // not any key that happens to end in "Id".
-  const anchorStrong = llmAnchorStrong(data);
+  // Model-proposed fields go through the same gate as rule-derived ones, so the
+  // "a hallucinated field cannot reach a caller" guarantee holds on the only
+  // path where hallucination is actually possible.
+  const report = ground(doc, data, provenance);
+  rejected.push(...report.dropped.map((d) => d.field));
+
+  // Anchor strength uses the category's own declared definition — the same one
+  // the rules use — rather than a third, incompatible one invented here.
+  const anchorStrong = hasAnchor(data, extractor.strongAnchor);
   if (base.category === 'none' && !anchorStrong) {
     return { ...base, warnings: [...(base.warnings ?? []), `LLM proposed '${reply.category}' but produced no grounded identifier; abstention kept.`] };
   }
@@ -156,6 +171,9 @@ function merge(doc: Doc, base: ExtractionResult, reply: LlmReply): ExtractionRes
     confidence,
     score,
     method: 'llm',
+    // The rules' abstention rationale must not survive onto a result that is
+    // no longer an abstention.
+    reason: undefined,
     warnings: [
       ...(base.warnings ?? []),
       `LLM fallback accepted ${accepted} field(s).`,

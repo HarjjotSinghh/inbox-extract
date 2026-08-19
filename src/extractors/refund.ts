@@ -21,6 +21,8 @@ export const refund: Extractor = {
   category: 'refund',
   schemaType: SCHEMA.order,
   required: REQUIRED,
+  strongAnchor: [['orderId', 'amount']],
+  softAnchor: [['amount', 'status']],
 
   run({ doc }: ExtractorContext) {
     const d = new Draft();
@@ -75,10 +77,6 @@ export const refund: Extractor = {
       d.set('eta', mapFound(absoluteEta, 'clean', cleanTitle));
     }
 
-    return d.finish({
-      required: REQUIRED,
-      anchorStrong: d.has('orderId') && d.has('amount'),
-      anchorSatisfied: d.has('amount') && d.has('status'),
-    });
+    return d.finish({ required: REQUIRED });
   },
 };

@@ -478,7 +478,7 @@
         "expectedDelivery": "2026-09-17",
         "orderId": "402-1234567-8901234",
         "merchant": "Amazon.in",
-        "deliveryStatus": "https://schema.org/OrderInTransit"
+        "deliveryStatus": "in-transit"
       },
       "confidence": "high",
       "missing": [],

@@ -10,6 +10,8 @@ export const event: Extractor = {
   category: 'event',
   schemaType: SCHEMA.eventReservation,
   required: REQUIRED,
+  strongAnchor: [['reservationId']],
+  softAnchor: [['reservationId'], ['eventName', 'startDateTime', 'location']],
 
   run({ doc }: ExtractorContext) {
     const d = new Draft();
@@ -52,10 +54,6 @@ export const event: Extractor = {
     d.set('screen', doc.match('event.screen', /\bscreen\s+(\d+[A-Z]?)\b/i));
     d.set('provider', senderBrand(doc, 'event.provider.sender'));
 
-    return d.finish({
-      required: REQUIRED,
-      anchorStrong: d.has('reservationId'),
-      anchorSatisfied: d.has('reservationId') || (d.has('eventName') && d.has('startDateTime') && d.has('location')),
-    });
+    return d.finish({ required: REQUIRED });
   },
 };
