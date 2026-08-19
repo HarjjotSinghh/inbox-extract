@@ -10,10 +10,19 @@ const SYMBOL_TO_ISO: Record<string, string> = {
   'aed': 'AED', 'sgd': 'SGD', 'aud': 'AUD', 'cad': 'CAD', 'jpy': 'JPY', '¥': 'JPY',
 };
 
+const UNIT = /lakh|lac|crore/i;
 const PREFIXED =
-  /(₹|Rs\.?|INR|US\$|\$|€|£|¥|AED|SGD|AUD|CAD|USD|EUR|GBP|JPY)\s*(\d[\d,  ]*(?:\.\d{1,2})?)(?!\s*%)/i;
+  /(₹|Rs\.?|INR|US\$|\$|€|£|¥|AED|SGD|AUD|CAD|USD|EUR|GBP|JPY)\s*(\d[\d,  ]*(?:\.\d{1,2})?)(?:\s*(lakh|lac|crore)s?)?(?!\s*%)/i;
 const SUFFIXED =
-  /(\d[\d,  ]*(?:\.\d{1,2})?)\s*(INR|USD|EUR|GBP|AED|SGD|AUD|CAD|JPY|rupees?)\b/i;
+  /(\d[\d,  ]*(?:\.\d{1,2})?)\s*(?:(lakh|lac|crore)s?\s+)?(INR|USD|EUR|GBP|AED|SGD|AUD|CAD|JPY|rupees?)\b/i;
+
+function scale(amount: number, unit: string | undefined): number {
+  if (!unit) return amount;
+  const u = unit.toLowerCase();
+  if (u === 'lakh' || u === 'lac') return amount * 100_000;
+  if (u === 'crore') return amount * 10_000_000;
+  return amount;
+}
 
 /**
  * Indian digit grouping ("1,81,550") and Western grouping ("18,450.00") both
@@ -41,11 +50,13 @@ export function findMoney(text: string): Span<Money> | null {
 
   const usePrefixed = preIdx <= sufIdx;
   const m = (usePrefixed ? pre : suf) as RegExpExecArray;
-  const symbol = usePrefixed ? (m[1] ?? '') : (m[2] ?? '');
+  const symbol = usePrefixed ? (m[1] ?? '') : (m[4] ?? m[3] ?? '');
   const digits = usePrefixed ? (m[2] ?? '') : (m[1] ?? '');
+  const unit = usePrefixed ? m[3] : (m[2] && UNIT.test(m[2]) ? m[2] : undefined);
 
-  const amount = parseAmount(digits);
-  if (amount == null) return null;
+  const parsed = parseAmount(digits);
+  if (parsed == null) return null;
+  const amount = scale(parsed, unit);
 
   const raw = m[0].trim();
   return {

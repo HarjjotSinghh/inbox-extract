@@ -68,7 +68,9 @@ export const food: Extractor = {
     d.set('items', parseItems(labelValue(doc, 'food.items', ['Items', 'Item', 'Order details', 'Your order'])));
 
     d.set('total', first(
-      moneyFromLabel(doc, 'food.total', ['Grand total', 'Order total', 'Bill total', 'Total amount', 'Total', 'Amount paid']),
+      moneyFromLabel(doc, 'food.total', ['Grand total', 'Order total', 'Bill total', 'Total amount', 'Total', 'Amount paid'], {
+        notPartOf: ['Item total', 'Items total', 'Subtotal', 'Total savings'],
+      }),
     ));
 
     const statusHit = doc.match('food.status', /\b(on\s+the\s+way|out\s+for\s+delivery|being\s+prepared|preparing|delivered|order\s+placed|confirmed|cancell?ed)\b/i);

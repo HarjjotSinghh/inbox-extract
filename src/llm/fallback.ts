@@ -1,6 +1,7 @@
 import { scoreResult } from '../confidence.ts';
 import { extractorFor } from '../extractors/registry.ts';
 import { Doc } from '../normalize.ts';
+import { looksLikeCoupon } from '../parse/ids.ts';
 import { extract } from '../pipeline.ts';
 import type { Email, ExtractOptions, ExtractionResult, Provenance } from '../types.ts';
 import { buildUserMessage, SYSTEM, TOOL } from './prompt.ts';
@@ -40,7 +41,20 @@ export async function extractAsync(email: Email, options: ExtractOptions = {}): 
   return merge(doc, base, reply);
 }
 
+const STRONG_ID_FIELDS = ['reservationId', 'trackingId', 'orderId', 'appointmentId', 'account'] as const;
+
+function llmAnchorStrong(data: Record<string, unknown>): boolean {
+  if (typeof data.cardLast4 === 'string' && /^\d{4}$/.test(data.cardLast4)) return true;
+  return STRONG_ID_FIELDS.some((k) => {
+    const v = data[k];
+    return typeof v === 'string' && /\d/.test(v) && !looksLikeCoupon(v);
+  });
+}
+
 function needsFallback(r: ExtractionResult): boolean {
+  // A high-confidence abstention is a decision, not a gap. Sending the
+  // BookMyShow decoy to the model is how a promo code becomes a booking id.
+  if (r.category === 'none' && r.confidence === 'high') return false;
   return r.category === 'none' || r.confidence !== 'high' || r.missing.length > 0;
 }
 
@@ -113,8 +127,9 @@ function merge(doc: Doc, base: ExtractionResult, reply: LlmReply): ExtractionRes
   }
 
   // Adopting a category on model say-so alone is exactly the promo failure mode,
-  // so an LLM-only category needs a grounded identifier to stand.
-  const anchorStrong = Boolean(base.data) || /Id$|^reservationId$|^trackingId$|^orderId$/.test(Object.keys(data).find((k) => /Id$/.test(k)) ?? '');
+  // so an LLM-only category needs a grounded identifier to stand — a real one,
+  // not any key that happens to end in "Id".
+  const anchorStrong = llmAnchorStrong(data);
   if (base.category === 'none' && !anchorStrong) {
     return { ...base, warnings: [...(base.warnings ?? []), `LLM proposed '${reply.category}' but produced no grounded identifier; abstention kept.`] };
   }

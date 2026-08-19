@@ -52,8 +52,8 @@ export const creditCard: Extractor = {
     return d.finish({
       required: REQUIRED,
       // A card last-4 tied to statement figures is the thing a marketing blast
-      // about the same card never has.
-      anchorStrong: d.has('cardLast4') && (d.has('totalDue') || d.has('statementDate') || d.has('minDue')),
+      // about the same card never has. A date alone is not a figure.
+      anchorStrong: d.has('cardLast4') && (d.has('totalDue') || d.has('minDue')),
       anchorSatisfied: d.has('cardLast4') && (d.has('totalDue') || d.has('dueDate') || d.has('statementDate')),
     });
   },

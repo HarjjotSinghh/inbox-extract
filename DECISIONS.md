@@ -22,20 +22,20 @@ The classifier picks up to three plausible categories from weighted wording sign
 
 | category | anchor |
 |---|---|
-| flight | PNR or flight number |
+| flight | PNR (a flight number in an offer is not a booking) |
 | event | booking/reservation id, or event name + start time + venue |
 | food | order id, or merchant + total |
 | shipment | tracking id, or order id + item |
 | refund | amount + outcome (refunded/cancelled) |
 | medical | appointment id, or provider + date-time |
 | credit-card | card last-4 **and** a statement figure or due date |
-| bill | amount **and** a due date (or an account number) |
+| bill | amount **and** a due date **and** an account number (amount+date alone is what cashback blasts carry) |
 
 This is what makes "Flat 50% off movie tickets this weekend!" fall through. It talks like a booking — cinema, tickets, weekend — but it has no booking id, no seats, no venue, no show time. There is nothing to extract, so there is no card. The same structure handles promos I have never seen, because it tests for the *presence of a transaction* rather than for the *absence of known promo words*.
 
 A promo lexicon exists as well (`% off`, `use code`, `pre-approved`, `T&C apply`, urgency, reward multipliers) but it is a **tiebreak, not the decision**: it can veto a result that only cleared a soft anchor, and it drives the `reason` string. A weak transactional lexicon (`your order`, `we've processed`, `due date`, identifier labels) is subtracted from it so a real statement that happens to mention an offer is not misfiled.
 
-**The trap I deliberately avoided.** Both supplied decoys come from `offers@`, and the matching genuine emails come from `cards@` and `tickets@` **on the same domain**. Keying off the mailbox name would score 100% on this fixture set and then fail on the first promo sent from `no-reply@`. So the sender local-part contributes at most ±0.6 to a score built from content, and `tests/contract.test.ts` re-runs both decoys **with the sender deleted entirely** and with the decoy re-sent from `tickets@` — both still return `none`. `tests/vendors.test.ts` adds an unseen promo from `no-reply@ubereats.com`, which is also rejected.
+**The trap I deliberately avoided.** Both supplied decoys come from `offers@`, and the matching genuine emails come from `cards@` and `tickets@` **on the same domain**. Keying off the mailbox name would score 100% on this fixture set and then fail on the first promo sent from `no-reply@`. So the sender local-part is a weak prior, never the decision, and `tests/contract.test.ts` re-runs both decoys with the sender deleted, and re-sends the BookMyShow decoy from `tickets@` — still `none`. `tests/vendors.test.ts` adds an unseen promo from `no-reply@ubereats.com`, which is also rejected. Coupon-shaped tokens (`SUMMER50`, `PROMO2026`, `CART-88213`) are not accepted as booking/order/tracking ids.
 
 ### 2. Never invent a field
 
@@ -90,7 +90,7 @@ Gmail's markup pipeline understands `FlightReservation`, `EventReservation`, `Lo
 | medical | `Reservation` | schema.org has **no** medical-appointment type; `Reservation` is the real parent of the whole family, so it is honest rather than invented |
 | subscription | `inbox:SubscriptionRenewal` | schema.org has **no** subscription type. Forcing it into `Invoice` would imply money already payable, which a renewal notice is not. Namespaced so a consumer can never mistake it for standard vocabulary |
 
-Alongside the brief's field names I emit the standard enum values too — `paymentStatus: PaymentPastDue`, `orderStatus: OrderInTransit` — so the output drops into a schema.org consumer unchanged.
+Alongside the brief's field names I emit the standard enum URIs too — `paymentStatus: PaymentPastDue`, `orderStatus: OrderInTransit` — so a consumer that already understands those URIs can read them. The card itself is the brief's shape, not schema.org JSON-LD. Where the brief's prose and the fixture's `targetSchemas` disagree (venue/clinic → `location`, booking ID → `reservationId`), I followed the fixture.
 
 One naming note: schema.org marks `carrier` as superseded by `provider` on `ParcelDelivery`. The brief names `carrier`, and so does every consumer of this data in practice, so `carrier` is what I emit.
 
@@ -108,7 +108,7 @@ upcoming   otherwise
 
 The **3-day window is a product decision, not something the email states**, so it is a parameter (`dueSoonDays`), recorded here, and easy to change. The reference date is likewise explicit (`--today`) rather than `new Date()`, so committed output is reproducible; without one, `status` is reported in `missing` with a warning rather than silently computed from the machine clock.
 
-Where the email *also* states its status ("is now overdue") and the arithmetic disagrees, both are kept and a `warning` is emitted. Neither side silently wins.
+Where the email *also* states its status ("is now overdue") and the arithmetic disagrees, the computed `status` is kept and a `warning` is emitted. The stated wording is not stored as a second value.
 
 Credit-card statements share this vocabulary — they are the same shape with a card and a minimum due attached.
 
@@ -173,7 +173,7 @@ hallucinatedFields           0
 additionalFieldsBeyondGold   17
 ```
 
-The eval exits non-zero if any promo is misfiled or any field fails the grounding audit, so it works as a build gate rather than a printout.
+Promo misfiles and ungrounded quotes fail the process. Wrong values vs gold are printed and currently still exit 0.
 
 `additionalFieldsBeyondGold` are grounded fields beyond what the brief listed — `lateFee`, `unitsConsumed`, `availableCredit`, `screen`, `deliveryAddress`, `platform`, `paymentMethodLast4`, plus the schema.org enums. They are reported separately rather than folded into the score, since scoring myself on fields I chose to add would be meaningless.
 

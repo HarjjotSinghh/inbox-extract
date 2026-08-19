@@ -1,6 +1,8 @@
 # inbox-extract
 
-Structured extraction from transactional email — the thing Gmail does when it turns a booking confirmation into a card, applied to nine categories.
+Structured extraction from transactional email — the thing Gmail does when it turns a booking confirmation into a card.
+
+The brief named five categories. The second attached fixture (`data/fixtures.bills.json`) asked for three more — credit-card, bill, shipment — so this repo covers those nine, plus `flight` (the worked example) and `none`.
 
 ```
 extract(email) -> { category, schemaType, data, confidence, missing }
@@ -8,8 +10,8 @@ extract(email) -> { category, schemaType, data, confidence, missing }
 
 Two properties are the point:
 
-- **A marketing blast that looks like a booking comes back `category: "none"`.** Not because it matched a promo keyword list, but because there is no booking in it to extract.
-- **No field is ever invented.** Every emitted value carries the exact span of the email it was read from, and any field that cannot be traced back is deleted before the result is returned. If a field isn't stated, it lands in `missing`.
+- **A marketing blast that looks like a booking comes back `category: "none"`.** Not because it matched a promo keyword list, but because there is no booking in it to extract. Coupon-shaped tokens (`SUMMER50`, `PROMO2026`, `CART-88213`) are not treated as booking ids.
+- **No field is ever invented.** Every rules-layer value carries the exact span of the email it was read from, and any field that cannot be traced back is deleted before the result is returned. If a field isn't stated, it lands in `missing`. JSON-LD fields are attributed to the sender's markup, not a prose span.
 
 Design rationale, schema mapping and known gaps: **[DECISIONS.md](DECISIONS.md)**.
 
@@ -26,6 +28,8 @@ node --experimental-strip-types src/cli.ts data/fixtures.bills.json data/fixture
 
 That prints a summary and writes results to `out/`. No `npm install` required — Node runs the TypeScript directly.
 
+`data/fixtures.commerce.json` is the attached `emails.json` (food, subscription, event, refund, medical, plus the flight reference and the movie-ticket promo). `data/fixtures.bills.json` is the second attachment (credit-card, bill, shipment). Output for both is in `out/`. Always pass `--today 2026-09-15` (or `--out` to a scratch dir) so a trial run does not overwrite the committed artifacts with your machine's date.
+
 To also run the tests and the scored evaluation:
 
 ```bash
@@ -38,7 +42,7 @@ npm install && npm run verify
 |---|---|
 | `npm run extract -- <file.json>` | run the extractor over a fixture file |
 | `npm run eval` | score against `data/gold.json`; exits non-zero on a misfiled promo or an ungrounded field |
-| `npm test` | 40 unit and contract tests |
+| `npm test` | 49 unit and contract tests |
 | `npm run demo` | rebuild `demo/index.html` |
 | `npm run typecheck` | `tsc --noEmit` |
 
@@ -66,6 +70,8 @@ fieldPrecision               100.0%    perfectCards        100.0%
 Both promo decoys return `none`. `flight-ref` reproduces the reference output in the brief exactly — that is asserted as a test, not eyeballed.
 
 Fourteen emails is a smoke test, not an evaluation; see the last section of [DECISIONS.md](DECISIONS.md).
+
+**Scaling to senders I have never seen:** extraction is generic and verification is strict — a vendor-agnostic label layer plus an LLM fallback both feed the same gate that deletes any field it cannot find verbatim in the email, so an unfamiliar sender costs recall, never precision.
 
 ---
 
@@ -189,4 +195,4 @@ const result = extract(
 );
 ```
 
-`extract` is synchronous and dependency-free — it runs unchanged in Node, a browser, or a Cloudflare Worker. `extractAsync` is the same call with the optional LLM fallback.
+`extract()` has no npm dependencies and no Node builtins — import it from `src/pipeline.ts` (not the barrel that also exports `extractAsync`) for a browser or Worker. `extractAsync` is the optional LLM fallback and reads `process.env`.

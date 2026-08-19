@@ -52,6 +52,8 @@ const PROMO: Signal[] = [
   { re: /\bunsubscribe\b/i, w: 0.6, label: 'unsubscribe' },
   { re: /\bearn\s+(?:up\s+to\s+)?\d/i, w: 0.9, label: 'earn' },
   { re: /\bno\s+cost\s+emi\b|\binstant\s+discount\b/i, w: 1.2, label: 'finance-offer' },
+  { re: /\bin\s+your\s+cart\b|\bleft\s+(?:something|items?)\s+in\s+your\s+cart\b/i, w: 1.8, label: 'abandoned-cart' },
+  { re: /\bhow\s+was\s+your\s+(?:order|booking|appointment)\b|\brate\s+(?:it|your\s+order)\b/i, w: 1.6, label: 'csat' },
 ];
 
 /**
@@ -198,7 +200,7 @@ function scoreSignals(doc: Doc, signals: Signal[]): { raw: number; hits: string[
  * emails come from `cards@` / `tickets@` on the *same domain*. Domain is
  * therefore useless and local-part is tempting — so it is capped at a small
  * nudge and the content lexicons carry the decision. Verified by
- * `tests/classify.test.ts`, which strips the sender and still expects 'none'.
+ * `tests/contract.test.ts`, which strips the sender and still expects 'none'.
  */
 export function assessPromo(doc: Doc): PromoAssessment {
   const promo = scoreSignals(doc, PROMO);

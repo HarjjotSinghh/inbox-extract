@@ -29,7 +29,7 @@ export const event: Extractor = {
 
     const when = dateFromLabel(doc, 'event.when', [
       'Date & time', 'Date and time', 'Show time', 'Showtime', 'Date/time', 'Date', 'When', 'Starts',
-    ]);
+    ], { notPartOf: ['Booking date', 'Booked on', 'Purchase date', 'Order date'] });
     if (when) {
       d.derive('startDateTime', when.value.value, when, 'event.startDateTime');
       if (when.value.kind === 'date') d.markPartial('startDateTime', 'Date found but no show time stated.');

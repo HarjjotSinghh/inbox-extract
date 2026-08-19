@@ -1,6 +1,6 @@
 import { combine } from '../parse/datetime.ts';
 import * as ids from '../parse/ids.ts';
-import { dateFromLabel, dateFromPattern, firstDate } from '../parse/locate.ts';
+import { dateFromLabel, dateFromPattern } from '../parse/locate.ts';
 import { first, spanUnion } from '../parse/text.ts';
 import { SCHEMA } from '../schema.ts';
 import { Draft, senderBrand, type Extractor, type ExtractorContext } from './base.ts';
@@ -36,9 +36,10 @@ export const flight: Extractor = {
 
     // Date of travel, then the two clock times stated separately alongside it.
     const dateHit = first(
-      dateFromLabel(doc, 'flight.date', ['Date of journey', 'Travel date', 'Date']),
-      dateFromPattern(doc, 'flight.date.on', /\bon\s+((?:\w+,?\s*)?\d{1,2}\s+\w{3,9},?\s+\d{4})/i),
-      firstDate(doc, 'flight.date.any'),
+      dateFromLabel(doc, 'flight.date', ['Date of journey', 'Travel date', 'Journey date']),
+      dateFromPattern(doc, 'flight.date.departs', /(\d{1,2}\s+\w{3,9},?\s+\d{4}),?\s+(?:departs?|departure)/i),
+      // "on 12 Sep 2026, departs" — but not "Booked on 01 Sep 2026".
+      dateFromPattern(doc, 'flight.date.on', /(?<!\bbooked\s)\bon\s+((?:\w+,?\s*)?\d{1,2}\s+\w{3,9},?\s+\d{4})/i),
     );
     const travelDate = dateHit && dateHit.value.kind !== 'time' ? dateHit.value.value.slice(0, 10) : null;
 
@@ -84,7 +85,10 @@ export const flight: Extractor = {
 
     return d.finish({
       required: REQUIRED,
-      anchorStrong: d.has('reservationId') || d.has('flightNumber'),
+      // A flight number in "book 6E 202 this weekend" is not a booking.
+      // The PNR is the thing marketing does not have.
+      anchorStrong: d.has('reservationId'),
+      anchorSatisfied: d.has('reservationId') || d.has('flightNumber'),
     });
   },
 };

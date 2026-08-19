@@ -30,12 +30,14 @@ export const bill: Extractor = {
     d.set('amount', first(
       moneyFromLabel(doc, 'bill.amount', ['Bill amount', 'Amount payable', 'Total amount', 'Amount due', 'Amount', 'Total']),
       moneyFromPattern(doc, 'bill.amount.of', /\bbill\s+of\s+([^.\n]{1,30})/i),
+      moneyFromPattern(doc, 'bill.amount.remit', /\b(?:kindly\s+)?remit\s+([^.\n]{1,30})/i),
     ));
 
     const due = first(
       dateFromLabel(doc, 'bill.dueDate', ['Due date', 'Payment due date', 'Payable by', 'Pay by', 'Last date of payment']),
       dateFromPattern(doc, 'bill.dueDate.was', /\b(?:was|is|were)\s+due\s+(?:on|by)\s+([^.,\n]{4,30})/i),
       dateFromPattern(doc, 'bill.dueDate.by', /\bdue\s+(?:on|by)\s+([^.,\n]{4,30})/i),
+      dateFromPattern(doc, 'bill.dueDate.before', /\b(?:on\s+or\s+before|pay\s+by)\s+([^.,\n]{4,30})/i),
     );
     if (due) {
       d.derive('dueDate', due.value.value, due, 'bill.dueDate');
@@ -63,7 +65,9 @@ export const bill: Extractor = {
 
     return d.finish({
       required: REQUIRED,
-      anchorStrong: d.has('amount') && d.has('dueDate'),
+      // Amount + due date is what every telco cashback blast also carries.
+      // The account number is the thing marketing does not have.
+      anchorStrong: d.has('amount') && d.has('dueDate') && d.has('account'),
       anchorSatisfied: d.has('amount') && (d.has('dueDate') || d.has('account')),
     });
   },
