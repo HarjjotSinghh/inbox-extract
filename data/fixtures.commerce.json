@@ -1,0 +1,77 @@
+{
+  "_about": "Sample emails for the Gmail structured-extraction take-home. Fully self-contained — no access to our stack needed. 'flight-ref' is worked out for you (shows the target shape). 'promo-decoy' is worked too (must come back category 'none'). The five categories in buildThese are yours to extract. All emails are synthetic — no real user data.",
+  "targetSchemas": {
+    "flight": "FlightReservation (reference — already done)",
+    "food": "Order — { merchant, orderId, items[], total, status/eta }",
+    "subscription": "{ service, plan, amount, renewalDate, status: 'renewing' | 'trial-ending' }",
+    "event": "EventReservation — { reservationId, eventName, location, startDateTime, seats[], amount }",
+    "refund": "{ merchant, orderId, item, amount, status: 'refunded' | 'cancelled', eta }",
+    "medical": "{ provider, specialty, location, dateTime, appointmentId }",
+    "none": "(not a transaction — e.g. marketing)"
+  },
+  "buildThese": ["food", "subscription", "event", "refund", "medical"],
+  "cases": [
+    {
+      "id": "flight-ref",
+      "from": "Air India <no-reply@airindia.com>",
+      "subject": "Booking Confirmed — PNR X4K9P2",
+      "body": "Dear Passenger, your booking is confirmed. PNR: X4K9P2. Flight AI-302 from Delhi (DEL) to Mumbai (BOM) on 12 Sep 2026, departs 08:15, arrives 10:30. Seat 14A. Fare INR 6,540.",
+      "expected": {
+        "category": "flight", "schemaType": "FlightReservation", "confidence": "high", "missing": [],
+        "data": { "reservationId": "X4K9P2", "airline": "Air India", "flightNumber": "AI 302",
+          "departureAirport": "DEL", "arrivalAirport": "BOM",
+          "departureTime": "2026-09-12T08:15", "arrivalTime": "2026-09-12T10:30", "seat": "14A" }
+      }
+    },
+    {
+      "id": "food-order",
+      "category_to_build": "food",
+      "from": "Zomato <orders@zomato.com>",
+      "subject": "Your order is on the way — Order #ZO987654",
+      "body": "Your order from Meghana Foods is on the way! Order #ZO987654. Items: 1x Chicken Biryani (₹320), 1x Coke (₹60). Total: ₹380. Estimated delivery: 8:45 PM. Delivering to: 12 MG Road.",
+      "expected": null
+    },
+    {
+      "id": "subscription-renewal",
+      "category_to_build": "subscription",
+      "from": "Netflix <info@netflix.com>",
+      "subject": "Your Netflix membership will renew soon",
+      "body": "Hi, your Netflix Premium plan will renew on 22 Sep 2026. You'll be charged ₹649 to the card ending 4821. To change or cancel, visit netflix.com/account.",
+      "expected": null
+    },
+    {
+      "id": "event-ticket",
+      "category_to_build": "event",
+      "from": "BookMyShow <tickets@bookmyshow.com>",
+      "subject": "Booking Confirmed — Oppenheimer, PVR Forum Mall",
+      "body": "Your booking is confirmed! Movie: Oppenheimer. Cinema: PVR Forum Mall, Bengaluru. Date: Sat, 20 Sep 2026, 6:30 PM. Seats: H14, H15. Screen 3. Booking ID: BMS1234567. Amount paid: ₹700.",
+      "expected": null
+    },
+    {
+      "id": "refund-1",
+      "category_to_build": "refund",
+      "from": "Amazon.in <returns@amazon.in>",
+      "subject": "Your refund has been processed",
+      "body": "We've processed a refund of ₹2,499 for your order #402-9988776-5544332 (boAt Rockerz 550 Headphones). It will reflect in your original payment method within 3–5 business days.",
+      "expected": null
+    },
+    {
+      "id": "medical-appt",
+      "category_to_build": "medical",
+      "from": "Practo <appointments@practo.com>",
+      "subject": "Appointment confirmed with Dr. Anita Rao",
+      "body": "Your appointment is confirmed. Doctor: Dr. Anita Rao (Dermatologist). Clinic: Skin & You, Indiranagar, Bengaluru. Date & time: Mon, 22 Sep 2026, 11:00 AM. Appointment ID: PR-556677. Please arrive 10 minutes early.",
+      "expected": null
+    },
+    {
+      "id": "promo-decoy",
+      "from": "BookMyShow Offers <offers@bookmyshow.com>",
+      "subject": "🎬 Flat 50% off movie tickets this weekend!",
+      "body": "Book any movie this weekend and get 50% off! Use code WEEKEND50. Valid at all cinemas. T&C apply.",
+      "expected": {
+        "category": "none", "schemaType": null, "confidence": "high",
+        "reason": "Promotional blast, not a booking. Must NOT be extracted as an EventReservation."
+      }
+    }
+  ]
+}

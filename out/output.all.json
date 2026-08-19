@@ -1,0 +1,1150 @@
+[
+  {
+    "source": "fixtures.bills.json",
+    "id": "flight-ref",
+    "from": "Air India <no-reply@airindia.com>",
+    "subject": "Booking Confirmed — PNR X4K9P2",
+    "result": {
+      "category": "flight",
+      "schemaType": "FlightReservation",
+      "data": {
+        "reservationId": "X4K9P2",
+        "airline": "Air India",
+        "flightNumber": "AI 302",
+        "departureAirport": "DEL",
+        "arrivalAirport": "BOM",
+        "departureTime": "2026-09-12T08:15",
+        "arrivalTime": "2026-09-12T10:30",
+        "seat": "14A"
+      },
+      "confidence": "high",
+      "missing": [],
+      "score": 0.905,
+      "provenance": {
+        "reservationId": {
+          "source": "text",
+          "quote": "X4K9P2",
+          "start": 24,
+          "end": 30,
+          "rule": "id.pnr"
+        },
+        "airline": {
+          "source": "sender",
+          "quote": "Air India",
+          "start": 0,
+          "end": 9,
+          "rule": "flight.airline.sender"
+        },
+        "flightNumber": {
+          "source": "text",
+          "quote": "AI-302",
+          "start": 95,
+          "end": 101,
+          "rule": "id.flightNumber>flight.normaliseNumber",
+          "derived": true
+        },
+        "departureAirport": {
+          "source": "text",
+          "quote": "DEL",
+          "start": 114,
+          "end": 117,
+          "rule": "id.airport.from"
+        },
+        "arrivalAirport": {
+          "source": "text",
+          "quote": "BOM",
+          "start": 130,
+          "end": 133,
+          "rule": "id.airport.to"
+        },
+        "departureTime": {
+          "source": "text",
+          "quote": "12 Sep 2026, departs 08:15",
+          "start": 138,
+          "end": 164,
+          "rule": "flight.depart>date>flight.departureTime",
+          "derived": true
+        },
+        "arrivalTime": {
+          "source": "text",
+          "quote": "12 Sep 2026, departs 08:15, arrives 10:30",
+          "start": 138,
+          "end": 179,
+          "rule": "flight.arrive>date>flight.arrivalTime",
+          "derived": true
+        },
+        "seat": {
+          "source": "text",
+          "quote": "14A",
+          "start": 186,
+          "end": 189,
+          "rule": "flight.seat"
+        }
+      },
+      "signals": [
+        {
+          "category": "flight",
+          "score": 0.7
+        }
+      ],
+      "method": "rules"
+    }
+  },
+  {
+    "source": "fixtures.bills.json",
+    "id": "card-stmt",
+    "from": "HDFC Bank <cards@hdfcbank.net>",
+    "subject": "Your HDFC Bank Credit Card statement — Aug 2026",
+    "result": {
+      "category": "credit-card",
+      "schemaType": "Invoice",
+      "data": {
+        "issuer": "HDFC Bank",
+        "cardLast4": "4821",
+        "statementDate": "2026-09-02",
+        "dueDate": "2026-09-20",
+        "totalDue": {
+          "amount": 18450,
+          "currency": "INR",
+          "raw": "₹18,450.00"
+        },
+        "minDue": {
+          "amount": 930,
+          "currency": "INR",
+          "raw": "₹930.00"
+        },
+        "availableCredit": {
+          "amount": 181550,
+          "currency": "INR",
+          "raw": "₹1,81,550"
+        },
+        "status": "upcoming",
+        "paymentStatus": "https://schema.org/PaymentDue"
+      },
+      "confidence": "high",
+      "missing": [],
+      "score": 0.933,
+      "provenance": {
+        "issuer": {
+          "source": "sender",
+          "quote": "HDFC Bank",
+          "start": 0,
+          "end": 9,
+          "rule": "card.issuer.sender"
+        },
+        "cardLast4": {
+          "source": "text",
+          "quote": "4821",
+          "start": 101,
+          "end": 105,
+          "rule": "id.cardLast4"
+        },
+        "statementDate": {
+          "source": "text",
+          "quote": "02 Sep 2026",
+          "start": 191,
+          "end": 202,
+          "rule": "card.statementDate:label(Statement date)>date>card.statementDate",
+          "derived": true
+        },
+        "dueDate": {
+          "source": "text",
+          "quote": "20 Sep 2026",
+          "start": 222,
+          "end": 233,
+          "rule": "card.dueDate:label(Payment due date)>date>card.dueDate",
+          "derived": true
+        },
+        "totalDue": {
+          "source": "text",
+          "quote": "₹18,450.00",
+          "start": 134,
+          "end": 144,
+          "rule": "card.totalDue:label(Total amount due)>money"
+        },
+        "minDue": {
+          "source": "text",
+          "quote": "₹930.00",
+          "start": 166,
+          "end": 173,
+          "rule": "card.minDue:label(Minimum amount due)>money"
+        },
+        "availableCredit": {
+          "source": "text",
+          "quote": "₹1,81,550",
+          "start": 259,
+          "end": 268,
+          "rule": "card.availableCredit:label(Available credit limit)>money"
+        },
+        "status": {
+          "source": "text",
+          "quote": "20 Sep 2026",
+          "start": 222,
+          "end": 233,
+          "rule": "card.dueDate:label(Payment due date)>date>card.status(today=2026-09-15,dueSoonDays=3)",
+          "derived": true
+        },
+        "paymentStatus": {
+          "source": "text",
+          "quote": "20 Sep 2026",
+          "start": 222,
+          "end": 233,
+          "rule": "card.dueDate:label(Payment due date)>date>card.paymentStatus",
+          "derived": true
+        }
+      },
+      "signals": [
+        {
+          "category": "credit-card",
+          "score": 0.812
+        },
+        {
+          "category": "bill",
+          "score": 0.34
+        }
+      ],
+      "method": "rules"
+    }
+  },
+  {
+    "source": "fixtures.bills.json",
+    "id": "bill-utility",
+    "from": "Tata Power <no-reply@tatapower.com>",
+    "subject": "Your electricity bill is ready — ₹2,340",
+    "result": {
+      "category": "bill",
+      "schemaType": "Invoice",
+      "data": {
+        "biller": "Tata Power",
+        "account": "900123456",
+        "amount": {
+          "amount": 2340,
+          "currency": "INR",
+          "raw": "₹2,340"
+        },
+        "dueDate": "2026-09-25",
+        "status": "upcoming",
+        "paymentStatus": "https://schema.org/PaymentDue",
+        "unitsConsumed": "312 kWh"
+      },
+      "confidence": "high",
+      "missing": [],
+      "score": 0.909,
+      "provenance": {
+        "biller": {
+          "source": "sender",
+          "quote": "Tata Power",
+          "start": 0,
+          "end": 10,
+          "rule": "bill.biller.sender"
+        },
+        "account": {
+          "source": "text",
+          "quote": "900123456",
+          "start": 90,
+          "end": 99,
+          "rule": "id.account"
+        },
+        "amount": {
+          "source": "text",
+          "quote": "₹2,340",
+          "start": 123,
+          "end": 129,
+          "rule": "bill.amount:label(Bill amount)>money"
+        },
+        "dueDate": {
+          "source": "text",
+          "quote": "25 Sep 2026",
+          "start": 141,
+          "end": 152,
+          "rule": "bill.dueDate:label(Due date)>date>bill.dueDate",
+          "derived": true
+        },
+        "status": {
+          "source": "text",
+          "quote": "25 Sep 2026",
+          "start": 141,
+          "end": 152,
+          "rule": "bill.dueDate:label(Due date)>date>bill.status(today=2026-09-15,dueSoonDays=3)",
+          "derived": true
+        },
+        "paymentStatus": {
+          "source": "text",
+          "quote": "25 Sep 2026",
+          "start": 141,
+          "end": 152,
+          "rule": "bill.dueDate:label(Due date)>date>bill.paymentStatus",
+          "derived": true
+        },
+        "unitsConsumed": {
+          "source": "text",
+          "quote": "312 kWh",
+          "start": 170,
+          "end": 177,
+          "rule": "bill.units:label(Units consumed)>clean"
+        }
+      },
+      "signals": [
+        {
+          "category": "bill",
+          "score": 0.717
+        }
+      ],
+      "method": "rules"
+    }
+  },
+  {
+    "source": "fixtures.bills.json",
+    "id": "bill-due-soon",
+    "from": "Airtel <billalert@airtel.com>",
+    "subject": "Reminder: your Airtel bill is due soon",
+    "result": {
+      "category": "bill",
+      "schemaType": "Invoice",
+      "data": {
+        "biller": "Airtel",
+        "account": "98•••••21",
+        "amount": {
+          "amount": 899,
+          "currency": "INR",
+          "raw": "₹899"
+        },
+        "dueDate": "2026-09-17",
+        "status": "due-soon",
+        "paymentStatus": "https://schema.org/PaymentDue"
+      },
+      "confidence": "high",
+      "missing": [],
+      "score": 0.891,
+      "provenance": {
+        "biller": {
+          "source": "sender",
+          "quote": "Airtel",
+          "start": 0,
+          "end": 6,
+          "rule": "bill.biller.sender"
+        },
+        "account": {
+          "source": "text",
+          "quote": "98•••••21",
+          "start": 160,
+          "end": 169,
+          "rule": "id.account"
+        },
+        "amount": {
+          "source": "text",
+          "quote": "₹899",
+          "start": 115,
+          "end": 119,
+          "rule": "bill.amount:label(Amount)>money"
+        },
+        "dueDate": {
+          "source": "text",
+          "quote": "17 Sep 2026",
+          "start": 131,
+          "end": 142,
+          "rule": "bill.dueDate:label(Due date)>date>bill.dueDate",
+          "derived": true
+        },
+        "status": {
+          "source": "text",
+          "quote": "17 Sep 2026",
+          "start": 131,
+          "end": 142,
+          "rule": "bill.dueDate:label(Due date)>date>bill.status(today=2026-09-15,dueSoonDays=3)",
+          "derived": true
+        },
+        "paymentStatus": {
+          "source": "text",
+          "quote": "17 Sep 2026",
+          "start": 131,
+          "end": 142,
+          "rule": "bill.dueDate:label(Due date)>date>bill.paymentStatus",
+          "derived": true
+        }
+      },
+      "signals": [
+        {
+          "category": "bill",
+          "score": 0.643
+        }
+      ],
+      "method": "rules"
+    }
+  },
+  {
+    "source": "fixtures.bills.json",
+    "id": "bill-overdue",
+    "from": "Adani Electricity <no-reply@adanielectricity.com>",
+    "subject": "OVERDUE: electricity bill payment pending",
+    "result": {
+      "category": "bill",
+      "schemaType": "Invoice",
+      "data": {
+        "biller": "Adani Electricity",
+        "account": "550012345",
+        "amount": {
+          "amount": 1760,
+          "currency": "INR",
+          "raw": "₹1,760"
+        },
+        "dueDate": "2026-09-05",
+        "status": "overdue",
+        "paymentStatus": "https://schema.org/PaymentPastDue",
+        "lateFee": {
+          "amount": 50,
+          "currency": "INR",
+          "raw": "₹50"
+        }
+      },
+      "confidence": "high",
+      "missing": [],
+      "score": 0.92,
+      "provenance": {
+        "biller": {
+          "source": "sender",
+          "quote": "Adani Electricity",
+          "start": 0,
+          "end": 17,
+          "rule": "bill.biller.sender"
+        },
+        "account": {
+          "source": "text",
+          "quote": "550012345",
+          "start": 87,
+          "end": 96,
+          "rule": "id.account"
+        },
+        "amount": {
+          "source": "text",
+          "quote": "₹1,760",
+          "start": 68,
+          "end": 74,
+          "rule": "bill.amount.of>money"
+        },
+        "dueDate": {
+          "source": "text",
+          "quote": "05 Sep 2026",
+          "start": 108,
+          "end": 119,
+          "rule": "bill.dueDate.was>date>bill.dueDate",
+          "derived": true
+        },
+        "status": {
+          "source": "text",
+          "quote": "05 Sep 2026",
+          "start": 108,
+          "end": 119,
+          "rule": "bill.dueDate.was>date>bill.status(today=2026-09-15,dueSoonDays=3)",
+          "derived": true
+        },
+        "paymentStatus": {
+          "source": "text",
+          "quote": "05 Sep 2026",
+          "start": 108,
+          "end": 119,
+          "rule": "bill.dueDate.was>date>bill.paymentStatus",
+          "derived": true
+        },
+        "lateFee": {
+          "source": "text",
+          "quote": "₹50",
+          "start": 154,
+          "end": 157,
+          "rule": "bill.lateFee>money"
+        }
+      },
+      "signals": [
+        {
+          "category": "bill",
+          "score": 0.76
+        }
+      ],
+      "method": "rules"
+    }
+  },
+  {
+    "source": "fixtures.bills.json",
+    "id": "shipment-1",
+    "from": "Amazon.in <shipment-tracking@amazon.in>",
+    "subject": "Your package has shipped",
+    "result": {
+      "category": "shipment",
+      "schemaType": "ParcelDelivery",
+      "data": {
+        "carrier": "Delhivery",
+        "trackingId": "DL123456789IN",
+        "item": "Sony WH-1000XM5 Headphones",
+        "expectedDelivery": "2026-09-17",
+        "orderId": "402-1234567-8901234",
+        "merchant": "Amazon.in",
+        "deliveryStatus": "https://schema.org/OrderInTransit"
+      },
+      "confidence": "high",
+      "missing": [],
+      "score": 0.922,
+      "provenance": {
+        "carrier": {
+          "source": "text",
+          "quote": "Delhivery",
+          "start": 85,
+          "end": 94,
+          "rule": "shipment.carrier.via>clean"
+        },
+        "trackingId": {
+          "source": "text",
+          "quote": "DL123456789IN",
+          "start": 109,
+          "end": 122,
+          "rule": "id.tracking"
+        },
+        "item": {
+          "source": "text",
+          "quote": "Sony WH-1000XM5 Headphones",
+          "start": 41,
+          "end": 67,
+          "rule": "shipment.item.quoted>clean"
+        },
+        "expectedDelivery": {
+          "source": "text",
+          "quote": "Wed, 17 Sep 2026",
+          "start": 143,
+          "end": 159,
+          "rule": "shipment.eta:label(Expected delivery)>date>shipment.expectedDelivery",
+          "derived": true
+        },
+        "orderId": {
+          "source": "text",
+          "quote": "402-1234567-8901234",
+          "start": 168,
+          "end": 187,
+          "rule": "id.order"
+        },
+        "merchant": {
+          "source": "sender",
+          "quote": "Amazon.in",
+          "start": 0,
+          "end": 9,
+          "rule": "shipment.merchant.sender"
+        },
+        "deliveryStatus": {
+          "source": "text",
+          "quote": "shipped",
+          "start": 17,
+          "end": 24,
+          "rule": "shipment.inTransit>shipment.status",
+          "derived": true
+        }
+      },
+      "signals": [
+        {
+          "category": "shipment",
+          "score": 0.767
+        }
+      ],
+      "method": "rules"
+    }
+  },
+  {
+    "source": "fixtures.bills.json",
+    "id": "promo-decoy",
+    "from": "HDFC Bank Offers <offers@hdfcbank.net>",
+    "subject": "💳 5X reward points this weekend + you're pre-approved!",
+    "result": {
+      "category": "none",
+      "schemaType": null,
+      "data": null,
+      "confidence": "high",
+      "missing": [],
+      "reason": "Marketing markers present (tnc-apply, pre-approved@subject, cta-now, multiplier-reward@subject, up-to-amount). No transactional anchor found — the email carries no booking, order, tracking, appointment or statement identifier, and no amount tied to a due date. No category signals matched.",
+      "score": 1,
+      "signals": [],
+      "method": "none"
+    }
+  },
+  {
+    "source": "fixtures.commerce.json",
+    "id": "flight-ref",
+    "from": "Air India <no-reply@airindia.com>",
+    "subject": "Booking Confirmed — PNR X4K9P2",
+    "result": {
+      "category": "flight",
+      "schemaType": "FlightReservation",
+      "data": {
+        "reservationId": "X4K9P2",
+        "airline": "Air India",
+        "flightNumber": "AI 302",
+        "departureAirport": "DEL",
+        "arrivalAirport": "BOM",
+        "departureTime": "2026-09-12T08:15",
+        "arrivalTime": "2026-09-12T10:30",
+        "seat": "14A"
+      },
+      "confidence": "high",
+      "missing": [],
+      "score": 0.905,
+      "provenance": {
+        "reservationId": {
+          "source": "text",
+          "quote": "X4K9P2",
+          "start": 24,
+          "end": 30,
+          "rule": "id.pnr"
+        },
+        "airline": {
+          "source": "sender",
+          "quote": "Air India",
+          "start": 0,
+          "end": 9,
+          "rule": "flight.airline.sender"
+        },
+        "flightNumber": {
+          "source": "text",
+          "quote": "AI-302",
+          "start": 95,
+          "end": 101,
+          "rule": "id.flightNumber>flight.normaliseNumber",
+          "derived": true
+        },
+        "departureAirport": {
+          "source": "text",
+          "quote": "DEL",
+          "start": 114,
+          "end": 117,
+          "rule": "id.airport.from"
+        },
+        "arrivalAirport": {
+          "source": "text",
+          "quote": "BOM",
+          "start": 130,
+          "end": 133,
+          "rule": "id.airport.to"
+        },
+        "departureTime": {
+          "source": "text",
+          "quote": "12 Sep 2026, departs 08:15",
+          "start": 138,
+          "end": 164,
+          "rule": "flight.depart>date>flight.departureTime",
+          "derived": true
+        },
+        "arrivalTime": {
+          "source": "text",
+          "quote": "12 Sep 2026, departs 08:15, arrives 10:30",
+          "start": 138,
+          "end": 179,
+          "rule": "flight.arrive>date>flight.arrivalTime",
+          "derived": true
+        },
+        "seat": {
+          "source": "text",
+          "quote": "14A",
+          "start": 186,
+          "end": 189,
+          "rule": "flight.seat"
+        }
+      },
+      "signals": [
+        {
+          "category": "flight",
+          "score": 0.7
+        }
+      ],
+      "method": "rules"
+    }
+  },
+  {
+    "source": "fixtures.commerce.json",
+    "id": "food-order",
+    "from": "Zomato <orders@zomato.com>",
+    "subject": "Your order is on the way — Order #ZO987654",
+    "result": {
+      "category": "food",
+      "schemaType": "Order",
+      "data": {
+        "merchant": "Meghana Foods",
+        "platform": "Zomato",
+        "orderId": "ZO987654",
+        "items": [
+          {
+            "name": "Chicken Biryani",
+            "quantity": 1,
+            "price": {
+              "amount": 320,
+              "currency": "INR",
+              "raw": "₹320"
+            }
+          },
+          {
+            "name": "Coke",
+            "quantity": 1,
+            "price": {
+              "amount": 60,
+              "currency": "INR",
+              "raw": "₹60"
+            }
+          }
+        ],
+        "total": {
+          "amount": 380,
+          "currency": "INR",
+          "raw": "₹380"
+        },
+        "status": "on-the-way",
+        "orderStatus": "https://schema.org/OrderInTransit",
+        "eta": "20:45",
+        "deliveryAddress": "12 MG Road"
+      },
+      "confidence": "high",
+      "missing": [],
+      "partial": [
+        "eta"
+      ],
+      "score": 0.853,
+      "provenance": {
+        "merchant": {
+          "source": "text",
+          "quote": "Meghana Foods",
+          "start": 60,
+          "end": 73,
+          "rule": "food.merchant.from>clean"
+        },
+        "platform": {
+          "source": "sender",
+          "quote": "Zomato",
+          "start": 0,
+          "end": 6,
+          "rule": "food.platform.sender"
+        },
+        "orderId": {
+          "source": "text",
+          "quote": "ZO987654",
+          "start": 34,
+          "end": 42,
+          "rule": "id.order"
+        },
+        "items": {
+          "source": "text",
+          "quote": "1x Chicken Biryani (₹320), 1x Coke (₹60)",
+          "start": 113,
+          "end": 153,
+          "rule": "food.items:label(Items)>items"
+        },
+        "total": {
+          "source": "text",
+          "quote": "₹380",
+          "start": 162,
+          "end": 166,
+          "rule": "food.total:label(Total)>money"
+        },
+        "status": {
+          "source": "text",
+          "quote": "on the way",
+          "start": 14,
+          "end": 24,
+          "rule": "food.status>food.status",
+          "derived": true
+        },
+        "orderStatus": {
+          "source": "text",
+          "quote": "on the way",
+          "start": 14,
+          "end": 24,
+          "rule": "food.status>food.orderStatus",
+          "derived": true
+        },
+        "eta": {
+          "source": "text",
+          "quote": "8:45 PM",
+          "start": 188,
+          "end": 195,
+          "rule": "food.eta:label(Estimated delivery)>date>food.eta",
+          "derived": true
+        },
+        "deliveryAddress": {
+          "source": "text",
+          "quote": "12 MG Road",
+          "start": 212,
+          "end": 222,
+          "rule": "food.address:label(Delivering to)>clean"
+        }
+      },
+      "signals": [
+        {
+          "category": "food",
+          "score": 0.692
+        }
+      ],
+      "method": "rules",
+      "notes": {
+        "eta": "Clock time only. No date is stated in the email, and none was supplied via email.date, so the day is left unresolved rather than assumed."
+      }
+    }
+  },
+  {
+    "source": "fixtures.commerce.json",
+    "id": "subscription-renewal",
+    "from": "Netflix <info@netflix.com>",
+    "subject": "Your Netflix membership will renew soon",
+    "result": {
+      "category": "subscription",
+      "schemaType": "inbox:SubscriptionRenewal",
+      "data": {
+        "service": "Netflix",
+        "plan": "Premium",
+        "amount": {
+          "amount": 649,
+          "currency": "INR",
+          "raw": "₹649"
+        },
+        "renewalDate": "2026-09-22",
+        "status": "renewing",
+        "paymentMethodLast4": "4821"
+      },
+      "confidence": "high",
+      "missing": [],
+      "score": 0.896,
+      "provenance": {
+        "service": {
+          "source": "sender",
+          "quote": "Netflix",
+          "start": 0,
+          "end": 7,
+          "rule": "subscription.service.sender"
+        },
+        "plan": {
+          "source": "text",
+          "quote": "Premium",
+          "start": 58,
+          "end": 65,
+          "rule": "subscription.plan.tier>clean"
+        },
+        "amount": {
+          "source": "text",
+          "quote": "₹649",
+          "start": 116,
+          "end": 120,
+          "rule": "subscription.amount.charged>money"
+        },
+        "renewalDate": {
+          "source": "text",
+          "quote": "22 Sep 2026",
+          "start": 85,
+          "end": 96,
+          "rule": "subscription.renewal.on>date>subscription.renewalDate",
+          "derived": true
+        },
+        "status": {
+          "source": "text",
+          "quote": "membership will renew",
+          "start": 13,
+          "end": 34,
+          "rule": "subscription.status.renewing>subscription.status",
+          "derived": true
+        },
+        "paymentMethodLast4": {
+          "source": "text",
+          "quote": "4821",
+          "start": 140,
+          "end": 144,
+          "rule": "id.cardLast4"
+        }
+      },
+      "signals": [
+        {
+          "category": "subscription",
+          "score": 0.665
+        },
+        {
+          "category": "credit-card",
+          "score": 0.286
+        }
+      ],
+      "method": "rules"
+    }
+  },
+  {
+    "source": "fixtures.commerce.json",
+    "id": "event-ticket",
+    "from": "BookMyShow <tickets@bookmyshow.com>",
+    "subject": "Booking Confirmed — Oppenheimer, PVR Forum Mall",
+    "result": {
+      "category": "event",
+      "schemaType": "EventReservation",
+      "data": {
+        "reservationId": "BMS1234567",
+        "eventName": "Oppenheimer",
+        "location": "PVR Forum Mall, Bengaluru",
+        "startDateTime": "2026-09-20T18:30",
+        "seats": [
+          "H14",
+          "H15"
+        ],
+        "amount": {
+          "amount": 700,
+          "currency": "INR",
+          "raw": "₹700"
+        },
+        "screen": "3",
+        "provider": "BookMyShow"
+      },
+      "confidence": "high",
+      "missing": [],
+      "score": 0.919,
+      "provenance": {
+        "reservationId": {
+          "source": "text",
+          "quote": "BMS1234567",
+          "start": 203,
+          "end": 213,
+          "rule": "id.booking"
+        },
+        "eventName": {
+          "source": "text",
+          "quote": "Oppenheimer",
+          "start": 83,
+          "end": 94,
+          "rule": "event.name:label(Movie)>clean"
+        },
+        "location": {
+          "source": "text",
+          "quote": "PVR Forum Mall, Bengaluru",
+          "start": 104,
+          "end": 129,
+          "rule": "event.location:label(Cinema)>clean"
+        },
+        "startDateTime": {
+          "source": "text",
+          "quote": "Sat, 20 Sep 2026, 6:30 PM",
+          "start": 137,
+          "end": 162,
+          "rule": "event.when:label(Date)>date>event.startDateTime",
+          "derived": true
+        },
+        "seats": {
+          "source": "text",
+          "quote": "H14, H15",
+          "start": 171,
+          "end": 179,
+          "rule": "event.seats:label(Seats)>event.seats",
+          "derived": true
+        },
+        "amount": {
+          "source": "text",
+          "quote": "₹700",
+          "start": 228,
+          "end": 232,
+          "rule": "event.amount:label(Amount paid)>money"
+        },
+        "screen": {
+          "source": "text",
+          "quote": "3",
+          "start": 188,
+          "end": 189,
+          "rule": "event.screen"
+        },
+        "provider": {
+          "source": "sender",
+          "quote": "BookMyShow",
+          "start": 0,
+          "end": 10,
+          "rule": "event.provider.sender"
+        }
+      },
+      "signals": [
+        {
+          "category": "event",
+          "score": 0.756
+        }
+      ],
+      "method": "rules"
+    }
+  },
+  {
+    "source": "fixtures.commerce.json",
+    "id": "refund-1",
+    "from": "Amazon.in <returns@amazon.in>",
+    "subject": "Your refund has been processed",
+    "result": {
+      "category": "refund",
+      "schemaType": "Order",
+      "data": {
+        "merchant": "Amazon.in",
+        "orderId": "402-9988776-5544332",
+        "item": "boAt Rockerz 550 Headphones",
+        "amount": {
+          "amount": 2499,
+          "currency": "INR",
+          "raw": "₹2,499"
+        },
+        "status": "refunded",
+        "orderStatus": "https://schema.org/OrderReturned",
+        "eta": "3–5 business days"
+      },
+      "confidence": "high",
+      "missing": [],
+      "partial": [
+        "eta"
+      ],
+      "score": 0.856,
+      "provenance": {
+        "merchant": {
+          "source": "sender",
+          "quote": "Amazon.in",
+          "start": 0,
+          "end": 9,
+          "rule": "refund.merchant.sender"
+        },
+        "orderId": {
+          "source": "text",
+          "quote": "402-9988776-5544332",
+          "start": 83,
+          "end": 102,
+          "rule": "id.order"
+        },
+        "item": {
+          "source": "text",
+          "quote": "boAt Rockerz 550 Headphones",
+          "start": 104,
+          "end": 131,
+          "rule": "refund.item.paren>clean"
+        },
+        "amount": {
+          "source": "text",
+          "quote": "₹2,499",
+          "start": 60,
+          "end": 66,
+          "rule": "refund.amount.of>money"
+        },
+        "status": {
+          "source": "text",
+          "quote": "refund",
+          "start": 5,
+          "end": 11,
+          "rule": "refund.status.refunded>refund.status",
+          "derived": true
+        },
+        "orderStatus": {
+          "source": "text",
+          "quote": "refund",
+          "start": 5,
+          "end": 11,
+          "rule": "refund.status.refunded>refund.orderStatus",
+          "derived": true
+        },
+        "eta": {
+          "source": "text",
+          "quote": "3–5 business days",
+          "start": 189,
+          "end": 206,
+          "rule": "refund.eta.relative>clean"
+        }
+      },
+      "signals": [
+        {
+          "category": "refund",
+          "score": 0.705
+        }
+      ],
+      "method": "rules",
+      "notes": {
+        "eta": "Stated as a relative window, not a date. Resolving it would require the message send date and a business-day calendar, neither of which is in the email."
+      }
+    }
+  },
+  {
+    "source": "fixtures.commerce.json",
+    "id": "medical-appt",
+    "from": "Practo <appointments@practo.com>",
+    "subject": "Appointment confirmed with Dr. Anita Rao",
+    "result": {
+      "category": "medical",
+      "schemaType": "Reservation",
+      "data": {
+        "provider": "Dr. Anita Rao",
+        "specialty": "Dermatologist",
+        "location": "Skin & You, Indiranagar, Bengaluru",
+        "dateTime": "2026-09-22T11:00",
+        "appointmentId": "PR-556677",
+        "platform": "Practo"
+      },
+      "confidence": "high",
+      "missing": [],
+      "score": 0.92,
+      "provenance": {
+        "provider": {
+          "source": "text",
+          "quote": "Dr. Anita Rao",
+          "start": 81,
+          "end": 94,
+          "rule": "medical.provider:label(Doctor)>beforeParen"
+        },
+        "specialty": {
+          "source": "text",
+          "quote": "Dermatologist",
+          "start": 96,
+          "end": 109,
+          "rule": "medical.provider:label(Doctor)>insideParen"
+        },
+        "location": {
+          "source": "text",
+          "quote": "Skin & You, Indiranagar, Bengaluru",
+          "start": 120,
+          "end": 154,
+          "rule": "medical.location:label(Clinic)>clean"
+        },
+        "dateTime": {
+          "source": "text",
+          "quote": "Mon, 22 Sep 2026, 11:00 AM",
+          "start": 169,
+          "end": 195,
+          "rule": "medical.when:label(Date & time)>date>medical.dateTime",
+          "derived": true
+        },
+        "appointmentId": {
+          "source": "text",
+          "quote": "PR-556677",
+          "start": 213,
+          "end": 222,
+          "rule": "id.appointment"
+        },
+        "platform": {
+          "source": "sender",
+          "quote": "Practo",
+          "start": 0,
+          "end": 6,
+          "rule": "medical.platform.sender"
+        }
+      },
+      "signals": [
+        {
+          "category": "medical",
+          "score": 0.761
+        }
+      ],
+      "method": "rules"
+    }
+  },
+  {
+    "source": "fixtures.commerce.json",
+    "id": "promo-decoy",
+    "from": "BookMyShow Offers <offers@bookmyshow.com>",
+    "subject": "🎬 Flat 50% off movie tickets this weekend!",
+    "result": {
+      "category": "none",
+      "schemaType": null,
+      "data": null,
+      "confidence": "high",
+      "missing": [],
+      "reason": "Marketing markers present (percent-off@subject, flat-discount@subject, get-percent, use-code, tnc-apply). No transactional anchor found — the email carries no booking, order, tracking, appointment or statement identifier, and no amount tied to a due date. Closest category was 'event' on wording alone (0.22), but its identifying fields are absent.",
+      "score": 0.95,
+      "signals": [
+        {
+          "category": "event",
+          "score": 0.219
+        }
+      ],
+      "method": "none"
+    }
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "name": "inbox-extract",
+  "version": "1.0.0",
+  "description": "Grounded structured extraction from transactional email — schema.org cards with verified provenance and honest abstention.",
+  "type": "module",
+  "engines": { "node": ">=22.6.0" },
+  "scripts": {
+    "extract": "node --experimental-strip-types src/cli.ts",
+    "run:all": "node --experimental-strip-types src/cli.ts data/fixtures.bills.json data/fixtures.commerce.json --today 2026-09-15 --out out",
+    "eval": "node --experimental-strip-types eval/run.ts",
+    "demo": "node --experimental-strip-types demo/build.ts",
+    "test": "vitest run",
+    "verify": "npm run run:all && npm run eval && npm run demo",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  },
+  "license": "MIT",
+  "private": true
+}

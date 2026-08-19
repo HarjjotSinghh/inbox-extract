@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>inbox-extract — fixture output</title>
+<style>
+  :root {
+    --bg: #fbfbfa; --panel: #fff; --ink: #1a1a19; --muted: #6b6b68; --line: #e5e4e1;
+    --accent: #b8552a; --mark: #ffe9a8; --mark-on: #ffc63d; --ok: #2f7d4f; --warn: #a8621b;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#16161a; --panel:#1e1e23; --ink:#eceae6; --muted:#9b9a96; --line:#33323a;
+            --accent:#e08a5c; --mark:#4a3f1c; --mark-on:#8a6d1e; --ok:#6cc08a; --warn:#d99a4e; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font:15px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  .wrap { max-width:1180px; margin:0 auto; padding:40px 24px 80px; }
+  header h1 { font-size:26px; margin:0 0 6px; letter-spacing:-.02em; }
+  header p { color:var(--muted); margin:0 0 24px; max-width:70ch; }
+  .metrics { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:36px; }
+  .metric { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:10px 14px; }
+  .metric b { display:block; font-size:20px; letter-spacing:-.02em; }
+  .metric span { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.06em; }
+  h2 { font-size:13px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted);
+       border-top:1px solid var(--line); padding-top:22px; margin:38px 0 14px; }
+  .case { margin-bottom:26px; }
+  .case h3 { font:600 13px/1 var(--mono); color:var(--accent); margin:0 0 8px; }
+  .split { display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:start; }
+  @media (max-width:860px) { .split { grid-template-columns:1fr; } }
+  .email, .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+  .email { font-family:var(--mono); font-size:12.5px; line-height:1.7; overflow-wrap:anywhere; }
+  .email .from { color:var(--muted); padding-bottom:8px; margin-bottom:8px; border-bottom:1px dashed var(--line); }
+  mark { background:var(--mark); color:inherit; border-radius:3px; padding:1px 0; transition:background .12s; }
+  mark.on { background:var(--mark-on); box-shadow:0 0 0 2px var(--mark-on); }
+  .card-head { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+  .badge { font:600 11px/1 var(--mono); text-transform:uppercase; letter-spacing:.06em;
+           padding:5px 8px; border-radius:6px; background:var(--accent); color:#fff; }
+  .badge.none { background:var(--muted); }
+  .schema { font:11px var(--mono); color:var(--muted); border:1px solid var(--line); padding:4px 7px; border-radius:6px; }
+  .conf { margin-left:auto; font:600 11px var(--mono); padding:4px 8px; border-radius:6px; border:1px solid var(--line); }
+  .conf.high { color:var(--ok); } .conf.medium { color:var(--warn); } .conf.low { color:var(--accent); }
+  .conf em { font-style:normal; opacity:.55; margin-left:5px; }
+  table { width:100%; border-collapse:collapse; }
+  tr { cursor:pointer; }
+  tr:hover th, tr:hover td { background:color-mix(in srgb, var(--accent) 8%, transparent); }
+  th, td { text-align:left; padding:5px 6px; vertical-align:top; border-bottom:1px solid var(--line); }
+  th { font:500 12px var(--mono); color:var(--muted); width:38%; white-space:nowrap; }
+  td { font-size:13.5px; }
+  .money { font-weight:600; } .raw { font:11px var(--mono); color:var(--muted); margin-left:6px; }
+  .enum { font:11px var(--mono); color:var(--muted); }
+  .list { margin:0; padding-left:16px; } .qty { color:var(--muted); margin-right:4px; }
+  .flag { font:10px var(--mono); text-transform:uppercase; letter-spacing:.06em;
+          margin-left:6px; padding:2px 5px; border-radius:4px; background:var(--mark); color:var(--warn); cursor:help; }
+  .missing { margin-top:10px; font-size:12px; display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .missing .label { font:600 10px var(--mono); text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+  .missing code { font:11px var(--mono); background:var(--mark); padding:2px 6px; border-radius:4px; }
+  .missing .hint { color:var(--muted); font-size:11.5px; }
+  .warn { margin-top:10px; font-size:12px; color:var(--warn); }
+  .reason { font-size:13px; margin:2px 0 10px; }
+  .abstain-note { font-size:12px; color:var(--muted); margin:0; }
+  .card.abstain { border-style:dashed; }
+</style></head>
+<body><div class="wrap">
+<header>
+  <h1>inbox-extract</h1>
+  <p>Every fixture email on the left, the structured card on the right. Click any row to highlight the exact
+     text that value was read from — a field with nothing to highlight cannot be emitted at all.</p>
+</header>
+<div class="metrics">
+  <div class="metric"><b>14</b><span>emails</span></div>
+  <div class="metric"><b>12</b><span>extracted</span></div>
+  <div class="metric"><b>2</b><span>abstained</span></div>
+  <div class="metric"><b>88</b><span>fields, all grounded</span></div>
+  <div class="metric"><b>0</b><span>invented fields</span></div>
+</div>
+<section><h2>bills</h2><article class="case" id="flight-ref">
+      <h3>flight-ref</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="airline">Air India</mark> &lt;no-reply@airindia.com&gt;</div>
+          <div class="body">Booking Confirmed — PNR <mark data-fields="reservationId">X4K9P2</mark><br><br>Dear Passenger, your booking is confirmed. PNR: X4K9P2. Flight <mark data-fields="flightNumber">AI-302</mark> from Delhi (<mark data-fields="departureAirport">DEL</mark>) to Mumbai (<mark data-fields="arrivalAirport">BOM</mark>) on <mark data-fields="arrivalTime departureTime">12 Sep 2026, departs 08:15</mark><mark data-fields="arrivalTime">, arrives 10:30</mark>. Seat <mark data-fields="seat">14A</mark>. Fare INR 6,540.</div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge flight">flight</span>
+      <code class="schema">FlightReservation</code>
+      <span class="conf high">high<em>0.905</em></span>
+    </div>
+    <table><tr data-field="reservationId"><th>reservationId</th><td>X4K9P2</td></tr><tr data-field="airline"><th>airline</th><td>Air India</td></tr><tr data-field="flightNumber"><th>flightNumber</th><td>AI 302</td></tr><tr data-field="departureAirport"><th>departureAirport</th><td>DEL</td></tr><tr data-field="arrivalAirport"><th>arrivalAirport</th><td>BOM</td></tr><tr data-field="departureTime"><th>departureTime</th><td>2026-09-12T08:15</td></tr><tr data-field="arrivalTime"><th>arrivalTime</th><td>2026-09-12T10:30</td></tr><tr data-field="seat"><th>seat</th><td>14A</td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="card-stmt">
+      <h3>card-stmt</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="issuer">HDFC Bank</mark> &lt;cards@hdfcbank.net&gt;</div>
+          <div class="body">Your HDFC Bank Credit Card statement — Aug 2026<br><br>Dear Cardmember, your statement for the card ending <mark data-fields="cardLast4">4821</mark> is ready. Total amount due: <mark data-fields="totalDue">₹18,450.00</mark>. Minimum amount due: <mark data-fields="minDue">₹930.00</mark>. Statement date: <mark data-fields="statementDate">02 Sep 2026</mark>. Payment due date: <mark data-fields="dueDate paymentStatus status">20 Sep 2026</mark>. Available credit limit: <mark data-fields="availableCredit">₹1,81,550</mark>.</div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge credit-card">credit-card</span>
+      <code class="schema">Invoice</code>
+      <span class="conf high">high<em>0.933</em></span>
+    </div>
+    <table><tr data-field="issuer"><th>issuer</th><td>HDFC Bank</td></tr><tr data-field="cardLast4"><th>cardLast4</th><td>4821</td></tr><tr data-field="statementDate"><th>statementDate</th><td>2026-09-02</td></tr><tr data-field="dueDate"><th>dueDate</th><td>2026-09-20</td></tr><tr data-field="totalDue"><th>totalDue</th><td><span class="money">₹18,450</span><span class="raw">₹18,450.00</span></td></tr><tr data-field="minDue"><th>minDue</th><td><span class="money">₹930</span><span class="raw">₹930.00</span></td></tr><tr data-field="availableCredit"><th>availableCredit</th><td><span class="money">₹1,81,550</span><span class="raw">₹1,81,550</span></td></tr><tr data-field="status"><th>status</th><td>upcoming</td></tr><tr data-field="paymentStatus"><th>paymentStatus</th><td><code class="enum">PaymentDue</code></td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="bill-utility">
+      <h3>bill-utility</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="biller">Tata Power</mark> &lt;no-reply@tatapower.com&gt;</div>
+          <div class="body">Your electricity bill is ready — ₹2,340<br><br>Dear Customer, your electricity bill for account <mark data-fields="account">900123456</mark> is ready. Bill amount: <mark data-fields="amount">₹2,340</mark>. Due date: <mark data-fields="dueDate paymentStatus status">25 Sep 2026</mark>. Units consumed: <mark data-fields="unitsConsumed">312 kWh</mark>.</div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge bill">bill</span>
+      <code class="schema">Invoice</code>
+      <span class="conf high">high<em>0.909</em></span>
+    </div>
+    <table><tr data-field="biller"><th>biller</th><td>Tata Power</td></tr><tr data-field="account"><th>account</th><td>900123456</td></tr><tr data-field="amount"><th>amount</th><td><span class="money">₹2,340</span><span class="raw">₹2,340</span></td></tr><tr data-field="dueDate"><th>dueDate</th><td>2026-09-25</td></tr><tr data-field="status"><th>status</th><td>upcoming</td></tr><tr data-field="paymentStatus"><th>paymentStatus</th><td><code class="enum">PaymentDue</code></td></tr><tr data-field="unitsConsumed"><th>unitsConsumed</th><td>312 kWh</td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="bill-due-soon">
+      <h3>bill-due-soon</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="biller">Airtel</mark> &lt;billalert@airtel.com&gt;</div>
+          <div class="body">Reminder: your Airtel bill is due soon<br><br>Hi, this is a reminder that your Airtel postpaid bill is due soon. Amount: <mark data-fields="amount">₹899</mark>. Due date: <mark data-fields="dueDate paymentStatus status">17 Sep 2026</mark>. Account number: <mark data-fields="account">98•••••21</mark>. Please pay now to avoid late charges.</div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge bill">bill</span>
+      <code class="schema">Invoice</code>
+      <span class="conf high">high<em>0.891</em></span>
+    </div>
+    <table><tr data-field="biller"><th>biller</th><td>Airtel</td></tr><tr data-field="account"><th>account</th><td>98•••••21</td></tr><tr data-field="amount"><th>amount</th><td><span class="money">₹899</span><span class="raw">₹899</span></td></tr><tr data-field="dueDate"><th>dueDate</th><td>2026-09-17</td></tr><tr data-field="status"><th>status</th><td>due-soon</td></tr><tr data-field="paymentStatus"><th>paymentStatus</th><td><code class="enum">PaymentDue</code></td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="bill-overdue">
+      <h3>bill-overdue</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="biller">Adani Electricity</mark> &lt;no-reply@adanielectricity.com&gt;</div>
+          <div class="body">OVERDUE: electricity bill payment pending<br><br>Your electricity bill of <mark data-fields="amount">₹1,760</mark> for account <mark data-fields="account">550012345</mark> was due on <mark data-fields="dueDate paymentStatus status">05 Sep 2026</mark> and is now overdue. A late fee of <mark data-fields="lateFee">₹50</mark> has been applied. Please pay immediately to avoid disconnection.</div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge bill">bill</span>
+      <code class="schema">Invoice</code>
+      <span class="conf high">high<em>0.92</em></span>
+    </div>
+    <table><tr data-field="biller"><th>biller</th><td>Adani Electricity</td></tr><tr data-field="account"><th>account</th><td>550012345</td></tr><tr data-field="amount"><th>amount</th><td><span class="money">₹1,760</span><span class="raw">₹1,760</span></td></tr><tr data-field="dueDate"><th>dueDate</th><td>2026-09-05</td></tr><tr data-field="status"><th>status</th><td>overdue</td></tr><tr data-field="paymentStatus"><th>paymentStatus</th><td><code class="enum">PaymentPastDue</code></td></tr><tr data-field="lateFee"><th>lateFee</th><td><span class="money">₹50</span><span class="raw">₹50</span></td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="shipment-1">
+      <h3>shipment-1</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="merchant">Amazon.in</mark> &lt;shipment-tracking@amazon.in&gt;</div>
+          <div class="body">Your package has <mark data-fields="deliveryStatus">shipped</mark><br><br>Your order of '<mark data-fields="item">Sony WH-1000XM5 Headphones</mark>' has shipped via <mark data-fields="carrier">Delhivery</mark>. Tracking ID: <mark data-fields="trackingId">DL123456789IN</mark>. Expected delivery: <mark data-fields="expectedDelivery">Wed, 17 Sep 2026</mark>. Order #<mark data-fields="orderId">402-1234567-8901234</mark>.</div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge shipment">shipment</span>
+      <code class="schema">ParcelDelivery</code>
+      <span class="conf high">high<em>0.922</em></span>
+    </div>
+    <table><tr data-field="carrier"><th>carrier</th><td>Delhivery</td></tr><tr data-field="trackingId"><th>trackingId</th><td>DL123456789IN</td></tr><tr data-field="item"><th>item</th><td>Sony WH-1000XM5 Headphones</td></tr><tr data-field="expectedDelivery"><th>expectedDelivery</th><td>2026-09-17</td></tr><tr data-field="orderId"><th>orderId</th><td>402-1234567-8901234</td></tr><tr data-field="merchant"><th>merchant</th><td>Amazon.in</td></tr><tr data-field="deliveryStatus"><th>deliveryStatus</th><td><code class="enum">OrderInTransit</code></td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="promo-decoy">
+      <h3>promo-decoy</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from">HDFC Bank Offers &lt;offers@hdfcbank.net&gt;</div>
+          <div class="body">💳 5X reward points this weekend + you're pre-approved!<br><br>Enjoy 5X reward points on all spends this weekend! Plus, you're pre-approved for a personal loan up to ₹5,00,000 at 10.5% p.a. Apply now. T&amp;C apply.</div>
+        </div>
+        <div class="card abstain">
+      <div class="card-head"><span class="badge none">none</span><span class="conf high">high</span></div>
+      <p class="reason">Marketing markers present (tnc-apply, pre-approved@subject, cta-now, multiplier-reward@subject, up-to-amount). No transactional anchor found — the email carries no booking, order, tracking, appointment or statement identifier, and no amount tied to a due date. No category signals matched.</p>
+      <p class="abstain-note">No card is shown because nothing here is a record of a transaction.</p>
+    </div>
+      </div>
+    </article></section><section><h2>commerce</h2><article class="case" id="flight-ref">
+      <h3>flight-ref</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="airline">Air India</mark> &lt;no-reply@airindia.com&gt;</div>
+          <div class="body">Booking Confirmed — PNR <mark data-fields="reservationId">X4K9P2</mark><br><br>Dear Passenger, your booking is confirmed. PNR: X4K9P2. Flight <mark data-fields="flightNumber">AI-302</mark> from Delhi (<mark data-fields="departureAirport">DEL</mark>) to Mumbai (<mark data-fields="arrivalAirport">BOM</mark>) on <mark data-fields="arrivalTime departureTime">12 Sep 2026, departs 08:15</mark><mark data-fields="arrivalTime">, arrives 10:30</mark>. Seat <mark data-fields="seat">14A</mark>. Fare INR 6,540.</div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge flight">flight</span>
+      <code class="schema">FlightReservation</code>
+      <span class="conf high">high<em>0.905</em></span>
+    </div>
+    <table><tr data-field="reservationId"><th>reservationId</th><td>X4K9P2</td></tr><tr data-field="airline"><th>airline</th><td>Air India</td></tr><tr data-field="flightNumber"><th>flightNumber</th><td>AI 302</td></tr><tr data-field="departureAirport"><th>departureAirport</th><td>DEL</td></tr><tr data-field="arrivalAirport"><th>arrivalAirport</th><td>BOM</td></tr><tr data-field="departureTime"><th>departureTime</th><td>2026-09-12T08:15</td></tr><tr data-field="arrivalTime"><th>arrivalTime</th><td>2026-09-12T10:30</td></tr><tr data-field="seat"><th>seat</th><td>14A</td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="food-order">
+      <h3>food-order</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="platform">Zomato</mark> &lt;orders@zomato.com&gt;</div>
+          <div class="body">Your order is <mark data-fields="orderStatus status">on the way</mark> — Order #<mark data-fields="orderId">ZO987654</mark><br><br>Your order from <mark data-fields="merchant">Meghana Foods</mark> is on the way! Order #ZO987654. Items: <mark data-fields="items">1x Chicken Biryani (₹320), 1x Coke (₹60)</mark>. Total: <mark data-fields="total">₹380</mark>. Estimated delivery: <mark data-fields="eta">8:45 PM</mark>. Delivering to: <mark data-fields="deliveryAddress">12 MG Road</mark>.</div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge food">food</span>
+      <code class="schema">Order</code>
+      <span class="conf high">high<em>0.853</em></span>
+    </div>
+    <table><tr data-field="merchant"><th>merchant</th><td>Meghana Foods</td></tr><tr data-field="platform"><th>platform</th><td>Zomato</td></tr><tr data-field="orderId"><th>orderId</th><td>ZO987654</td></tr><tr data-field="items"><th>items</th><td><ul class="list"><li><span class="qty">1×</span>Chicken Biryani <span class="money">₹320</span><span class="raw">₹320</span></li><li><span class="qty">1×</span>Coke <span class="money">₹60</span><span class="raw">₹60</span></li></ul></td></tr><tr data-field="total"><th>total</th><td><span class="money">₹380</span><span class="raw">₹380</span></td></tr><tr data-field="status"><th>status</th><td>on-the-way</td></tr><tr data-field="orderStatus"><th>orderStatus</th><td><code class="enum">OrderInTransit</code></td></tr><tr data-field="eta"><th>eta</th><td>20:45<span class="flag partial" title="Clock time only. No date is stated in the email, and none was supplied via email.date, so the day is left unresolved rather than assumed.">partial</span></td></tr><tr data-field="deliveryAddress"><th>deliveryAddress</th><td>12 MG Road</td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="subscription-renewal">
+      <h3>subscription-renewal</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="service">Netflix</mark> &lt;info@netflix.com&gt;</div>
+          <div class="body">Your Netflix <mark data-fields="status">membership will renew</mark> soon<br><br>Hi, your Netflix <mark data-fields="plan">Premium</mark> plan will renew on <mark data-fields="renewalDate">22 Sep 2026</mark>. You'll be charged <mark data-fields="amount">₹649</mark> to the card ending <mark data-fields="paymentMethodLast4">4821</mark>. To change or cancel, visit netflix.com/account.</div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge subscription">subscription</span>
+      <code class="schema">inbox:SubscriptionRenewal</code>
+      <span class="conf high">high<em>0.896</em></span>
+    </div>
+    <table><tr data-field="service"><th>service</th><td>Netflix</td></tr><tr data-field="plan"><th>plan</th><td>Premium</td></tr><tr data-field="amount"><th>amount</th><td><span class="money">₹649</span><span class="raw">₹649</span></td></tr><tr data-field="renewalDate"><th>renewalDate</th><td>2026-09-22</td></tr><tr data-field="status"><th>status</th><td>renewing</td></tr><tr data-field="paymentMethodLast4"><th>paymentMethodLast4</th><td>4821</td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="event-ticket">
+      <h3>event-ticket</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="provider">BookMyShow</mark> &lt;tickets@bookmyshow.com&gt;</div>
+          <div class="body">Booking Confirmed — Oppenheimer, PVR Forum Mall<br><br>Your booking is confirmed! Movie: <mark data-fields="eventName">Oppenheimer</mark>. Cinema: <mark data-fields="location">PVR Forum Mall, Bengaluru</mark>. Date: <mark data-fields="startDateTime">Sat, 20 Sep 2026, 6:30 PM</mark>. Seats: <mark data-fields="seats">H14, H15</mark>. Screen <mark data-fields="screen">3</mark>. Booking ID: <mark data-fields="reservationId">BMS1234567</mark>. Amount paid: <mark data-fields="amount">₹700</mark>.</div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge event">event</span>
+      <code class="schema">EventReservation</code>
+      <span class="conf high">high<em>0.919</em></span>
+    </div>
+    <table><tr data-field="reservationId"><th>reservationId</th><td>BMS1234567</td></tr><tr data-field="eventName"><th>eventName</th><td>Oppenheimer</td></tr><tr data-field="location"><th>location</th><td>PVR Forum Mall, Bengaluru</td></tr><tr data-field="startDateTime"><th>startDateTime</th><td>2026-09-20T18:30</td></tr><tr data-field="seats"><th>seats</th><td><ul class="list"><li>H14</li><li>H15</li></ul></td></tr><tr data-field="amount"><th>amount</th><td><span class="money">₹700</span><span class="raw">₹700</span></td></tr><tr data-field="screen"><th>screen</th><td>3</td></tr><tr data-field="provider"><th>provider</th><td>BookMyShow</td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="refund-1">
+      <h3>refund-1</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="merchant">Amazon.in</mark> &lt;returns@amazon.in&gt;</div>
+          <div class="body">Your <mark data-fields="orderStatus status">refund</mark> has been processed<br><br>We've processed a refund of <mark data-fields="amount">₹2,499</mark> for your order #<mark data-fields="orderId">402-9988776-5544332</mark> (<mark data-fields="item">boAt Rockerz 550 Headphones</mark>). It will reflect in your original payment method within <mark data-fields="eta">3–5 business days</mark>.</div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge refund">refund</span>
+      <code class="schema">Order</code>
+      <span class="conf high">high<em>0.856</em></span>
+    </div>
+    <table><tr data-field="merchant"><th>merchant</th><td>Amazon.in</td></tr><tr data-field="orderId"><th>orderId</th><td>402-9988776-5544332</td></tr><tr data-field="item"><th>item</th><td>boAt Rockerz 550 Headphones</td></tr><tr data-field="amount"><th>amount</th><td><span class="money">₹2,499</span><span class="raw">₹2,499</span></td></tr><tr data-field="status"><th>status</th><td>refunded</td></tr><tr data-field="orderStatus"><th>orderStatus</th><td><code class="enum">OrderReturned</code></td></tr><tr data-field="eta"><th>eta</th><td>3–5 business days<span class="flag partial" title="Stated as a relative window, not a date. Resolving it would require the message send date and a business-day calendar, neither of which is in the email.">partial</span></td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="medical-appt">
+      <h3>medical-appt</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="platform">Practo</mark> &lt;appointments@practo.com&gt;</div>
+          <div class="body">Appointment confirmed with Dr. Anita Rao<br><br>Your appointment is confirmed. Doctor: <mark data-fields="provider">Dr. Anita Rao</mark> (<mark data-fields="specialty">Dermatologist</mark>). Clinic: <mark data-fields="location">Skin &amp; You, Indiranagar, Bengaluru</mark>. Date &amp; time: <mark data-fields="dateTime">Mon, 22 Sep 2026, 11:00 AM</mark>. Appointment ID: <mark data-fields="appointmentId">PR-556677</mark>. Please arrive 10 minutes early.</div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge medical">medical</span>
+      <code class="schema">Reservation</code>
+      <span class="conf high">high<em>0.92</em></span>
+    </div>
+    <table><tr data-field="provider"><th>provider</th><td>Dr. Anita Rao</td></tr><tr data-field="specialty"><th>specialty</th><td>Dermatologist</td></tr><tr data-field="location"><th>location</th><td>Skin &amp; You, Indiranagar, Bengaluru</td></tr><tr data-field="dateTime"><th>dateTime</th><td>2026-09-22T11:00</td></tr><tr data-field="appointmentId"><th>appointmentId</th><td>PR-556677</td></tr><tr data-field="platform"><th>platform</th><td>Practo</td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="promo-decoy">
+      <h3>promo-decoy</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from">BookMyShow Offers &lt;offers@bookmyshow.com&gt;</div>
+          <div class="body">🎬 Flat 50% off movie tickets this weekend!<br><br>Book any movie this weekend and get 50% off! Use code WEEKEND50. Valid at all cinemas. T&amp;C apply.</div>
+        </div>
+        <div class="card abstain">
+      <div class="card-head"><span class="badge none">none</span><span class="conf high">high</span></div>
+      <p class="reason">Marketing markers present (percent-off@subject, flat-discount@subject, get-percent, use-code, tnc-apply). No transactional anchor found — the email carries no booking, order, tracking, appointment or statement identifier, and no amount tied to a due date. Closest category was 'event' on wording alone (0.22), but its identifying fields are absent.</p>
+      <p class="abstain-note">No card is shown because nothing here is a record of a transaction.</p>
+    </div>
+      </div>
+    </article></section>
+</div>
+<script>
+document.querySelectorAll('.case').forEach((caseEl) => {
+  const marks = caseEl.querySelectorAll('mark');
+  const clear = () => marks.forEach((m) => m.classList.remove('on'));
+  caseEl.querySelectorAll('tr[data-field]').forEach((row) => {
+    const field = row.getAttribute('data-field');
+    const light = () => {
+      clear();
+      marks.forEach((m) => {
+        if ((m.getAttribute('data-fields') || '').split(' ').includes(field)) m.classList.add('on');
+      });
+    };
+    row.addEventListener('mouseenter', light);
+    row.addEventListener('click', light);
+  });
+  caseEl.addEventListener('mouseleave', clear);
+});
+</script>
+</body></html>

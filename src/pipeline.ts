@@ -1,0 +1,201 @@
+import { CANDIDATE_FLOOR, classify, type CategoryScore } from './classify.ts';
+import { scoreAbstention, scoreResult } from './confidence.ts';
+import type { ExtractorContext, ExtractorOutput } from './extractors/base.ts';
+import { extractorFor } from './extractors/registry.ts';
+import { ground } from './ground.ts';
+import { readJsonLd } from './jsonld.ts';
+import { Doc } from './normalize.ts';
+import { DEFAULT_DUE_SOON_DAYS } from './status.ts';
+import type { Category, Email, ExtractOptions, ExtractionResult, Method } from './types.ts';
+
+/** How many classifier candidates actually get an extractor run. */
+const MAX_CANDIDATES = 3;
+/** Promo score above which a result without a hard identifier is rejected. */
+const PROMO_VETO = 0.6;
+
+interface Attempt {
+  candidate: CategoryScore;
+  output: ExtractorOutput;
+  droppedCount: number;
+  decision: number;
+}
+
+/**
+ * Extract one email.
+ *
+ * Classification proposes; extraction disposes. A category is only assigned if
+ * its own extractor can find the fields that define it, which is what makes
+ * "Flat 50% off movie tickets" fall through to 'none' — it talks like a
+ * booking but has no booking in it.
+ */
+export function extract(email: Email, options: ExtractOptions = {}): ExtractionResult {
+  const doc = new Doc(email);
+  const today = options.today ?? null;
+  const ctx: ExtractorContext = {
+    doc,
+    today,
+    dueSoonDays: options.dueSoonDays ?? DEFAULT_DUE_SOON_DAYS,
+  };
+
+  if (!doc.text.trim()) {
+    return {
+      category: 'none', schemaType: null, data: null, confidence: 'low', missing: [],
+      reason: 'Email has no subject or body content to read.', score: 0.3, method: 'none',
+    };
+  }
+
+  const { ranked, promo } = classify(doc);
+
+  // Layer 0: the sender already published structured data. Trust it, then let
+  // the text rules fill any gaps it left.
+  const seed = readJsonLd(doc.jsonld);
+  if (seed && seed.category !== 'none') {
+    return buildFromSeed(doc, ctx, seed, ranked, promo.score);
+  }
+
+  const candidates = ranked.filter((r) => r.raw >= CANDIDATE_FLOOR).slice(0, MAX_CANDIDATES);
+  const attempts: Attempt[] = [];
+
+  for (const candidate of candidates) {
+    const extractor = extractorFor(candidate.category);
+    if (!extractor) continue;
+    const output = extractor.run(ctx);
+    if (!output) continue;
+
+    const report = ground(doc, output.data, output.provenance);
+    // Grounding can delete fields, so `missing` is recomputed after the check.
+    const missing = extractor.required.filter((f) => !Object.hasOwn(output.data, f));
+    const requiredFound = extractor.required.length - missing.length;
+    output.missing = missing;
+
+    if (!output.anchorSatisfied) continue;
+
+    attempts.push({
+      candidate,
+      output: { ...output, requiredFound },
+      droppedCount: report.dropped.length,
+      decision: candidate.score + (output.anchorStrong ? 1 : 0.35) + requiredFound * 0.05,
+    });
+  }
+
+  attempts.sort((a, b) => b.decision - a.decision);
+  const best = attempts[0];
+
+  if (!best) return abstain(doc, ranked, promo.score, promo.promoHits, 'no-anchor');
+
+  // A blast can occasionally satisfy a soft anchor. A hard identifier is the
+  // one thing marketing never carries, so it is what overrides a promo verdict.
+  if (promo.score >= PROMO_VETO && !best.output.anchorStrong) {
+    return abstain(doc, ranked, promo.score, promo.promoHits, 'promo-veto');
+  }
+
+  return assemble(best, promo.score, 'rules', ranked);
+}
+
+function assemble(best: Attempt, promoScore: number, method: Method, ranked: CategoryScore[]): ExtractionResult {
+  const extractor = extractorFor(best.candidate.category);
+  const { score, confidence } = scoreResult({
+    lexical: best.candidate.score,
+    anchorStrong: best.output.anchorStrong,
+    requiredFound: best.output.requiredFound,
+    requiredTotal: best.output.requiredTotal,
+    promoScore,
+    partialCount: best.output.partial.length,
+    droppedCount: best.droppedCount,
+    method,
+  });
+
+  return {
+    category: best.candidate.category,
+    schemaType: extractor?.schemaType ?? null,
+    data: best.output.data,
+    confidence,
+    missing: best.output.missing,
+    ...(best.output.partial.length ? { partial: best.output.partial } : {}),
+    score,
+    provenance: best.output.provenance,
+    signals: ranked.slice(0, 4).map((r) => ({ category: r.category, score: Number(r.score.toFixed(3)) })),
+    method,
+    ...(best.output.warnings.length ? { warnings: best.output.warnings } : {}),
+    ...(Object.keys(best.output.notes).length ? { notes: best.output.notes } : {}),
+  };
+}
+
+function buildFromSeed(
+  doc: Doc,
+  ctx: ExtractorContext,
+  seed: NonNullable<ReturnType<typeof readJsonLd>>,
+  ranked: CategoryScore[],
+  promoScore: number,
+): ExtractionResult {
+  const extractor = extractorFor(seed.category);
+  const fromText = extractor?.run(ctx) ?? null;
+  if (fromText) ground(doc, fromText.data, fromText.provenance);
+
+  const data = { ...(fromText?.data ?? {}), ...seed.data };
+  const provenance = { ...(fromText?.provenance ?? {}), ...seed.provenance };
+  const required = extractor?.required ?? [];
+  const missing = required.filter((f) => !Object.hasOwn(data, f));
+
+  const { score, confidence } = scoreResult({
+    lexical: ranked[0]?.score ?? 0.5,
+    anchorStrong: true,
+    requiredFound: required.length - missing.length,
+    requiredTotal: required.length,
+    promoScore,
+    partialCount: fromText?.partial.length ?? 0,
+    droppedCount: 0,
+    method: 'jsonld',
+  });
+
+  return {
+    category: seed.category,
+    schemaType: seed.schemaType,
+    data,
+    confidence,
+    missing,
+    ...(fromText?.partial.length ? { partial: fromText.partial } : {}),
+    score,
+    provenance,
+    signals: ranked.slice(0, 4).map((r) => ({ category: r.category, score: Number(r.score.toFixed(3)) })),
+    method: 'jsonld',
+    ...(fromText?.warnings.length ? { warnings: fromText.warnings } : {}),
+    ...(fromText && Object.keys(fromText.notes).length ? { notes: fromText.notes } : {}),
+  };
+}
+
+function abstain(
+  doc: Doc,
+  ranked: CategoryScore[],
+  promoScore: number,
+  promoHits: string[],
+  cause: 'no-anchor' | 'promo-veto',
+): ExtractionResult {
+  const top = ranked[0];
+  const { score, confidence } = scoreAbstention(promoScore, Boolean(top));
+
+  const promoPart = promoHits.length
+    ? `Marketing markers present (${promoHits.slice(0, 5).join(', ')}). `
+    : '';
+  const nearest = top
+    ? `Closest category was '${top.category}' on wording alone (${top.score.toFixed(2)}), but its identifying fields are absent.`
+    : 'No category signals matched.';
+  const reason =
+    cause === 'promo-veto'
+      ? `${promoPart}Reads as an offer, and no hard identifier (booking / order / tracking / statement number) is present, so nothing here is a record of a transaction.`
+      : `${promoPart}No transactional anchor found — the email carries no booking, order, tracking, appointment or statement identifier, and no amount tied to a due date. ${nearest}`;
+
+  return {
+    category: 'none',
+    schemaType: null,
+    data: null,
+    confidence,
+    missing: [],
+    reason,
+    score,
+    signals: ranked.slice(0, 4).map((r) => ({ category: r.category, score: Number(r.score.toFixed(3)) })),
+    method: 'none',
+  };
+}
+
+export type { Category };

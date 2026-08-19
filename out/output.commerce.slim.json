@@ -1,0 +1,150 @@
+{
+  "source": "fixtures.commerce.json",
+  "today": "2026-09-15",
+  "cases": [
+    {
+      "id": "flight-ref",
+      "category": "flight",
+      "schemaType": "FlightReservation",
+      "data": {
+        "reservationId": "X4K9P2",
+        "airline": "Air India",
+        "flightNumber": "AI 302",
+        "departureAirport": "DEL",
+        "arrivalAirport": "BOM",
+        "departureTime": "2026-09-12T08:15",
+        "arrivalTime": "2026-09-12T10:30",
+        "seat": "14A"
+      },
+      "confidence": "high",
+      "missing": []
+    },
+    {
+      "id": "food-order",
+      "category": "food",
+      "schemaType": "Order",
+      "data": {
+        "merchant": "Meghana Foods",
+        "platform": "Zomato",
+        "orderId": "ZO987654",
+        "items": [
+          {
+            "name": "Chicken Biryani",
+            "quantity": 1,
+            "price": {
+              "amount": 320,
+              "currency": "INR",
+              "raw": "₹320"
+            }
+          },
+          {
+            "name": "Coke",
+            "quantity": 1,
+            "price": {
+              "amount": 60,
+              "currency": "INR",
+              "raw": "₹60"
+            }
+          }
+        ],
+        "total": {
+          "amount": 380,
+          "currency": "INR",
+          "raw": "₹380"
+        },
+        "status": "on-the-way",
+        "orderStatus": "https://schema.org/OrderInTransit",
+        "eta": "20:45",
+        "deliveryAddress": "12 MG Road"
+      },
+      "confidence": "high",
+      "missing": []
+    },
+    {
+      "id": "subscription-renewal",
+      "category": "subscription",
+      "schemaType": "inbox:SubscriptionRenewal",
+      "data": {
+        "service": "Netflix",
+        "plan": "Premium",
+        "amount": {
+          "amount": 649,
+          "currency": "INR",
+          "raw": "₹649"
+        },
+        "renewalDate": "2026-09-22",
+        "status": "renewing",
+        "paymentMethodLast4": "4821"
+      },
+      "confidence": "high",
+      "missing": []
+    },
+    {
+      "id": "event-ticket",
+      "category": "event",
+      "schemaType": "EventReservation",
+      "data": {
+        "reservationId": "BMS1234567",
+        "eventName": "Oppenheimer",
+        "location": "PVR Forum Mall, Bengaluru",
+        "startDateTime": "2026-09-20T18:30",
+        "seats": [
+          "H14",
+          "H15"
+        ],
+        "amount": {
+          "amount": 700,
+          "currency": "INR",
+          "raw": "₹700"
+        },
+        "screen": "3",
+        "provider": "BookMyShow"
+      },
+      "confidence": "high",
+      "missing": []
+    },
+    {
+      "id": "refund-1",
+      "category": "refund",
+      "schemaType": "Order",
+      "data": {
+        "merchant": "Amazon.in",
+        "orderId": "402-9988776-5544332",
+        "item": "boAt Rockerz 550 Headphones",
+        "amount": {
+          "amount": 2499,
+          "currency": "INR",
+          "raw": "₹2,499"
+        },
+        "status": "refunded",
+        "orderStatus": "https://schema.org/OrderReturned",
+        "eta": "3–5 business days"
+      },
+      "confidence": "high",
+      "missing": []
+    },
+    {
+      "id": "medical-appt",
+      "category": "medical",
+      "schemaType": "Reservation",
+      "data": {
+        "provider": "Dr. Anita Rao",
+        "specialty": "Dermatologist",
+        "location": "Skin & You, Indiranagar, Bengaluru",
+        "dateTime": "2026-09-22T11:00",
+        "appointmentId": "PR-556677",
+        "platform": "Practo"
+      },
+      "confidence": "high",
+      "missing": []
+    },
+    {
+      "id": "promo-decoy",
+      "category": "none",
+      "schemaType": null,
+      "data": null,
+      "confidence": "high",
+      "missing": []
+    }
+  ]
+}

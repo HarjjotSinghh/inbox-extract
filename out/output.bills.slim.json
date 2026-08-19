@@ -1,0 +1,140 @@
+{
+  "source": "fixtures.bills.json",
+  "today": "2026-09-15",
+  "cases": [
+    {
+      "id": "flight-ref",
+      "category": "flight",
+      "schemaType": "FlightReservation",
+      "data": {
+        "reservationId": "X4K9P2",
+        "airline": "Air India",
+        "flightNumber": "AI 302",
+        "departureAirport": "DEL",
+        "arrivalAirport": "BOM",
+        "departureTime": "2026-09-12T08:15",
+        "arrivalTime": "2026-09-12T10:30",
+        "seat": "14A"
+      },
+      "confidence": "high",
+      "missing": []
+    },
+    {
+      "id": "card-stmt",
+      "category": "credit-card",
+      "schemaType": "Invoice",
+      "data": {
+        "issuer": "HDFC Bank",
+        "cardLast4": "4821",
+        "statementDate": "2026-09-02",
+        "dueDate": "2026-09-20",
+        "totalDue": {
+          "amount": 18450,
+          "currency": "INR",
+          "raw": "₹18,450.00"
+        },
+        "minDue": {
+          "amount": 930,
+          "currency": "INR",
+          "raw": "₹930.00"
+        },
+        "availableCredit": {
+          "amount": 181550,
+          "currency": "INR",
+          "raw": "₹1,81,550"
+        },
+        "status": "upcoming",
+        "paymentStatus": "https://schema.org/PaymentDue"
+      },
+      "confidence": "high",
+      "missing": []
+    },
+    {
+      "id": "bill-utility",
+      "category": "bill",
+      "schemaType": "Invoice",
+      "data": {
+        "biller": "Tata Power",
+        "account": "900123456",
+        "amount": {
+          "amount": 2340,
+          "currency": "INR",
+          "raw": "₹2,340"
+        },
+        "dueDate": "2026-09-25",
+        "status": "upcoming",
+        "paymentStatus": "https://schema.org/PaymentDue",
+        "unitsConsumed": "312 kWh"
+      },
+      "confidence": "high",
+      "missing": []
+    },
+    {
+      "id": "bill-due-soon",
+      "category": "bill",
+      "schemaType": "Invoice",
+      "data": {
+        "biller": "Airtel",
+        "account": "98•••••21",
+        "amount": {
+          "amount": 899,
+          "currency": "INR",
+          "raw": "₹899"
+        },
+        "dueDate": "2026-09-17",
+        "status": "due-soon",
+        "paymentStatus": "https://schema.org/PaymentDue"
+      },
+      "confidence": "high",
+      "missing": []
+    },
+    {
+      "id": "bill-overdue",
+      "category": "bill",
+      "schemaType": "Invoice",
+      "data": {
+        "biller": "Adani Electricity",
+        "account": "550012345",
+        "amount": {
+          "amount": 1760,
+          "currency": "INR",
+          "raw": "₹1,760"
+        },
+        "dueDate": "2026-09-05",
+        "status": "overdue",
+        "paymentStatus": "https://schema.org/PaymentPastDue",
+        "lateFee": {
+          "amount": 50,
+          "currency": "INR",
+          "raw": "₹50"
+        }
+      },
+      "confidence": "high",
+      "missing": []
+    },
+    {
+      "id": "shipment-1",
+      "category": "shipment",
+      "schemaType": "ParcelDelivery",
+      "data": {
+        "carrier": "Delhivery",
+        "trackingId": "DL123456789IN",
+        "item": "Sony WH-1000XM5 Headphones",
+        "expectedDelivery": "2026-09-17",
+        "orderId": "402-1234567-8901234",
+        "merchant": "Amazon.in",
+        "deliveryStatus": "https://schema.org/OrderInTransit"
+      },
+      "confidence": "high",
+      "missing": []
+    },
+    {
+      "id": "promo-decoy",
+      "category": "none",
+      "schemaType": null,
+      "data": null,
+      "confidence": "high",
+      "missing": []
+    }
+  ]
+}

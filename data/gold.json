@@ -1,0 +1,117 @@
+{
+  "_about": "Hand-transcribed expected output, read off the email bodies in data/fixtures.*.json rather than copied from the extractor. 'flight-ref' and both 'promo-decoy' entries are the expectations supplied in the take-home itself. Keys are '<fixture>:<case id>' because the two fixture files reuse ids.",
+  "today": "2026-09-15",
+  "cases": {
+    "bills:flight-ref": {
+      "category": "flight", "schemaType": "FlightReservation", "confidence": "high", "missing": [],
+      "data": {
+        "reservationId": "X4K9P2", "airline": "Air India", "flightNumber": "AI 302",
+        "departureAirport": "DEL", "arrivalAirport": "BOM",
+        "departureTime": "2026-09-12T08:15", "arrivalTime": "2026-09-12T10:30", "seat": "14A"
+      }
+    },
+    "commerce:flight-ref": {
+      "category": "flight", "schemaType": "FlightReservation", "confidence": "high", "missing": [],
+      "data": {
+        "reservationId": "X4K9P2", "airline": "Air India", "flightNumber": "AI 302",
+        "departureAirport": "DEL", "arrivalAirport": "BOM",
+        "departureTime": "2026-09-12T08:15", "arrivalTime": "2026-09-12T10:30", "seat": "14A"
+      }
+    },
+    "bills:card-stmt": {
+      "category": "credit-card", "schemaType": "Invoice", "confidence": "high", "missing": [],
+      "data": {
+        "issuer": "HDFC Bank", "cardLast4": "4821",
+        "statementDate": "2026-09-02", "dueDate": "2026-09-20",
+        "totalDue": { "amount": 18450, "currency": "INR", "raw": "₹18,450.00" },
+        "minDue": { "amount": 930, "currency": "INR", "raw": "₹930.00" },
+        "status": "upcoming"
+      }
+    },
+    "bills:bill-utility": {
+      "category": "bill", "schemaType": "Invoice", "confidence": "high", "missing": [],
+      "data": {
+        "biller": "Tata Power", "account": "900123456",
+        "amount": { "amount": 2340, "currency": "INR", "raw": "₹2,340" },
+        "dueDate": "2026-09-25", "status": "upcoming"
+      }
+    },
+    "bills:bill-due-soon": {
+      "category": "bill", "schemaType": "Invoice", "confidence": "high", "missing": [],
+      "data": {
+        "biller": "Airtel", "account": "98•••••21",
+        "amount": { "amount": 899, "currency": "INR", "raw": "₹899" },
+        "dueDate": "2026-09-17", "status": "due-soon"
+      }
+    },
+    "bills:bill-overdue": {
+      "category": "bill", "schemaType": "Invoice", "confidence": "high", "missing": [],
+      "data": {
+        "biller": "Adani Electricity", "account": "550012345",
+        "amount": { "amount": 1760, "currency": "INR", "raw": "₹1,760" },
+        "dueDate": "2026-09-05", "status": "overdue"
+      }
+    },
+    "bills:shipment-1": {
+      "category": "shipment", "schemaType": "ParcelDelivery", "confidence": "high", "missing": [],
+      "data": {
+        "carrier": "Delhivery", "trackingId": "DL123456789IN",
+        "item": "Sony WH-1000XM5 Headphones", "expectedDelivery": "2026-09-17",
+        "orderId": "402-1234567-8901234"
+      }
+    },
+    "commerce:food-order": {
+      "category": "food", "schemaType": "Order", "confidence": "high", "missing": [], "partial": ["eta"],
+      "data": {
+        "merchant": "Meghana Foods", "orderId": "ZO987654",
+        "items": [
+          { "name": "Chicken Biryani", "quantity": 1, "price": { "amount": 320, "currency": "INR", "raw": "₹320" } },
+          { "name": "Coke", "quantity": 1, "price": { "amount": 60, "currency": "INR", "raw": "₹60" } }
+        ],
+        "total": { "amount": 380, "currency": "INR", "raw": "₹380" },
+        "status": "on-the-way",
+        "eta": "20:45"
+      }
+    },
+    "commerce:subscription-renewal": {
+      "category": "subscription", "schemaType": "inbox:SubscriptionRenewal", "confidence": "high", "missing": [],
+      "data": {
+        "service": "Netflix", "plan": "Premium",
+        "amount": { "amount": 649, "currency": "INR", "raw": "₹649" },
+        "renewalDate": "2026-09-22", "status": "renewing"
+      }
+    },
+    "commerce:event-ticket": {
+      "category": "event", "schemaType": "EventReservation", "confidence": "high", "missing": [],
+      "data": {
+        "reservationId": "BMS1234567", "eventName": "Oppenheimer",
+        "location": "PVR Forum Mall, Bengaluru", "startDateTime": "2026-09-20T18:30",
+        "seats": ["H14", "H15"],
+        "amount": { "amount": 700, "currency": "INR", "raw": "₹700" }
+      }
+    },
+    "commerce:refund-1": {
+      "category": "refund", "schemaType": "Order", "confidence": "high", "missing": [], "partial": ["eta"],
+      "data": {
+        "merchant": "Amazon.in", "orderId": "402-9988776-5544332",
+        "item": "boAt Rockerz 550 Headphones",
+        "amount": { "amount": 2499, "currency": "INR", "raw": "₹2,499" },
+        "status": "refunded", "eta": "3–5 business days"
+      }
+    },
+    "commerce:medical-appt": {
+      "category": "medical", "schemaType": "Reservation", "confidence": "high", "missing": [],
+      "data": {
+        "provider": "Dr. Anita Rao", "specialty": "Dermatologist",
+        "location": "Skin & You, Indiranagar, Bengaluru",
+        "dateTime": "2026-09-22T11:00", "appointmentId": "PR-556677"
+      }
+    },
+    "bills:promo-decoy": {
+      "category": "none", "schemaType": null, "confidence": "high", "missing": [], "data": null
+    },
+    "commerce:promo-decoy": {
+      "category": "none", "schemaType": null, "confidence": "high", "missing": [], "data": null
+    }
+  }
+}

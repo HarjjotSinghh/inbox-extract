@@ -1,0 +1,77 @@
+{
+  "_about": "Sample emails for the Gmail structured-extraction take-home. Fully self-contained — no access to our stack needed. 'flight-ref' is worked out for you (shows the target shape). 'promo-decoy' is worked too (must come back category 'none'). The five categories in buildThese are yours to extract. Use 'today' to compute a bill's status. All emails are synthetic — no real user data.",
+  "today": "2026-09-15",
+  "targetSchemas": {
+    "flight": "FlightReservation (reference — already done)",
+    "credit-card": "statement: { issuer, cardLast4, statementDate, dueDate, totalDue, minDue, status }",
+    "bill": "Invoice-like: { biller, account, amount, dueDate, status }  (status: 'upcoming' | 'due-soon' | 'overdue', computed from dueDate vs today)",
+    "shipment": "ParcelDelivery: { carrier, trackingId, item, expectedDelivery, orderId }",
+    "none": "(not a transaction — e.g. marketing)"
+  },
+  "buildThese": ["credit-card", "bill (with status: bills / bills-due / bills-overdue are one extractor keyed by status)", "shipment"],
+  "note": "Bills, Bills-due and Bills-overdue are the SAME kind of email — a bill — sorted by its due date. Extract the bill once and set status (upcoming / due-soon / overdue) by comparing dueDate to 'today'. Credit-card statements are a richer version of the same.",
+  "cases": [
+    {
+      "id": "flight-ref",
+      "from": "Air India <no-reply@airindia.com>",
+      "subject": "Booking Confirmed — PNR X4K9P2",
+      "body": "Dear Passenger, your booking is confirmed. PNR: X4K9P2. Flight AI-302 from Delhi (DEL) to Mumbai (BOM) on 12 Sep 2026, departs 08:15, arrives 10:30. Seat 14A. Fare INR 6,540.",
+      "expected": {
+        "category": "flight", "schemaType": "FlightReservation", "confidence": "high", "missing": [],
+        "data": { "reservationId": "X4K9P2", "airline": "Air India", "flightNumber": "AI 302",
+          "departureAirport": "DEL", "arrivalAirport": "BOM",
+          "departureTime": "2026-09-12T08:15", "arrivalTime": "2026-09-12T10:30", "seat": "14A" }
+      }
+    },
+    {
+      "id": "card-stmt",
+      "category_to_build": "credit-card",
+      "from": "HDFC Bank <cards@hdfcbank.net>",
+      "subject": "Your HDFC Bank Credit Card statement — Aug 2026",
+      "body": "Dear Cardmember, your statement for the card ending 4821 is ready. Total amount due: ₹18,450.00. Minimum amount due: ₹930.00. Statement date: 02 Sep 2026. Payment due date: 20 Sep 2026. Available credit limit: ₹1,81,550.",
+      "expected": null
+    },
+    {
+      "id": "bill-utility",
+      "category_to_build": "bill (→ status upcoming; due 25 Sep, today 15 Sep)",
+      "from": "Tata Power <no-reply@tatapower.com>",
+      "subject": "Your electricity bill is ready — ₹2,340",
+      "body": "Dear Customer, your electricity bill for account 900123456 is ready. Bill amount: ₹2,340. Due date: 25 Sep 2026. Units consumed: 312 kWh.",
+      "expected": null
+    },
+    {
+      "id": "bill-due-soon",
+      "category_to_build": "bill (→ status due-soon; due 17 Sep, today 15 Sep)",
+      "from": "Airtel <billalert@airtel.com>",
+      "subject": "Reminder: your Airtel bill is due soon",
+      "body": "Hi, this is a reminder that your Airtel postpaid bill is due soon. Amount: ₹899. Due date: 17 Sep 2026. Account number: 98•••••21. Please pay now to avoid late charges.",
+      "expected": null
+    },
+    {
+      "id": "bill-overdue",
+      "category_to_build": "bill (→ status overdue; due 05 Sep, today 15 Sep)",
+      "from": "Adani Electricity <no-reply@adanielectricity.com>",
+      "subject": "OVERDUE: electricity bill payment pending",
+      "body": "Your electricity bill of ₹1,760 for account 550012345 was due on 05 Sep 2026 and is now overdue. A late fee of ₹50 has been applied. Please pay immediately to avoid disconnection.",
+      "expected": null
+    },
+    {
+      "id": "shipment-1",
+      "category_to_build": "shipment",
+      "from": "Amazon.in <shipment-tracking@amazon.in>",
+      "subject": "Your package has shipped",
+      "body": "Your order of 'Sony WH-1000XM5 Headphones' has shipped via Delhivery. Tracking ID: DL123456789IN. Expected delivery: Wed, 17 Sep 2026. Order #402-1234567-8901234.",
+      "expected": null
+    },
+    {
+      "id": "promo-decoy",
+      "from": "HDFC Bank Offers <offers@hdfcbank.net>",
+      "subject": "💳 5X reward points this weekend + you're pre-approved!",
+      "body": "Enjoy 5X reward points on all spends this weekend! Plus, you're pre-approved for a personal loan up to ₹5,00,000 at 10.5% p.a. Apply now. T&C apply.",
+      "expected": {
+        "category": "none", "schemaType": null, "confidence": "high",
+        "reason": "Marketing from the bank — looks card-related but it's an offer, not a statement or bill. Must NOT be extracted as a transaction."
+      }
+    }
+  ]
+}
