@@ -1,0 +1,78 @@
+{
+  "_about": "Travel categories added beyond the original brief: train, bus, hotel, cab. Synthetic emails, multiple vendors per category including messy/HTML formats, plus one travel-family promo decoy. No real user data.",
+  "targetSchemas": {
+    "train": "TrainReservation — { pnr, operator, trainNumber, trainName, departureStation, arrivalStation, departureTime, arrivalTime, classOfTravel, coach, berth, fare }",
+    "bus": "BusReservation — { bookingId, operator, from, to, departureTime, arrivalTime, seats[], boardingPoint, fare }",
+    "hotel": "LodgingReservation — { bookingId, hotel, location, checkIn, checkOut, nights, roomType, guests, total }",
+    "cab": "RentalCarReservation — { bookingId, provider, pickup, drop, pickupTime, vehicle, fare }",
+    "none": "(not a transaction — e.g. marketing)"
+  },
+  "buildThese": ["train", "bus", "hotel", "cab"],
+  "cases": [
+    {
+      "id": "train-irctc-clean",
+      "from": "IRCTC <ticketadmin@irctc.co.in>",
+      "subject": "E-Ticket Booked — PNR 2458109763",
+      "body": "Dear Passenger, your booking is confirmed.\nPNR: 2458109763\nTrain: 12658 - KSR Bengaluru City Express\nClass: 3A\nDate of journey: 20 Sep 2026\nFrom: KSR Bengaluru\nTo: Chennai Central\nDeparture time: 22:40\nArrival time: 05:45\nCoach: B4\nBerth: 32 Side Lower\nTotal fare: Rs. 1,245"
+    },
+    {
+      "id": "train-irctc-messy",
+      "from": "IRCTC <no-reply@irctc.co.in>",
+      "subject": "Ticket Confirmed",
+      "body": "PNR: 6821904455\nTrain 12622 Tamil Nadu Express\nJourney date: 05/09/2026\nBoarding station: New Delhi\nDestination station: Chennai Central\nDeparture: 22:30\nCoach B2, Berth 14 Upper\nClass of travel: Sleeper\nFare: INR 780",
+      "note": "Numeric date is genuinely ambiguous (05/09) — day-first assumed and flagged."
+    },
+    {
+      "id": "bus-redbus-clean",
+      "from": "redBus <noreply@redbus.in>",
+      "subject": "Booking Confirmed — Ticket ID RB88213401",
+      "body": "Your bus ticket is confirmed.\nBooking ID: RB88213401\nOperator: Orange Travels\nFrom: Bengaluru\nTo: Hyderabad\nDeparture: 21 Sep 2026, 21:30\nArrival: 22 Sep 2026, 06:15\nSeat numbers: U12, U13\nBoarding point: Madiwala, Silk Board\nTotal fare: Rs. 1,450"
+    },
+    {
+      "id": "bus-abhibus-html",
+      "from": "AbhiBus <tickets@abhibus.com>",
+      "subject": "Your ticket for Bengaluru to Chennai",
+      "body": "<html><body><table><tr><td>Booking ID</td><td>AB5521190</td></tr><tr><td>Operator</td><td>VRL Travels</td></tr><tr><td>From</td><td>Bengaluru</td></tr><tr><td>To</td><td>Chennai</td></tr><tr><td>Departure</td><td>20 Sep 2026, 23:00</td></tr><tr><td>Boarding point</td><td>Anand Rao Circle</td></tr><tr><td>Fare</td><td>Rs. 980</td></tr></table><p>Have a safe journey.</p></body></html>",
+      "note": "HTML table with no colons — exercises the collapse()/labelValue tab-separator fix."
+    },
+    {
+      "id": "hotel-makemytrip-clean",
+      "from": "MakeMyTrip <bookings@makemytrip.com>",
+      "subject": "Hotel Booking Confirmed — MMT99871",
+      "body": "Your hotel booking is confirmed.\nBooking ID: MMT99871\nHotel: Treebo Trend Grand Palace\nLocation: Koramangala, Bengaluru\nCheck-in: 04 Oct 2026\nCheck-out: 06 Oct 2026\nRoom type: Deluxe Room\nGuests: 2 Adults\nTotal amount: Rs. 4,200"
+    },
+    {
+      "id": "hotel-oyo-messy",
+      "from": "OYO Rooms <bookings@oyorooms.com>",
+      "subject": "Your stay is booked!",
+      "body": "Booking confirmed at OYO Townhouse Indiranagar.\nBooking ID: OYO7723145\nCheck-in: 10/12/2026\nCheck-out: 11/12/2026\nRoom category: Standard\nAmount paid: Rs. 1,899",
+      "note": "Hotel name only stated in prose, not as a 'Hotel:' label — expected to land in `missing`."
+    },
+    {
+      "id": "hotel-treebo-jsonld",
+      "from": "Treebo <no-reply@treebo.com>",
+      "subject": "Booking confirmed",
+      "body": "<html><body><script type=\"application/ld+json\">{\"@context\":\"https://schema.org\",\"@type\":\"LodgingReservation\",\"reservationId\":\"TRB44210\",\"reservationFor\":{\"@type\":\"LodgingBusiness\",\"name\":\"Treebo Trend Grand Palace\"},\"checkinTime\":\"2026-10-04T14:00:00+05:30\",\"checkoutTime\":\"2026-10-06T11:00:00+05:30\",\"totalPrice\":\"4200\",\"priceCurrency\":\"INR\"}</script><p>Your stay is booked.</p></body></html>"
+    },
+    {
+      "id": "cab-uber-clean",
+      "from": "Uber Receipts <receipts@uber.com>",
+      "subject": "Your ride is confirmed",
+      "body": "Booking ID: UBR33871\nPickup location: Koramangala 5th Block\nDrop location: Kempegowda International Airport\nPickup date & time: 20 Sep 2026, 05:30\nVehicle: Sedan\nFare estimate: Rs. 890"
+    },
+    {
+      "id": "cab-ola-messy",
+      "from": "Ola <no-reply@olacabs.com>",
+      "subject": "Trip confirmed",
+      "body": "Your ride is confirmed. Booking ID OLA9812345.\nPickup point: Indiranagar\nDrop point: Whitefield\nScheduled at: 09:15",
+      "note": "No trip date stated alongside the pickup time — expected to be marked partial."
+    },
+    {
+      "id": "travel-promo-decoy",
+      "from": "MakeMyTrip Offers <offers@makemytrip.com>",
+      "subject": "Flat 40% OFF your next hotel booking!",
+      "body": "Your next getaway just got cheaper. Book any hotel and get flat 40% off. Use promo code STAYMORE40. Limited time offer, hurry! T&Cs apply. Unsubscribe here.",
+      "expected": { "category": "none" }
+    }
+  ]
+}

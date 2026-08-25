@@ -109,10 +109,71 @@ const MAPS: Partial<Record<Category, { type: string; fields: FieldMap }>> = {
       orderStatus: (n) => str(get(n, 'orderStatus')),
     },
   },
+  train: {
+    type: SCHEMA.trainReservation,
+    fields: {
+      pnr: (n) => str(get(n, 'reservationId')),
+      operator: (n) => str(get(n, 'reservationFor.provider.name')),
+      trainNumber: (n) => str(get(n, 'reservationFor.trainNumber')),
+      trainName: (n) => str(get(n, 'reservationFor.trainName')),
+      departureStation: (n) => str(get(n, 'reservationFor.departureStation.name')),
+      arrivalStation: (n) => str(get(n, 'reservationFor.arrivalStation.name')),
+      departureTime: (n) => dt(get(n, 'reservationFor.departureTime')),
+      arrivalTime: (n) => dt(get(n, 'reservationFor.arrivalTime')),
+    },
+  },
+  bus: {
+    type: SCHEMA.busReservation,
+    fields: {
+      bookingId: (n) => str(get(n, 'reservationId')),
+      operator: (n) => str(get(n, 'reservationFor.provider.name')),
+      from: (n) => str(get(n, 'reservationFor.departureBusStop.name')),
+      to: (n) => str(get(n, 'reservationFor.arrivalBusStop.name')),
+      departureTime: (n) => dt(get(n, 'reservationFor.departureTime')),
+      arrivalTime: (n) => dt(get(n, 'reservationFor.arrivalTime')),
+    },
+  },
+  hotel: {
+    type: SCHEMA.lodgingReservation,
+    fields: {
+      bookingId: (n) => str(get(n, 'reservationId')),
+      hotel: (n) => str(get(n, 'reservationFor.name')),
+      checkIn: (n) => dt(get(n, 'checkinTime')),
+      checkOut: (n) => dt(get(n, 'checkoutTime')),
+      total: (n) => money(get(n, 'totalPrice'), get(n, 'priceCurrency')),
+    },
+  },
+  cab: {
+    type: SCHEMA.rentalCarReservation,
+    fields: {
+      bookingId: (n) => str(get(n, 'reservationId')),
+      pickup: (n) => str(get(n, 'pickupLocation.name')),
+      drop: (n) => str(get(n, 'dropoffLocation.name')),
+      pickupTime: (n) => dt(get(n, 'pickupTime')),
+    },
+  },
+  restaurant: {
+    type: SCHEMA.foodEstablishmentReservation,
+    fields: {
+      bookingId: (n) => str(get(n, 'reservationId')),
+      restaurant: (n) => str(get(n, 'reservationFor.name')),
+      dateTime: (n) => dt(get(n, 'startTime')),
+      partySize: (n) => {
+        const v = get(n, 'partySize');
+        const num = typeof v === 'number' ? v : Number(str(v));
+        return Number.isFinite(num) ? num : null;
+      },
+    },
+  },
 };
 
 const TYPE_TO_CATEGORY: Record<string, Category> = {
   FlightReservation: 'flight',
+  TrainReservation: 'train',
+  BusReservation: 'bus',
+  LodgingReservation: 'hotel',
+  RentalCarReservation: 'cab',
+  FoodEstablishmentReservation: 'restaurant',
   EventReservation: 'event',
   ParcelDelivery: 'shipment',
   Invoice: 'bill',

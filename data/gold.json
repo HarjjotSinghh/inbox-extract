@@ -112,6 +112,85 @@
     },
     "commerce:promo-decoy": {
       "category": "none", "schemaType": null, "confidence": "high", "missing": [], "data": null
+    },
+    "travel:train-irctc-clean": {
+      "category": "train", "schemaType": "TrainReservation", "confidence": "high", "missing": [],
+      "data": {
+        "pnr": "2458109763", "operator": "IRCTC", "trainNumber": "12658", "trainName": "KSR Bengaluru City Express",
+        "departureStation": "KSR Bengaluru", "arrivalStation": "Chennai Central",
+        "departureTime": "2026-09-20T22:40", "arrivalTime": "05:45",
+        "classOfTravel": "3A", "coach": "B4", "berth": "32 Side Lower",
+        "fare": { "amount": 1245, "currency": "INR", "raw": "Rs. 1,245" }
+      }
+    },
+    "travel:train-irctc-messy": {
+      "category": "train", "schemaType": "TrainReservation", "confidence": "high", "missing": [],
+      "data": {
+        "pnr": "6821904455", "operator": "IRCTC", "trainNumber": "12622", "trainName": "Tamil Nadu Express",
+        "departureStation": "New Delhi", "arrivalStation": "Chennai Central",
+        "departureTime": "2026-09-05T22:30", "classOfTravel": "Sleeper", "coach": "B2", "berth": "14 Upper",
+        "fare": { "amount": 780, "currency": "INR", "raw": "INR 780" }
+      }
+    },
+    "travel:bus-redbus-clean": {
+      "category": "bus", "schemaType": "BusReservation", "confidence": "high", "missing": [],
+      "data": {
+        "bookingId": "RB88213401", "operator": "Orange Travels", "from": "Bengaluru", "to": "Hyderabad",
+        "departureTime": "2026-09-21T21:30", "arrivalTime": "2026-09-22T06:15",
+        "seats": ["U12", "U13"], "boardingPoint": "Madiwala, Silk Board",
+        "fare": { "amount": 1450, "currency": "INR", "raw": "Rs. 1,450" }
+      }
+    },
+    "travel:bus-abhibus-html": {
+      "category": "bus", "schemaType": "BusReservation", "confidence": "high", "missing": [],
+      "data": {
+        "bookingId": "AB5521190", "operator": "VRL Travels", "from": "Bengaluru", "to": "Chennai",
+        "departureTime": "2026-09-20T23:00", "boardingPoint": "Anand Rao Circle",
+        "fare": { "amount": 980, "currency": "INR", "raw": "Rs. 980" }
+      }
+    },
+    "travel:hotel-makemytrip-clean": {
+      "category": "hotel", "schemaType": "LodgingReservation", "confidence": "high", "missing": [],
+      "data": {
+        "bookingId": "MMT99871", "hotel": "Treebo Trend Grand Palace", "location": "Koramangala, Bengaluru",
+        "checkIn": "2026-10-04", "checkOut": "2026-10-06", "nights": 2,
+        "roomType": "Deluxe Room", "guests": "2 Adults",
+        "total": { "amount": 4200, "currency": "INR", "raw": "Rs. 4,200" }
+      }
+    },
+    "travel:hotel-oyo-messy": {
+      "category": "hotel", "schemaType": "LodgingReservation", "confidence": "high", "missing": ["hotel"],
+      "data": {
+        "bookingId": "OYO7723145", "checkIn": "2026-12-10", "checkOut": "2026-12-11", "nights": 1,
+        "roomType": "Standard",
+        "total": { "amount": 1899, "currency": "INR", "raw": "Rs. 1,899" }
+      }
+    },
+    "travel:hotel-treebo-jsonld": {
+      "category": "hotel", "schemaType": "LodgingReservation", "confidence": "high", "missing": [],
+      "data": {
+        "bookingId": "TRB44210", "hotel": "Treebo Trend Grand Palace",
+        "checkIn": "2026-10-04T14:00", "checkOut": "2026-10-06T11:00",
+        "total": { "amount": 4200, "currency": "INR", "raw": "INR 4200" }
+      }
+    },
+    "travel:cab-uber-clean": {
+      "category": "cab", "schemaType": "RentalCarReservation", "confidence": "high", "missing": [],
+      "data": {
+        "bookingId": "UBR33871", "provider": "Uber Receipts", "pickup": "Koramangala 5th Block",
+        "drop": "Kempegowda International Airport", "pickupTime": "2026-09-20T05:30", "vehicle": "Sedan",
+        "fare": { "amount": 890, "currency": "INR", "raw": "Rs. 890" }
+      }
+    },
+    "travel:cab-ola-messy": {
+      "category": "cab", "schemaType": "RentalCarReservation", "confidence": "high", "missing": [],
+      "data": {
+        "bookingId": "OLA9812345", "provider": "Ola", "pickup": "Indiranagar", "drop": "Whitefield",
+        "pickupTime": "09:15"
+      }
+    },
+    "travel:travel-promo-decoy": {
+      "category": "none", "schemaType": null, "confidence": "high", "missing": [], "data": null
     }
   }
 }
