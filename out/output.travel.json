@@ -293,7 +293,7 @@
         },
         "confidence": "high",
         "missing": [],
-        "score": 0.882,
+        "score": 0.895,
         "provenance": {
           "bookingId": {
             "source": "text",
@@ -365,7 +365,7 @@
         "signals": [
           {
             "category": "bus",
-            "score": 0.607
+            "score": 0.66
           },
           {
             "category": "event",

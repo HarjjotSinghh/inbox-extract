@@ -24,9 +24,12 @@ export const insurance: Extractor = {
     ));
     d.set('policyNumber', ids.policyNumber(doc));
 
-    d.set('policyType', mapFound(
-      first(doc.match('insurance.policyType', POLICY_TYPE, 1), labelValue(doc, 'insurance.policyType.label', ['Policy type', 'Plan type'])),
-      'clean', cleanTitle,
+    // The word-list match is normalised to lowercase (it names one of a fixed
+    // set: health/term/motor/...); a "Policy type:" label keeps its own
+    // casing, since it may state something outside that set.
+    d.set('policyType', first(
+      mapFound(doc.match('insurance.policyType', POLICY_TYPE, 1), 'lower', (s) => s.toLowerCase()),
+      mapFound(labelValue(doc, 'insurance.policyType.label', ['Policy type', 'Plan type']), 'clean', cleanTitle),
     ));
 
     d.set('premium', moneyFromLabel(doc, 'insurance.premium', ['Premium amount', 'Premium due', 'Premium', 'Amount due']));

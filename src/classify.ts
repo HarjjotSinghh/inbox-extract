@@ -184,6 +184,11 @@ const CATEGORY_SIGNALS: Record<Exclude<Category, 'none'>, Signal[]> = {
     { re: /\b(?:sleeper|semi-?sleeper|volvo|AC)\s+bus\b/i, w: 1.4, label: 'bus-type' },
     { re: /\bdrop(?:ping)?\s+point\b/i, w: 1.2, label: 'drop-point' },
     { re: /\bseat\s+(?:no\.?)?\s*\d{1,2}\b/i, w: 0.8, label: 'bus-seat' },
+    // A generic "Booking ID" + "ticket" alone reads as event on wording (both
+    // are common to event/hotel/cab too); an explicit "Operator:" label is a
+    // travel-vendor-specific cue that a bus confirmation carries even without
+    // "boarding point" phrasing.
+    { re: /\boperator\s*:/i, w: 1.4, label: 'operator-label' },
   ],
   hotel: [
     { re: /\bcheck-?in\b/i, w: 2.0, label: 'check-in' },

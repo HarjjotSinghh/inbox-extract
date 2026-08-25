@@ -1456,7 +1456,7 @@
       },
       "confidence": "high",
       "missing": [],
-      "score": 0.882,
+      "score": 0.895,
       "provenance": {
         "bookingId": {
           "source": "text",
@@ -1528,7 +1528,7 @@
       "signals": [
         {
           "category": "bus",
-          "score": 0.607
+          "score": 0.66
         },
         {
           "category": "event",
@@ -2754,7 +2754,7 @@
           "quote": "term",
           "start": 117,
           "end": 121,
-          "rule": "insurance.policyType>clean"
+          "rule": "insurance.policyType>lower"
         },
         "premium": {
           "source": "text",
@@ -2834,7 +2834,7 @@
           "quote": "motor",
           "start": 11,
           "end": 16,
-          "rule": "insurance.policyType>clean"
+          "rule": "insurance.policyType>lower"
         },
         "premium": {
           "source": "text",

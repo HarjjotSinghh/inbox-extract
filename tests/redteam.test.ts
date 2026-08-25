@@ -157,6 +157,49 @@ describe('a PNR alone does not make something a flight', () => {
   });
 });
 
+describe('regressions from building the 18-category rework', () => {
+  it('an overnight train does not stamp the arrival with the departure date', () => {
+    // 22:40 departure / 05:45 arrival with one journey date stated: the
+    // arrival is the next calendar day, which the email never states.
+    // Composing it from the departure date would fabricate a same-day arrival.
+    const r = extract({
+      from: 'IRCTC <ticketadmin@irctc.co.in>',
+      subject: 'Ticket confirmed',
+      body: 'PNR: 2458109763\nTrain: 12658 - KSR Bengaluru City Express\nDate of journey: 20 Sep 2026\nFrom: KSR Bengaluru\nTo: Chennai Central\nDeparture time: 22:40\nArrival time: 05:45',
+    }, { today: TODAY });
+
+    expect(r.category).toBe('train');
+    expect((r.data as any).departureTime).toBe('2026-09-20T22:40');
+    expect((r.data as any).arrivalTime).toBe('05:45');
+    expect(r.partial).toContain('arrivalTime');
+  });
+
+  it('trainName does not repeat the leading train number when there is no dash', () => {
+    const r = extract({
+      from: 'IRCTC <ticketadmin@irctc.co.in>',
+      subject: 'Ticket confirmed',
+      body: 'PNR: 2458109763\nTrain: 12658 KSR Bengaluru City Express\nDate of journey: 20 Sep 2026\nFrom: KSR Bengaluru\nTo: Chennai Central\nDeparture time: 22:40',
+    }, { today: TODAY });
+
+    expect((r.data as any).trainName).toBe('KSR Bengaluru City Express');
+  });
+
+  it('an EMI amount with "Rs." is not truncated by the period inside it', () => {
+    // A blob-capture regex ([^.\n]{1,30}) stops at the first '.', which sits
+    // inside "Rs." itself — "EMI of Rs. 12,300" captured just "Rs" with no
+    // digits, so the amount was silently dropped.
+    const r = extract({
+      from: 'HDFC Bank <loans@hdfcbank.net>',
+      subject: 'EMI reminder',
+      body: 'Your EMI of Rs. 12,300 for Personal Loan is due on 20 Sep 2026.\nLoan Account Number: HDFCPL5521190',
+    }, { today: TODAY });
+
+    expect(r.category).toBe('loan');
+    expect((r.data as any).emiAmount).toMatchObject({ amount: 12300, currency: 'INR' });
+    expect((r.data as any).dueDate).toBe('2026-09-20');
+  });
+});
+
 describe('malformed input abstains instead of throwing', () => {
   const bad: Array<[string, unknown]> = [
     ['null', null],
