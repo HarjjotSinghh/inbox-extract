@@ -33,11 +33,11 @@
         "score": 0.918,
         "provenance": {
           "lender": {
-            "source": "sender",
+            "source": "text",
             "quote": "Bajaj Finserv",
-            "start": 0,
-            "end": 13,
-            "rule": "loan.lender.sender"
+            "start": 63,
+            "end": 76,
+            "rule": "loan.lender:label(Lender)>clean"
           },
           "loanAccountId": {
             "source": "text",
@@ -239,11 +239,11 @@
         "score": 0.912,
         "provenance": {
           "insurer": {
-            "source": "sender",
+            "source": "text",
             "quote": "LIC of India",
-            "start": 0,
-            "end": 12,
-            "rule": "insurance.insurer.sender"
+            "start": 66,
+            "end": 78,
+            "rule": "insurance.insurer:label(Insurer)>clean"
           },
           "policyNumber": {
             "source": "text",
@@ -396,7 +396,7 @@
         "category": "salary",
         "schemaType": "inbox:Payslip",
         "data": {
-          "employer": "Acme Corp HR",
+          "employer": "Acme Corp",
           "payPeriod": "September 2026",
           "netPay": {
             "amount": 72700,
@@ -421,11 +421,11 @@
         "score": 0.905,
         "provenance": {
           "employer": {
-            "source": "sender",
-            "quote": "Acme Corp HR",
-            "start": 0,
-            "end": 12,
-            "rule": "salary.employer.sender"
+            "source": "text",
+            "quote": "Acme Corp",
+            "start": 53,
+            "end": 62,
+            "rule": "salary.employer:label(Employer)>clean"
           },
           "payPeriod": {
             "source": "text",

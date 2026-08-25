@@ -184,6 +184,74 @@ describe('regressions from building the 18-category rework', () => {
     expect((r.data as any).trainName).toBe('KSR Bengaluru City Express');
   });
 
+  it('an unknown departure time does not make the arrival same-day either (train)', () => {
+    // Caught by external review: departure time unknown was treated the same
+    // as "same day" as the journey date, when it could still be overnight.
+    const r = extract({
+      from: 'IRCTC <ticketadmin@irctc.co.in>',
+      subject: 'Ticket confirmed',
+      body: 'PNR: 2458109763\nTrain: 12658 - KSR Bengaluru City Express\nDate of journey: 20 Sep 2026\nFrom: KSR Bengaluru\nTo: Chennai Central\nArrival time: 05:45',
+    }, { today: TODAY });
+
+    expect((r.data as any).arrivalTime).toBe('05:45');
+    expect(r.partial).toContain('arrivalTime');
+  });
+
+  it('an unknown departure time does not make the arrival same-day either (flight)', () => {
+    // Same defect, pre-existing in flight.ts before train.ts copied it.
+    const r = extract({
+      from: 'Air India <no-reply@airindia.com>',
+      subject: 'Booking Confirmed — PNR X4K9P2',
+      body: 'PNR: X4K9P2. Flight AI-302 from Delhi (DEL) to Mumbai (BOM) on 12 Sep 2026. Arrives 05:45.',
+    }, { today: TODAY });
+
+    expect((r.data as any).arrivalTime).toBe('05:45');
+    expect(r.partial).toContain('arrivalTime');
+  });
+
+  it('an explicit "Lender:" label outranks a loan-aggregator sender', () => {
+    const r = extract({
+      from: 'PaisaBazaar <loans@paisabazaar.com>',
+      subject: 'EMI due',
+      body: 'Lender: HDFC Bank. Loan Account Number: HDFCPL5521190. EMI amount: Rs. 8,450. Due date: 25 Sep 2026.',
+    }, { today: TODAY });
+
+    expect((r.data as any).lender).toBe('HDFC Bank');
+  });
+
+  it('an explicit "Insurer:" label outranks an aggregator sender', () => {
+    const r = extract({
+      from: 'Policybazaar <renewals@policybazaar.com>',
+      subject: 'Policy renewal',
+      body: 'Insurer: Star Health. Policy number: SH88213047. Premium amount: Rs. 18,900. Policy renewal date: 05 Oct 2026.',
+    }, { today: TODAY });
+
+    expect((r.data as any).insurer).toBe('Star Health');
+  });
+
+  it('an explicit "Employer:" label outranks a payroll-platform sender', () => {
+    const r = extract({
+      from: 'Keka <payroll@keka.com>',
+      subject: 'Payslip for September 2026',
+      body: 'Employer: Initech Systems. Pay period: September 2026. Net pay: Rs. 61,200. Payslip ID: IS-2609-771.',
+    }, { today: TODAY });
+
+    expect((r.data as any).employer).toBe('Initech Systems');
+  });
+
+  it('JSON-LD Order defers to the text classifier when it clearly favours shopping over food', () => {
+    const html = `<html><body>
+      <script type="application/ld+json">
+      {"@context":"https://schema.org","@type":"Order","orderNumber":"402-1234567","merchant":{"@type":"Organization","name":"Amazon.in"},"totalPrice":"1098","priceCurrency":"INR","orderStatus":"OrderProcessing"}
+      </script>
+      <p>Your Amazon.in order is confirmed. Expected delivery: 22 Sep 2026.</p>
+      </body></html>`;
+    const r = extract({ from: 'Amazon.in <auto-confirm@amazon.in>', subject: 'Your Amazon.in order', body: html }, { today: TODAY });
+
+    expect(r.category).toBe('shopping');
+    expect(r.method).toBe('jsonld');
+  });
+
   it('an EMI amount with "Rs." is not truncated by the period inside it', () => {
     // A blob-capture regex ([^.\n]{1,30}) stops at the first '.', which sits
     // inside "Rs." itself — "EMI of Rs. 12,300" captured just "Rs" with no

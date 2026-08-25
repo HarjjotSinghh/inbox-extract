@@ -17,9 +17,12 @@ export const loan: Extractor = {
   run({ doc, today, dueSoonDays }: ExtractorContext) {
     const d = new Draft();
 
+    // A stated "Lender:" outranks the sender: loan aggregators (PaisaBazaar,
+    // BankBazaar) send on the lender's behalf, so senderBrand alone would
+    // name the aggregator whenever both are present.
     d.set('lender', first(
-      senderBrand(doc, 'loan.lender.sender'),
       mapFound(labelValue(doc, 'loan.lender', ['Lender', 'Bank', 'NBFC']), 'clean', cleanTitle),
+      senderBrand(doc, 'loan.lender.sender'),
     ));
     // "Loan Account Number" / "Loan A/c No" both satisfy the generic
     // account-number rule below — no loan-specific pattern needed.

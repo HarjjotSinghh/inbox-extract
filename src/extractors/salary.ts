@@ -17,9 +17,12 @@ export const salary: Extractor = {
   run({ doc }: ExtractorContext) {
     const d = new Draft();
 
+    // A stated "Employer:" outranks the sender: payroll platforms (Keka, Zoho
+    // Payroll) send on the employer's behalf, so the sender brand would be
+    // the platform, not the employer, whenever both are present.
     d.set('employer', first(
-      senderBrand(doc, 'salary.employer.sender'),
       mapFound(labelValue(doc, 'salary.employer', ['Employer', 'Company']), 'clean', cleanTitle),
+      senderBrand(doc, 'salary.employer.sender'),
     ));
     d.set('payPeriod', mapFound(
       labelValue(doc, 'salary.payPeriod', ['Pay period', 'Salary period', 'For the month of', 'Month']),

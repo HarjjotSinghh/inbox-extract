@@ -109,7 +109,7 @@
       "category": "salary",
       "schemaType": "inbox:Payslip",
       "data": {
-        "employer": "Acme Corp HR",
+        "employer": "Acme Corp",
         "payPeriod": "September 2026",
         "netPay": {
           "amount": 72700,

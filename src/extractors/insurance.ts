@@ -18,9 +18,12 @@ export const insurance: Extractor = {
   run({ doc }: ExtractorContext) {
     const d = new Draft();
 
+    // A stated "Insurer:" outranks the sender: aggregators (Policybazaar)
+    // send on the insurer's behalf, so senderBrand alone would name the
+    // aggregator whenever both are present.
     d.set('insurer', first(
-      senderBrand(doc, 'insurance.insurer.sender'),
       mapFound(labelValue(doc, 'insurance.insurer', ['Insurer', 'Insurance company']), 'clean', cleanTitle),
+      senderBrand(doc, 'insurance.insurer.sender'),
     ));
     d.set('policyNumber', ids.policyNumber(doc));
 

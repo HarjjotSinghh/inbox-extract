@@ -279,7 +279,7 @@
     "money:salary-payslip-clean": {
       "category": "salary", "schemaType": "inbox:Payslip", "confidence": "high", "missing": [],
       "data": {
-        "employer": "Acme Corp HR", "payPeriod": "September 2026",
+        "employer": "Acme Corp", "payPeriod": "September 2026",
         "netPay": { "amount": 72700, "currency": "INR", "raw": "Rs. 72,700" },
         "grossPay": { "amount": 85000, "currency": "INR", "raw": "Rs. 85,000" },
         "deductions": { "amount": 12300, "currency": "INR", "raw": "Rs. 12,300" },

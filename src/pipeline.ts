@@ -149,7 +149,15 @@ function buildFromSeed(
   ranked: CategoryScore[],
   promoScore: number,
 ): ExtractionResult {
-  const extractor = extractorFor(seed.category);
+  // schema.org's Order has no food-vs-retail split, so jsonld.ts always seeds
+  // 'food' for it. Defer to the classifier's own text signals — already
+  // computed, already passed in — when they clearly favour 'shopping' instead.
+  const category = seed.category === 'food' && (ranked.find((r) => r.category === 'shopping')?.raw ?? 0)
+      > (ranked.find((r) => r.category === 'food')?.raw ?? 0)
+    ? 'shopping'
+    : seed.category;
+
+  const extractor = extractorFor(category);
   const fromText = extractor?.run(ctx) ?? null;
   if (fromText) ground(doc, fromText.data, fromText.provenance);
 
@@ -170,7 +178,7 @@ function buildFromSeed(
   });
 
   return {
-    category: seed.category,
+    category,
     schemaType: seed.schemaType,
     data,
     confidence,

@@ -58,15 +58,18 @@ export const train: Extractor = {
       }
       if (arrTime?.value.kind === 'time') {
         const depClock = depTime?.value.kind === 'time' ? depTime.value.value : null;
-        if (!depClock || arrTime.value.value >= depClock) {
+        if (depClock && arrTime.value.value >= depClock) {
           d.derive('arrivalTime', `${date}T${arrTime.value.value}`, arrTime, 'train.arrivalTime');
         } else {
-          // Arrival earlier than departure means an overnight journey. The
-          // email states only one date, so the arrival date is not stated —
-          // stamping it with the departure date would fabricate a same-day
-          // arrival for a train that lands the next morning.
+          // Same-day arrival can only be asserted once departure's own clock
+          // time is known and precedes it. An unknown departure time does not
+          // imply same-day either — a departure late in the day could still
+          // land the next morning, and stamping the journey date on the
+          // arrival either way would fabricate a date the email never states.
           d.derive('arrivalTime', arrTime.value.value, arrTime, 'train.arrivalTimeOnly');
-          d.markPartial('arrivalTime', 'Arrival clock time precedes departure (overnight journey); the email does not state the arrival date.');
+          d.markPartial('arrivalTime', depClock
+            ? 'Arrival clock time precedes departure (overnight journey); the email does not state the arrival date.'
+            : 'Arrival time found but no departure clock time stated, so whether it falls on the journey date or the next day cannot be determined.');
         }
       }
     } else if (depTime) {
