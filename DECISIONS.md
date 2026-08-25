@@ -14,7 +14,7 @@ found](#what-the-18-category-build-found) are new for the rework.
 
 | | |
 |---|---|
-| **Detecting the category** | Classification proposes, extraction disposes. Weighted wording signals shortlist up to three categories; each runs its own extractor, and a category is only assigned if that extractor finds the field that *defines* it. A promo has nothing to extract, so it gets no card. |
+| **Detecting the category** | Classification proposes, extraction disposes. Weighted wording signals shortlist up to six candidate categories; each runs its own extractor, and a category is only assigned if that extractor finds the field that *defines* it. A promo has nothing to extract, so it gets no card. |
 | **Mapping to a schema** | Real schema.org vocabulary wherever one fits (`FlightReservation`, `EventReservation`, `Order`, `ParcelDelivery`, `Invoice`), a namespaced `inbox:` type only where schema.org genuinely has none. Full table [below](#category--schemaorg-type). |
 | **Missing fields** | Three states, not two: present, `partial` (found but under-specified, like an ETA with no date), or `missing`. Nothing is completed by guessing — `ground()` deletes any field that cannot be traced to a span in the email. |
 | **Different vendors** | Four layers, cheapest first: the sender's own JSON-LD → vendor-agnostic label scanning → category-specific structure → an optional LLM fallback, all funnelling through the same verification gate. |
@@ -32,7 +32,7 @@ If you read one more section, make it [What an adversarial pass found](#what-an-
 
 The rule is: **classification proposes, extraction disposes.**
 
-The classifier picks up to three plausible categories from weighted wording signals. Each one then *runs its own extractor*, and a category is only assigned if that extractor found the field that defines it — an **anchor**. If nothing anchors, the answer is `none`.
+The classifier picks up to six plausible categories from weighted wording signals (sized to the largest vocabulary-sharing family, travel). Each one then *runs its own extractor*, and a category is only assigned if that extractor found the field that defines it — an **anchor**. If nothing anchors, the answer is `none`.
 
 | category | strong anchor (declared on the extractor) |
 |---|---|
@@ -69,7 +69,7 @@ Inside the extractors there is **no way to write a field without a `Found<T>` or
 1. the quote must still exist verbatim at its recorded offsets in the email (offsets are repaired if the text shifted; if the quote is absent entirely, the field is deleted);
 2. unless the value is an explicit **derivation** of the quote, the value must be recoverable from that quote.
 
-A field that fails is **deleted from `data` before the result is returned**. The worst case is therefore a field that shows up in `missing` — never a fabricated one. `eval/run.ts` audits this independently, re-reading the raw fixture strings rather than the extractor's own normalised text, and reports **0 hallucinated fields across 88 emitted fields**.
+A field that fails is **deleted from `data` before the result is returned**. The worst case is therefore a field that shows up in `missing` — never a fabricated one. `eval/run.ts` audits this independently, re-reading the raw fixture strings rather than the extractor's own normalised text, and reports **0 hallucinated fields across 232 emitted fields**.
 
 Derivations are the narrow, declared exception: `"20 Sep 2026"` → `"2026-09-20"`, `"₹18,450.00"` → `18450`, a due date → `overdue`. They are flagged `derived: true` in the provenance and still require the quote to be real.
 
@@ -198,7 +198,7 @@ Credit-card statements share this vocabulary — they are the same shape with a 
 
 Four layers, cheapest and most reliable first:
 
-**Layer 0 — the sender's own schema.org markup.** Real airlines and merchants ship JSON-LD in the HTML part; this is the mechanism Gmail actually uses. When present it is authoritative and short-circuits everything else, with the text rules still filling gaps it left. The fixtures are plain text, so this layer is exercised by a test instead (`tests/parse.test.ts`, IndiGo JSON-LD → `method: "jsonld"`).
+**Layer 0 — the sender's own schema.org markup.** Real airlines and merchants ship JSON-LD in the HTML part; this is the mechanism Gmail actually uses. When present it is authoritative and short-circuits everything else, with the text rules still filling gaps it left. Exercised by fixtures as well as tests: `hotel-treebo-jsonld` ships real LodgingReservation markup, and `tests/parse.test.ts` covers the IndiGo FlightReservation path (`method: "jsonld"`).
 
 **Layer 1 — vendor-agnostic label/value scanning.** `Tracking ID:`, `Due date:`, `Total:`, `Booking ID:` are near-universal, because they are written for humans, not for parsers. Labels are tried **most-specific-first**, which is what makes `Statement date … Payment due date` resolve correctly. Two details that bite in practice:
 
