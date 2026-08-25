@@ -55,13 +55,22 @@ export const TOOL = {
 // used for EXTRACTORS and CATEGORY_SIGNALS.
 export const TARGET_FIELDS: Record<Exclude<Category, 'none'>, string[]> = {
   flight: ['reservationId', 'airline', 'flightNumber', 'departureAirport', 'arrivalAirport', 'departureTime', 'arrivalTime', 'seat'],
+  train: ['pnr', 'operator', 'trainNumber', 'trainName', 'departureStation', 'arrivalStation', 'departureTime', 'arrivalTime', 'classOfTravel', 'coach', 'berth', 'fare'],
+  bus: ['bookingId', 'operator', 'from', 'to', 'departureTime', 'arrivalTime', 'seats', 'boardingPoint', 'fare'],
+  hotel: ['bookingId', 'hotel', 'location', 'checkIn', 'checkOut', 'nights', 'roomType', 'guests', 'total'],
+  cab: ['bookingId', 'provider', 'pickup', 'drop', 'pickupTime', 'vehicle', 'fare'],
   food: ['merchant', 'orderId', 'items', 'total', 'status', 'eta', 'deliveryAddress'],
+  shopping: ['merchant', 'orderId', 'items', 'total', 'status', 'expectedDelivery'],
   subscription: ['service', 'plan', 'amount', 'renewalDate', 'status'],
   event: ['reservationId', 'eventName', 'location', 'startDateTime', 'seats', 'amount'],
   refund: ['merchant', 'orderId', 'item', 'amount', 'status', 'eta'],
   medical: ['provider', 'specialty', 'location', 'dateTime', 'appointmentId'],
   'credit-card': ['issuer', 'cardLast4', 'statementDate', 'dueDate', 'totalDue', 'minDue'],
   bill: ['biller', 'account', 'amount', 'dueDate'],
+  loan: ['lender', 'loanAccountId', 'emiAmount', 'dueDate', 'installmentNumber', 'outstanding', 'status'],
+  insurance: ['insurer', 'policyNumber', 'policyType', 'premium', 'renewalDate', 'sumInsured'],
+  salary: ['employer', 'payPeriod', 'netPay', 'grossPay', 'deductions', 'creditDate', 'payslipId'],
+  restaurant: ['bookingId', 'restaurant', 'location', 'dateTime', 'partySize', 'table'],
   shipment: ['carrier', 'trackingId', 'item', 'expectedDelivery', 'orderId'],
 };
 

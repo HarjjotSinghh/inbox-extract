@@ -136,13 +136,14 @@ describe('a paid bill is not overdue', () => {
 });
 
 describe('a PNR alone does not make something a flight', () => {
-  it('abstains on an IRCTC train ticket rather than calling it a FlightReservation', () => {
+  it('reads an IRCTC train ticket as a train booking, never as a FlightReservation', () => {
     const r = extract({
       from: 'IRCTC <ticketadmin@irctc.co.in>',
       subject: 'Ticket confirmed',
       body: 'PNR: 4523118876\nTrain: 12658 KSR Bengaluru Express\nDate of journey: 20 Sep 2026\nSeat 32A\nFare: ₹1,245',
     }, { today: TODAY });
-    expect(r.category).toBe('none');
+    expect(r.category).toBe('train');
+    expect(r.schemaType).toBe('TrainReservation');
   });
 
   it('still reads a real flight, whose PNR sits beside a flight number and IATA codes', () => {

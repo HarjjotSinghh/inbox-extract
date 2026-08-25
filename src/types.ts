@@ -10,7 +10,12 @@ export type Confidence = 'high' | 'medium' | 'low';
 
 export type Category =
   | 'flight'
+  | 'train'
+  | 'bus'
+  | 'hotel'
+  | 'cab'
   | 'food'
+  | 'shopping'
   | 'subscription'
   | 'event'
   | 'refund'
@@ -18,6 +23,10 @@ export type Category =
   | 'credit-card'
   | 'bill'
   | 'shipment'
+  | 'loan'
+  | 'insurance'
+  | 'salary'
+  | 'restaurant'
   | 'none';
 
 /** Where a value was read from. Used by the grounding check to pick the haystack. */
