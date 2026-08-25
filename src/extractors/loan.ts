@@ -27,12 +27,17 @@ export const loan: Extractor = {
 
     d.set('emiAmount', first(
       moneyFromLabel(doc, 'loan.emiAmount', ['EMI amount', 'EMI due', 'Installment amount', 'Instalment amount']),
-      moneyFromPattern(doc, 'loan.emiAmount.of', /\bEMI\s+of\s+([^.\n]{1,30})/i),
+      // A blob-capture ([^.\n]{1,30}) fails here: "EMI of Rs. 12,300" has a
+      // period inside "Rs." itself, so the class would stop before the digits.
+      moneyFromPattern(doc, 'loan.emiAmount.of', /\bEMI\s+of\s+((?:₹|Rs\.?|INR|\$)\s*[\d,]+(?:\.\d{1,2})?)/i),
     ));
 
     const due = first(
       dateFromLabel(doc, 'loan.dueDate', ['Due date', 'EMI due date', 'Payment due date', 'Payable by']),
-      dateFromPattern(doc, 'loan.dueDate.by', /\bEMI\s+(?:is\s+)?due\s+(?:on|by)\s+([^.,\n]{4,30})/i),
+      // Generic "is/was due on|by" — not anchored to "EMI" immediately
+      // preceding it, since the amount routinely sits in between.
+      dateFromPattern(doc, 'loan.dueDate.was', /\b(?:is|was|were)\s+due\s+(?:on|by)\s+([^.,\n]{4,30})/i),
+      dateFromPattern(doc, 'loan.dueDate.by', /\bdue\s+(?:on|by)\s+([^.,\n]{4,30})/i),
     );
     if (due) {
       d.derive('dueDate', due.value.value, due, 'loan.dueDate');

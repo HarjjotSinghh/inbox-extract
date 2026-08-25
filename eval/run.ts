@@ -28,6 +28,7 @@ const FIXTURES: Array<[key: string, path: string]> = [
   ['commerce', 'data/fixtures.commerce.json'],
   ['travel', 'data/fixtures.travel.json'],
   ['shopping', 'data/fixtures.shopping.json'],
+  ['money', 'data/fixtures.money.json'],
 ];
 
 const gold = JSON.parse(readFileSync('data/gold.json', 'utf8')) as { today: string; cases: Record<string, GoldEntry> };

@@ -235,6 +235,64 @@
     },
     "shopping:shopping-promo-decoy": {
       "category": "none", "schemaType": null, "confidence": "high", "missing": [], "data": null
+    },
+    "money:loan-bajaj-clean": {
+      "category": "loan", "schemaType": "inbox:LoanInstallment", "confidence": "high", "missing": [],
+      "data": {
+        "lender": "Bajaj Finserv", "loanAccountId": "LN88213045",
+        "emiAmount": { "amount": 8450, "currency": "INR", "raw": "Rs. 8,450" },
+        "dueDate": "2026-09-25", "status": "upcoming", "installmentNumber": "14",
+        "outstanding": { "amount": 125000, "currency": "INR", "raw": "Rs. 1,25,000" }
+      }
+    },
+    "money:loan-hdfc-messy": {
+      "category": "loan", "schemaType": "inbox:LoanInstallment", "confidence": "medium", "missing": [],
+      "data": {
+        "lender": "HDFC Bank", "loanAccountId": "HDFCPL5521190",
+        "emiAmount": { "amount": 12300, "currency": "INR", "raw": "Rs. 12,300" },
+        "dueDate": "2026-09-20", "status": "upcoming", "installmentNumber": "7"
+      }
+    },
+    "money:loan-promo-decoy": {
+      "category": "none", "schemaType": null, "confidence": "high", "missing": [], "data": null
+    },
+    "money:insurance-lic-clean": {
+      "category": "insurance", "schemaType": "inbox:InsurancePolicy", "confidence": "high", "missing": [],
+      "data": {
+        "insurer": "LIC of India", "policyNumber": "998877665544", "policyType": "term",
+        "premium": { "amount": 24500, "currency": "INR", "raw": "Rs. 24,500" },
+        "renewalDate": "2026-09-30",
+        "sumInsured": { "amount": 5000000, "currency": "INR", "raw": "Rs. 50,00,000" }
+      }
+    },
+    "money:insurance-hdfcergo-html": {
+      "category": "insurance", "schemaType": "inbox:InsurancePolicy", "confidence": "high", "missing": [],
+      "data": {
+        "insurer": "HDFC ERGO", "policyNumber": "HE4487213", "policyType": "motor",
+        "premium": { "amount": 5200, "currency": "INR", "raw": "Rs. 5,200" },
+        "renewalDate": "2026-10-15"
+      }
+    },
+    "money:insurance-promo-decoy": {
+      "category": "none", "schemaType": null, "confidence": "high", "missing": [], "data": null
+    },
+    "money:salary-payslip-clean": {
+      "category": "salary", "schemaType": "inbox:Payslip", "confidence": "high", "missing": [],
+      "data": {
+        "employer": "Acme Corp HR", "payPeriod": "September 2026",
+        "netPay": { "amount": 72700, "currency": "INR", "raw": "Rs. 72,700" },
+        "grossPay": { "amount": 85000, "currency": "INR", "raw": "Rs. 85,000" },
+        "deductions": { "amount": 12300, "currency": "INR", "raw": "Rs. 12,300" },
+        "creditDate": "2026-09-30", "payslipId": "PS-2026-09-4471"
+      }
+    },
+    "money:salary-messy": {
+      "category": "salary", "schemaType": "inbox:Payslip", "confidence": "high", "missing": ["payPeriod"],
+      "data": {
+        "employer": "Zenith Technologies",
+        "netPay": { "amount": 55000, "currency": "INR", "raw": "Rs. 55,000" },
+        "creditDate": "2026-10-01", "payslipId": "ZT-9982"
+      }
     }
   }
 }
