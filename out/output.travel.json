@@ -263,7 +263,10 @@
             "score": 0.219
           }
         ],
-        "method": "rules"
+        "method": "rules",
+        "warnings": [
+          "Numeric date could be read day-first or month-first; day-first assumed."
+        ]
       }
     },
     {

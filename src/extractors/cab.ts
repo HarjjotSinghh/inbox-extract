@@ -17,7 +17,13 @@ export const cab: Extractor = {
     const d = new Draft();
 
     d.set('bookingId', ids.bookingId(doc));
-    d.set('provider', senderBrand(doc, 'cab.provider.sender'));
+    // A stated "Provider:" outranks the sender: aggregators book on the
+    // actual operator's behalf, so senderBrand alone would name the
+    // aggregator whenever both are present.
+    d.set('provider', first(
+      mapFound(labelValue(doc, 'cab.provider', ['Provider', 'Cab provider', 'Operator']), 'clean', cleanTitle),
+      senderBrand(doc, 'cab.provider.sender'),
+    ));
 
     d.set('pickup', mapFound(
       labelValue(doc, 'cab.pickup', ['Pickup location', 'Pickup point', 'Pickup', 'From']),

@@ -160,7 +160,12 @@ const MAPS: Partial<Record<Category, { type: string; fields: FieldMap }>> = {
       dateTime: (n) => dt(get(n, 'startTime')),
       partySize: (n) => {
         const v = get(n, 'partySize');
-        const num = typeof v === 'number' ? v : Number(str(v));
+        // str(v) turns an absent field into null, and Number(null) is 0, not
+        // NaN — so a completely missing partySize would otherwise fabricate
+        // 0. JSON-LD provenance skips the quote check ground() would
+        // otherwise catch this with, so it has to be excluded here instead.
+        if (typeof v !== 'number' && (typeof v !== 'string' || !v.trim())) return null;
+        const num = typeof v === 'number' ? v : Number(v);
         return Number.isFinite(num) ? num : null;
       },
     },

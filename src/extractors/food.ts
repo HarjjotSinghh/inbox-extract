@@ -34,7 +34,14 @@ export const food: Extractor = {
       }),
     ));
 
-    const statusHit = doc.match('food.status', /\b(on\s+the\s+way|out\s+for\s+delivery|being\s+prepared|preparing|delivered|placed|confirmed|cancell?ed)\b/i);
+    // A terminal state (cancelled/delivered) outranks an earlier progress
+    // mention wherever it sits — "order was placed ... later cancelled" is a
+    // cancellation, and first-match-wins would report 'placed'. Same
+    // precedence refund.ts already applies to cancelled-vs-refunded.
+    const statusHit = first(
+      doc.match('food.status.terminal', /\b(delivered|cancell?ed)\b/i),
+      doc.match('food.status', /\b(on\s+the\s+way|out\s+for\s+delivery|being\s+prepared|preparing|placed|confirmed)\b/i),
+    );
     if (statusHit) {
       d.derive('status', statusHit.value.toLowerCase().replace(/\s+/g, '-'), statusHit, 'food.status');
       const v = statusHit.value.toLowerCase();

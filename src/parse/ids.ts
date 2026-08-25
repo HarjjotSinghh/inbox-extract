@@ -117,7 +117,9 @@ export function trainNumber(doc: Doc): Found<string> | null {
     /\btrain\s*(?:no\.?|number|#)?\s*[:#]?\s*(\d{4,5})\b/i,
     // "12658 - Chennai Mail" / "12658 Chennai Mail Express" — the number leads
     // the name and is followed by an IRCTC train-class word somewhere close by.
-    /\b(\d{5})\b(?=[^.\n]{0,40}\b(?:express|mail|superfast|duronto|shatabdi|rajdhani|garib\s*rath|passenger|exp)\b)/i,
+    // The lookbehind rejects a money figure ("fare: Rs 45000 for the Rajdhani
+    // Express upgrade") that happens to sit near a class word.
+    /(?<!(?:₹|rs\.?|inr)\s{0,3})\b(\d{5})\b(?=[^.\n]{0,40}\b(?:express|mail|superfast|duronto|shatabdi|rajdhani|garib\s*rath|passenger|exp)\b)/i,
   ], hasDigit);
 }
 

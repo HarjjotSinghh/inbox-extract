@@ -38,7 +38,12 @@ export const shopping: Extractor = {
       }),
     ));
 
-    const statusHit = doc.match('shopping.status', /\b(placed|confirmed|packed|shipped|dispatched|out\s+for\s+delivery|delivered|cancell?ed)\b/i);
+    // Terminal states outrank progress mentions wherever they sit in the
+    // email — same precedence as food.ts and refund.ts.
+    const statusHit = first(
+      doc.match('shopping.status.terminal', /\b(delivered|cancell?ed)\b/i),
+      doc.match('shopping.status', /\b(placed|confirmed|packed|shipped|dispatched|out\s+for\s+delivery)\b/i),
+    );
     if (statusHit) {
       d.derive('status', statusHit.value.toLowerCase().replace(/\s+/g, '-'), statusHit, 'shopping.status');
       const v = statusHit.value.toLowerCase();

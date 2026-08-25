@@ -268,6 +268,71 @@ describe('regressions from building the 18-category rework', () => {
   });
 });
 
+describe('regressions from a deep review pass over the 18-category branch', () => {
+  it('a combined "Date of journey: <date>, <time>" keeps its clock time', () => {
+    const r = extract({
+      from: 'IRCTC <ticketadmin@irctc.co.in>',
+      subject: 'Ticket confirmed',
+      body: 'PNR: 2458109763\nTrain: 12658 - KSR Bengaluru City Express\nDate of journey: 20 Sep 2026, 22:40\nFrom: KSR Bengaluru\nTo: Chennai Central',
+    }, { today: TODAY });
+    expect((r.data as any).departureTime).toBe('2026-09-20T22:40');
+    expect(r.partial ?? []).not.toContain('departureTime');
+  });
+
+  it('a 3+ column HTML table row stops at the cell boundary', () => {
+    const r = extract({
+      from: 'Treebo <no-reply@treebo.com>',
+      subject: 'Booking confirmed',
+      body: '<html><body><table><tr><td>Booking ID</td><td>TRB44210</td></tr><tr><td>Hotel</td><td>Treebo Trend Grand Palace</td><td>Star Rating</td><td>4 Star</td></tr><tr><td>Check-in</td><td>04 Oct 2026</td></tr><tr><td>Check-out</td><td>06 Oct 2026</td></tr></table></body></html>',
+    }, { today: TODAY });
+    expect((r.data as any).hotel).toBe('Treebo Trend Grand Palace');
+  });
+
+  it('JSON-LD with no partySize does not fabricate partySize: 0', () => {
+    // Number(str(undefined)) === 0, and JSON-LD provenance skips the quote
+    // check — so an absent field became a stated zero.
+    const html = '<html><body><script type="application/ld+json">{"@context":"https://schema.org","@type":"FoodEstablishmentReservation","reservationId":"ED123456","reservationFor":{"@type":"FoodEstablishment","name":"Truffles"},"startTime":"2026-09-21T19:00:00+05:30"}</script><p>Reserved.</p></body></html>';
+    const r = extract({ from: 'EazyDiner <r@eazydiner.com>', subject: 'Reserved', body: html }, { today: TODAY });
+    expect(Object.hasOwn((r.data ?? {}) as object, 'partySize')).toBe(false);
+  });
+
+  it('a later cancellation outranks an earlier "placed" mention', () => {
+    const r = extract({
+      from: 'Zomato <orders@zomato.com>',
+      subject: 'Order update',
+      body: 'Your order from Meghana Foods was placed at your saved address. Order #ZO987654. Update: the order was cancelled by the restaurant. Total: ₹380.',
+    }, { today: TODAY });
+    expect((r.data as any).status).toBe('cancelled');
+  });
+
+  it('a 5-digit fare near a train-class word is not a train number', () => {
+    const r = extract({
+      from: 'IRCTC <ticketadmin@irctc.co.in>',
+      subject: 'Upgrade offer receipt',
+      body: 'PNR: 2458109763\nTotal fare: Rs 45000 for the Rajdhani Express upgrade\nFrom: New Delhi\nTo: Mumbai Central\nDate of journey: 20 Sep 2026',
+    }, { today: TODAY });
+    expect((r.data as any)?.trainNumber).toBeUndefined();
+  });
+
+  it('an explicit "Provider:" label outranks a cab-aggregator sender', () => {
+    const r = extract({
+      from: 'MakeMyTrip Cabs <cabs@makemytrip.com>',
+      subject: 'Cab booked',
+      body: 'Booking ID: MMT88213. Provider: Meru Cabs. Pickup location: HSR Layout. Drop location: Airport. Pickup date & time: 22 Sep 2026, 08:00.',
+    }, { today: TODAY });
+    expect((r.data as any).provider).toBe('Meru Cabs');
+  });
+
+  it('an explicit "Policy type:" label outranks cross-sell prose', () => {
+    const r = extract({
+      from: 'HDFC ERGO <renewals@hdfcergo.com>',
+      subject: 'Policy renewal',
+      body: 'Policy No: HE4487213\nPolicy type: Two-Wheeler\nPremium: Rs. 5,200\nExpiry date: 15 Oct 2026\nAlso explore our health insurance plans.',
+    }, { today: TODAY });
+    expect((r.data as any).policyType).toBe('Two-Wheeler');
+  });
+});
+
 describe('malformed input abstains instead of throwing', () => {
   const bad: Array<[string, unknown]> = [
     ['null', null],

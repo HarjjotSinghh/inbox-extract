@@ -31,8 +31,8 @@ export const insurance: Extractor = {
     // set: health/term/motor/...); a "Policy type:" label keeps its own
     // casing, since it may state something outside that set.
     d.set('policyType', first(
-      mapFound(doc.match('insurance.policyType', POLICY_TYPE, 1), 'lower', (s) => s.toLowerCase()),
       mapFound(labelValue(doc, 'insurance.policyType.label', ['Policy type', 'Plan type']), 'clean', cleanTitle),
+      mapFound(doc.match('insurance.policyType', POLICY_TYPE, 1), 'lower', (s) => s.toLowerCase()),
     ));
 
     d.set('premium', moneyFromLabel(doc, 'insurance.premium', ['Premium amount', 'Premium due', 'Premium', 'Amount due']));

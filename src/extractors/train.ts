@@ -48,16 +48,25 @@ export const train: Extractor = {
     const depTime = dateFromLabel(doc, 'train.departTime', ['Departure time', 'Departs at', 'Departure']);
     const arrTime = dateFromLabel(doc, 'train.arriveTime', ['Arrival time', 'Arrives at', 'Arrival']);
 
+    if (when && when.value.ambiguous) d.warn('Numeric date could be read day-first or month-first; day-first assumed.');
+
     if (when && when.value.kind !== 'time') {
       const date = when.value.value.slice(0, 10);
-      if (depTime?.value.kind === 'time') {
+      if (when.value.kind === 'datetime') {
+        // "Date of journey: 20 Sep 2026, 22:40" already states both in one
+        // label; re-deriving date-only here would throw away the time it
+        // stated just because no separate "Departure time:" label exists.
+        d.derive('departureTime', when.value.value, when, 'train.departureTime');
+      } else if (depTime?.value.kind === 'time') {
         d.derive('departureTime', `${date}T${depTime.value.value}`, depTime, 'train.departureTime');
       } else {
         d.derive('departureTime', date, when, 'train.departureDateOnly');
         d.markPartial('departureTime', 'Journey date found but no departure clock time stated.');
       }
       if (arrTime?.value.kind === 'time') {
-        const depClock = depTime?.value.kind === 'time' ? depTime.value.value : null;
+        const depClock = when.value.kind === 'datetime'
+          ? when.value.value.slice(11)
+          : depTime?.value.kind === 'time' ? depTime.value.value : null;
         if (depClock && arrTime.value.value >= depClock) {
           d.derive('arrivalTime', `${date}T${arrTime.value.value}`, arrTime, 'train.arrivalTime');
         } else {

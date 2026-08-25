@@ -17,7 +17,10 @@ const ABBREV =
 export function valueEnd(text: string, from: number): number {
   for (let i = from; i < text.length; i++) {
     const c = text[i];
-    if (c === '\n') return i;
+    // \t is the HTML-table-cell separator (see normalize.ts:collapse); a
+    // non-multiline value must stop there too, or a 3+-column row bleeds
+    // across cells instead of stopping at the second one.
+    if (c === '\n' || c === '\t') return i;
     if (c !== '.' && c !== '!' && c !== '?') continue;
 
     const rest = text.slice(i + 1);

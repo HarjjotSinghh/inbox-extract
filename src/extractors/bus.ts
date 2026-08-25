@@ -32,7 +32,11 @@ export const bus: Extractor = {
       if (depart.value.ambiguous) d.warn('Numeric date could be read day-first or month-first; day-first assumed.');
     }
     const arrive = dateFromLabel(doc, 'bus.arrivalTime', ['Arrival', 'Arrival date & time', 'Arrives at']);
-    if (arrive) d.derive('arrivalTime', arrive.value.value, arrive, 'bus.arrivalTime');
+    if (arrive) {
+      d.derive('arrivalTime', arrive.value.value, arrive, 'bus.arrivalTime');
+      if (arrive.value.kind === 'time') d.markPartial('arrivalTime', 'Arrival time found but no date stated.');
+      if (arrive.value.ambiguous) d.warn('Numeric date could be read day-first or month-first; day-first assumed.');
+    }
 
     const seatSpan = labelValue(doc, 'bus.seats', ['Seat numbers', 'Seat no', 'Seats', 'Seat']);
     if (seatSpan) {
