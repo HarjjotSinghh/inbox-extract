@@ -105,8 +105,11 @@ export function labelValue(
   const blocked = opts.notPartOf?.length ? coveredSpans(doc.text, opts.notPartOf) : [];
 
   for (const label of labels) {
+    // \t is a stand-in separator for an HTML table cell boundary (see
+    // normalize.ts:collapse); listing it here lets the engine backtrack the
+    // leading \s* to it when there is no colon, e.g. "Due Date\t20 Sep 2026".
     const re = new RegExp(
-      `(?:^|[\\n.;!?()]\\s*|\\s)(${labelPattern(label)})\\s*(?::|-|–|—|\\bis\\b)\\s*`,
+      `(?:^|[\\n.;!?()]\\s*|\\s)(${labelPattern(label)})\\s*(?::|-|–|—|\\bis\\b|\\t)\\s*`,
       'gi',
     );
     for (const m of doc.text.matchAll(re)) {

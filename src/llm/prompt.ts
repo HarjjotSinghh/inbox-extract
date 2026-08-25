@@ -1,4 +1,6 @@
+import { EXTRACTORS } from '../extractors/registry.ts';
 import type { Doc } from '../normalize.ts';
+import type { Category } from '../types.ts';
 
 export const SYSTEM = `You extract structured data from a single transactional email.
 
@@ -25,7 +27,9 @@ export const TOOL = {
     properties: {
       category: {
         type: 'string',
-        enum: ['flight', 'food', 'subscription', 'event', 'refund', 'medical', 'credit-card', 'bill', 'shipment', 'none'],
+        // Derived from the registry so this can never drift from the categories
+        // that actually have an extractor behind them.
+        enum: [...Object.keys(EXTRACTORS), 'none'],
       },
       fields: {
         type: 'array',
@@ -46,7 +50,10 @@ export const TOOL = {
   },
 };
 
-export const TARGET_FIELDS: Record<string, string[]> = {
+// Exhaustive over Category (minus 'none') so tsc refuses to compile until a
+// new extractor's entry lands here too — the same forcing function already
+// used for EXTRACTORS and CATEGORY_SIGNALS.
+export const TARGET_FIELDS: Record<Exclude<Category, 'none'>, string[]> = {
   flight: ['reservationId', 'airline', 'flightNumber', 'departureAirport', 'arrivalAirport', 'departureTime', 'arrivalTime', 'seat'],
   food: ['merchant', 'orderId', 'items', 'total', 'status', 'eta', 'deliveryAddress'],
   subscription: ['service', 'plan', 'amount', 'renewalDate', 'status'],

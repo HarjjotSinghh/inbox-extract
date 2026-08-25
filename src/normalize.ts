@@ -73,11 +73,19 @@ export function htmlToText(html: string): string {
   );
 }
 
-/** Collapse runs of horizontal whitespace; keep at most one blank line. */
+/**
+ * Collapse runs of horizontal whitespace; keep at most one blank line.
+ *
+ * A tab is preserved as a single separator rather than folded into a space:
+ * `htmlToText` emits one at every `</td>`, and that is the only surviving cue
+ * that "Due Date" and "20 Sep 2026" were separate table cells once the tags
+ * are gone — the label layer treats it as a label/value separator.
+ */
 export function collapse(s: string): string {
   return s
     .replace(/\r\n?/g, '\n')
-    .replace(/[ \t   ]+/g, ' ')
+    .replace(/[    ]+/g, ' ')
+    .replace(/[ \t]*\t[ \t]*/g, '\t')
     .replace(/ *\n */g, '\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
