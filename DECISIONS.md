@@ -2,6 +2,14 @@
 
 How this works, what I chose, and what I left out.
 
+This started as a 9-category take-home and is now all 18 named in the
+category-rework brief. The design did not change to get there — the honesty
+gate and the classify→extract→ground pipeline are entirely category-agnostic,
+so the 9 new categories are 9 vertical slices against the existing pattern,
+not a rewrite. What follows describes both rounds; [Nine more
+categories](#nine-more-categories) and [What the 18-category build
+found](#what-the-18-category-build-found) are new for the rework.
+
 **The short version — the brief's five questions, one line each:**
 
 | | |
@@ -37,6 +45,12 @@ The classifier picks up to three plausible categories from weighted wording sign
 | subscription | renewal date **and** renewing-vs-trial status |
 | credit-card | card last-4 **and** a figure that is owed — a statement *date* alone is not one |
 | bill | amount **and** due date **and** account number — amount+date alone is what cashback blasts carry |
+| train | PNR **and** train number — see [Nine more categories](#nine-more-categories) for why PNR alone is not enough |
+| bus / hotel / cab / restaurant | a booking id — the one thing a promo for that vendor never carries |
+| shopping | order id — same anchor as `food`; the two are told apart before this point, at classification |
+| loan | loan account id **and** EMI amount |
+| insurance | policy number |
+| salary | payslip id |
 
 Each extractor also declares a weaker `softAnchor` (e.g. event name + time + venue, when no booking id is present) that is enough to build a card but not enough to survive a promo veto. Both are declared as data on the extractor and evaluated **after** grounding, against the fields that actually survived — so a field deleted by the verifier cannot prop up an anchor, and the LLM fallback consults the same definition instead of inventing its own.
 
@@ -98,10 +112,67 @@ Gmail's markup pipeline understands `FlightReservation`, `EventReservation`, `Lo
 | credit-card | `Invoice` | `minimumPaymentDue`, `totalPaymentDue`, `paymentDueDate` and `accountId` are literally Invoice properties — a card statement is a richer bill |
 | medical | `Reservation` | schema.org has **no** medical-appointment type; `Reservation` is the real parent of the whole family, so it is honest rather than invented |
 | subscription | `inbox:SubscriptionRenewal` | schema.org has no type that models a subscription *renewal notice*. `MediaSubscription` is the closest real type, but it carries only `authenticator` and `expectsAcceptanceOf` — no amount, renewal date or status — and `Subscription` is a `PriceComponentTypeEnumeration` member, not a type. Forcing it into `Invoice` would imply money already payable, which a renewal notice is not. Namespaced so a consumer can never mistake it for standard vocabulary |
+| train | `TrainReservation` | given, Gmail-supported |
+| bus | `BusReservation` | given, Gmail-supported |
+| hotel | `LodgingReservation` | given, Gmail-supported |
+| cab | `RentalCarReservation` | given, Gmail-supported |
+| shopping | `Order` | same type as `food` — a retail order is an `Order` too; see [Nine more categories](#nine-more-categories) for how the two stay apart |
+| restaurant | `FoodEstablishmentReservation` | the real schema.org type for a table booking. The brief's own table names this category `RestaurantReservation` — that string is not schema.org vocabulary (Gmail's own developer reference names it `RestaurantReservation` too, which is the same non-standard name, not a second real type). `medical` has the identical problem: the brief says `MedicalAppointment`, which also is not schema.org's vocabulary. Both use the real fitting type instead — `Reservation` for medical (schema.org has no medical-appointment type; `Reservation` is the honest parent), `FoodEstablishmentReservation` for restaurant, since that one *does* exist |
+| loan | `inbox:LoanInstallment` | no schema.org type models an EMI reminder; `Invoice` would work but `LoanInstallment` names what is actually owed |
+| insurance | `inbox:InsurancePolicy` | no schema.org type for a policy premium/renewal notice |
+| salary | `inbox:Payslip` | no schema.org type for a payslip. Its fields are personal, not merely transactional, so the `Extractor` interface carries a `sensitive: true` flag a downstream consumer can check before logging or displaying the result — enforced as API metadata, not by hiding anything in this repo's own demo, since every fixture here is synthetic |
 
 Alongside the brief's field names I emit the standard enum URIs too — `paymentStatus: PaymentPastDue`, `orderStatus: OrderInTransit` — so a consumer that already understands those URIs can read them. The card itself is the brief's shape, not schema.org JSON-LD. Where the brief's prose and the fixture's `targetSchemas` disagree (venue/clinic → `location`, booking ID → `reservationId`), I followed the fixture.
 
 Two vocabulary notes. schema.org marks `carrier` as superseded by `provider` on `ParcelDelivery`; the brief names `carrier`, and so does every consumer of this data in practice, so `carrier` is what I emit. And `ParcelDelivery.deliveryStatus` expects a `DeliveryEvent`, not an enumeration member — so that field carries a plain `"in-transit"` / `"delivered"` token rather than a schema.org URI that would not validate.
+
+---
+
+## Nine more categories
+
+Adding train, bus, hotel, cab, shopping, loan, insurance, salary and
+restaurant did not touch `ground.ts` or `pipeline.ts` — both are entirely
+category-agnostic, operating on `data`/`provenance` keys generically. Each
+new category is the same six-touchpoint pattern as the original nine: a
+`Category` union entry, an extractor module, a registry entry, a classify
+signal set, a schema constant, and an optional JSON-LD map. The actual work
+was keeping siblings that share vocabulary from stealing each other's email.
+
+**Travel — PNR is not a flight anchor.** IRCTC's numeric PNR is
+indistinguishable in shape from an airline's alphanumeric one, and both
+appear beside the word "PNR". `flight`'s anchor was already `reservationId`
+**and** a flight number or IATA airport code, precisely so a train ticket
+(no flight number, no airport code) cannot satisfy it — this was already true
+before `train` existed, verified by a fixture that used to abstain and now
+correctly reads as `train` (`tests/redteam.test.ts`). Bus, hotel and cab all
+anchor on a booking id instead, which is unambiguous.
+
+**Shopping vs food — same schema.org type, different discriminator.** Both
+are `Order`. A vendor allowlist (Amazon = shopping, Swiggy = food) would not
+generalise to a merchant neither list has seen, so the classify signals
+discriminate on **delivery horizon and retail framing** instead: `shopping`
+scores on a multi-day "expected delivery" date and retail-brand words;
+`food` scores on same-day/clock-time ETA and delivery-in-progress wording.
+Deliberately **not** included: a generic "order confirmed/placed" signal for
+`shopping` — that phrasing is just as common in food-delivery mail and
+outscored `food` on wording alone for a plain food order with no brand
+keyword in the body (`tests/adversarial.test.ts`, caught before merging).
+
+**A generic anchor is not automatically the right category.** `event`'s
+anchor is a bare booking/reservation id, which a bus ticket also carries.
+Adding `bus` initially lost a bus confirmation to `event` on "Booking ID" +
+"ticket" alone, because those are common transactional words and the bus
+email in question used "Pickup point" rather than the "boarding point"
+phrase `bus` was originally tuned on. The fix was not to weaken `event`, but
+to give `bus` an equally-legitimate signal it was missing — an explicit
+"Operator:" label, which a real bus confirmation carries even without that
+one phrase (`tests/vendors.test.ts`).
+
+**Money siblings stay apart on vocabulary alone.** `loan` (EMI, installment,
+outstanding), `insurance` (policy number, premium, sum insured) and `salary`
+(net pay, payslip, CTC) share no wording with each other or with `bill` /
+`credit-card`, so no special-casing was needed there — the harder part was
+robustness within each one (below).
 
 ---
 
@@ -133,12 +204,13 @@ Four layers, cheapest and most reliable first:
 
 - *Abbreviations.* `Doctor: Dr. Anita Rao (Dermatologist).` — a naive sentence split truncates this to `Dr`. The value scanner only breaks on a full stop when the next non-space character starts something new and the preceding token is not a known abbreviation.
 - *Nested labels.* `Available credit limit: ₹1,81,550` ends in `credit limit`. My first version emitted a `creditLimit` field asserting a total limit the email never states — the exact failure the brief warns about, caught by reading the output rather than the code. Labels can now declare phrases they must not be read out of, and there is a test for it.
+- *HTML tables with no colons.* This is how HDFC, IRCTC and most Indian utility mail actually ships: `<td>Due Date</td><td>20 Sep 2026</td>`. Stripping tags left `"Due Date 20 Sep 2026"` with nothing marking where the label ends — every field from a table-formatted email was silently lost. `collapse()` now preserves one tab per table-cell boundary instead of folding it into a space, and the label scanner accepts a tab as a separator alongside `:`/`-`/`is`. Fixture coverage: `bus-abhibus-html`, `insurance-hdfcergo-html`, `shopping-flipkart-html`.
 
 **Layer 2 — category-specific structure** for things labels miss: `from Delhi (DEL) to Mumbai (BOM)`, `1x Chicken Biryani (₹320)`, `shipped via Delhivery`, `Dr. Anita Rao (Dermatologist)`.
 
 **Layer 3 — an LLM fallback for anything still unrecognised**, off by default (`--llm`). It only runs when the rules came up short, it is asked for a verbatim quote per field, and **every quote is located in the email before the field is accepted** — ungrounded fields are discarded and counted in `warnings`. An LLM-only result is never reported as `high` confidence, and it cannot invent a *category*: if the rules abstained and the model proposes a transaction without a grounded identifier, the abstention stands.
 
-`tests/vendors.test.ts` runs six senders that appear nowhere in the fixtures — Swiggy, Flipkart via Blue Dart, Spotify, Apollo, ICICI, Myntra — with different label spellings (`Tracking number` vs `Tracking ID`, `Pay by` vs `Payment due date`, `Reference` vs `Appointment ID`, a card masked as `XXXX1234`).
+`tests/vendors.test.ts` runs fifteen senders that appear nowhere in the fixtures across all 18 categories — Swiggy, Flipkart via Blue Dart, Spotify, Apollo, ICICI, Myntra, ConfirmTkt, IntrCity, Goibibo, Rapido, Nykaa, Tata Capital, Star Health, an unbranded employer, an unbranded restaurant — each with different label spellings than its fixture counterpart (`Tracking number` vs `Tracking ID`, `Pay by` vs `Payment due date`, `Instalment` vs `Installment`, `Sum assured` vs `Sum insured`, a card masked as `XXXX1234`), so the tests actually exercise generalisation rather than re-running the same phrasing under a different sender.
 
 ---
 
@@ -161,7 +233,7 @@ Four layers, cheapest and most reliable first:
 - **Non-English and Hinglish.** The lexicons are English. For an India-first product this is the first gap I would close, and it is mostly lexicon work rather than architecture.
 - **Timezones.** No fixture states one. If a sender ever does, the current shape would need an offset.
 - **Thread-level entity resolution.** "Order confirmed" → "Shipped" → "Delivered" are three emails about one order and should collapse into one card with a status timeline. That is a store-level concern, not an `extract(email)` concern, but it is the obvious next thing to build.
-- **A larger adversarial set.** Promo rejection is currently measured on **two** emails. 100% on n=2 is not a strong claim. The honest next step is a few hundred labelled emails per category so the numbers mean something.
+- **A larger adversarial set.** Promo rejection is now measured on **seven** decoys across nine category families, up from two — better, and still not a strong claim at n=7. The honest next step is unchanged: a few hundred labelled emails per category.
 
 ---
 
@@ -204,25 +276,49 @@ confidence score is worth nothing until something adversarial has tried to move
 it, which is the argument for building the eval harness before trusting any of
 the numbers in it.
 
+## What the 18-category build found
+
+Six real defects surfaced while building and fixture-testing the nine new
+categories, all fixed and pinned by tests (`tests/redteam.test.ts`,
+`tests/vendors.test.ts`, `tests/parse.test.ts`):
+
+| defect | what it did |
+|---|---|
+| **Item-list comma smear** | `"1x Cotton Shirt (₹1,299)"` split into two fake items at the thousands-separator comma inside the price. The splitter now tracks paren depth and only splits a comma at depth zero |
+| **HTML tables lost every field after the first multiline one** | A table row with no colon (`Total amount\t₹2,199`) was not recognised as a new label boundary inside a multiline value, so one `Items` field swallowed every row after it |
+| **Overnight train arrival fabricated a date** | A 22:40 departure / 05:45 arrival with one stated journey date was stamped `<departure-date>T05:45` — a same-day arrival for a train that lands the next morning. Same fix shape as the pre-existing overnight-flight guard, ported to `train.ts` |
+| **`trainName` repeated the leading train number** | "Train: 12658 KSR Bengaluru Express" (space, not a dash) fell through to a label match that captured the number along with the name |
+| **An EMI amount was silently dropped** | `"EMI of Rs. 12,300"` — a blob-capture pattern (`[^.\n]{1,30}`) stopped at the period inside "Rs." itself, capturing no digits at all |
+| **`bus` lost to `event` on generic wording** | "Booking ID" + "ticket" alone, with no "boarding point" phrase, scored higher for `event` (which anchors on a bare booking id) than for `bus`. Fixed by adding a bus-specific "Operator:" label signal, not by weakening `event` |
+
+The pattern across all six: every one was caught by writing a fixture that
+looked like real vendor mail and then reading the actual output field by
+field against the source text, not by trusting the extractor's own report —
+the same discipline the original adversarial pass documents above. None of
+them were caught by `tsc` or by the honest-abstention gate, because all six
+were "found a plausible-looking wrong answer," not "invented a field out of
+nothing" — a reminder that grounding proves a value came from the email, not
+that it is the *right* value.
+
 ## Numbers
 
-`npm run eval`, against `data/gold.json` (hand-transcribed from the email bodies, not copied from my own output). 78 tests pass; `tsc --noEmit` is clean:
+`npm run eval`, against `data/gold.json` (hand-transcribed from the email bodies, not copied from my own output). 98 tests pass; `tsc --noEmit` is clean:
 
 ```
-cases                        14
+cases                        40
 categoryAccuracy             100.0%
 schemaTypeAccuracy           100.0%
 fieldRecall                  100.0%
 fieldPrecision               100.0%
 perfectCards                 100.0%
-promoRejection               100.0% (2/2)
+promoRejection               100.0% (7/7)
 falsePositiveExtractions     0
 hallucinatedFields           0
-additionalFieldsBeyondGold   17
+additionalFieldsBeyondGold   23
 ```
 
 Promo misfiles and ungrounded quotes fail the process. Wrong values vs gold are printed and currently still exit 0.
 
-`additionalFieldsBeyondGold` are grounded fields beyond what the brief listed — `lateFee`, `unitsConsumed`, `availableCredit`, `screen`, `deliveryAddress`, `platform`, `paymentMethodLast4`, `merchant`, `provider`, plus the schema.org enums. They are reported separately rather than folded into the score, since scoring myself on fields I chose to add would be meaningless.
+`additionalFieldsBeyondGold` are grounded fields beyond what the brief listed — `lateFee`, `unitsConsumed`, `availableCredit`, `screen`, `deliveryAddress`, `platform`, `paymentMethodLast4`, `merchant`, `provider`, `orderStatus`, `paymentStatus`, plus the schema.org enums. They are reported separately rather than folded into the score, since scoring myself on fields I chose to add would be meaningless.
 
 At this size the harness buys a **regression gate** and an **independent grounding audit**, not accuracy numbers — those start to mean something at a few hundred labelled emails.
