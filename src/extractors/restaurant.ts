@@ -1,5 +1,5 @@
 import * as ids from '../parse/ids.ts';
-import { dateFromLabel } from '../parse/locate.ts';
+import { dateFromLabel, dateFromPattern } from '../parse/locate.ts';
 import { cleanTitle, first, labelValue, mapFound } from '../parse/text.ts';
 import { SCHEMA } from '../schema.ts';
 import { Draft, type Extractor, type ExtractorContext } from './base.ts';
@@ -18,7 +18,10 @@ export const restaurant: Extractor = {
 
     d.set('bookingId', first(ids.bookingId(doc), ids.confirmationId(doc)));
     d.set('restaurant', mapFound(
-      labelValue(doc, 'restaurant.name', ['Restaurant', 'Restaurant name', 'Venue']),
+      first(
+        labelValue(doc, 'restaurant.name.label', ['Restaurant', 'Restaurant name', 'Venue']),
+        doc.match('restaurant.name.prose', /\b(?:reservation|table|booking)\s+at\s+([A-Z][\w&.,'-]*(?:\s+[\w&.,'-]+){0,4}?)(?=\s+(?:is|has|was)\b|[,.!]|$)/i),
+      ),
       'clean', cleanTitle,
     ));
     d.set('location', mapFound(
@@ -26,14 +29,21 @@ export const restaurant: Extractor = {
       'clean', cleanTitle,
     ));
 
-    const when = dateFromLabel(doc, 'restaurant.dateTime', ['Date & time', 'Date and time', 'Reservation date & time', 'Booked for', 'Date/time']);
+    const when = first(
+      dateFromLabel(doc, 'restaurant.dateTime', ['Date & time', 'Date and time', 'Reservation date & time', 'Booked for', 'Date/time']),
+      // "confirmed for 2 guests on 21 Sep 2026 at 19:00" — no label at all.
+      dateFromPattern(doc, 'restaurant.dateTime.on', /\bon\s+(\d{1,2}\s+\w{3,9}\s+\d{4}\s+at\s+\d{1,2}:\d{2})/i),
+    );
     if (when) {
       d.derive('dateTime', when.value.value, when, 'restaurant.dateTime');
       if (when.value.kind === 'date') d.markPartial('dateTime', 'Date found but no reservation time stated.');
       if (when.value.ambiguous) d.warn('Numeric date could be read day-first or month-first; day-first assumed.');
     }
 
-    const partySpan = labelValue(doc, 'restaurant.partySize', ['Party size', 'No. of guests', 'Guests', 'Covers', 'Pax']);
+    const partySpan = first(
+      labelValue(doc, 'restaurant.partySize.label', ['Party size', 'No. of guests', 'Guests', 'Covers', 'Pax']),
+      doc.match('restaurant.partySize.prose', /\bfor\s+(\d{1,2}\s+(?:guests?|people|persons?|pax))\b/i),
+    );
     if (partySpan) {
       const m = /\d+/.exec(partySpan.value);
       if (m) d.derive('partySize', Number(m[0]), partySpan, 'restaurant.partySize');

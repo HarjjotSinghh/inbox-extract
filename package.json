@@ -6,7 +6,7 @@
   "engines": { "node": ">=22.6.0" },
   "scripts": {
     "extract": "node --experimental-strip-types src/cli.ts",
-    "run:all": "node --experimental-strip-types src/cli.ts data/fixtures.bills.json data/fixtures.commerce.json --today 2026-09-15 --out out",
+    "run:all": "node --experimental-strip-types src/cli.ts data/fixtures.bills.json data/fixtures.commerce.json data/fixtures.travel.json data/fixtures.shopping.json data/fixtures.money.json data/fixtures.life.json --today 2026-09-15 --out out",
     "eval": "node --experimental-strip-types eval/run.ts",
     "demo": "node --experimental-strip-types demo/build.ts",
     "test": "vitest run",

@@ -88,6 +88,10 @@
           {
             "category": "flight",
             "score": 0.7
+          },
+          {
+            "category": "train",
+            "score": 0.39
           }
         ],
         "method": "rules"
@@ -538,6 +542,10 @@
           {
             "category": "shipment",
             "score": 0.767
+          },
+          {
+            "category": "shopping",
+            "score": 0.3
           }
         ],
         "method": "rules"

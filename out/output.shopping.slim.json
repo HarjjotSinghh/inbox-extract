@@ -1,0 +1,137 @@
+{
+  "source": "fixtures.shopping.json",
+  "today": "2026-09-15",
+  "cases": [
+    {
+      "id": "shopping-amazon-clean",
+      "category": "shopping",
+      "schemaType": "Order",
+      "data": {
+        "merchant": "Amazon.in",
+        "orderId": "402-1234567-8901234",
+        "items": [
+          {
+            "name": "Wireless Mouse",
+            "quantity": 1,
+            "price": {
+              "amount": 799,
+              "currency": "INR",
+              "raw": "₹799"
+            }
+          },
+          {
+            "name": "USB-C Cable",
+            "quantity": 1,
+            "price": {
+              "amount": 299,
+              "currency": "INR",
+              "raw": "₹299"
+            }
+          }
+        ],
+        "total": {
+          "amount": 1098,
+          "currency": "INR",
+          "raw": "₹1,098"
+        },
+        "status": "placed",
+        "orderStatus": "https://schema.org/OrderProcessing",
+        "expectedDelivery": "2026-09-22"
+      },
+      "confidence": "high",
+      "missing": []
+    },
+    {
+      "id": "shopping-flipkart-html",
+      "category": "shopping",
+      "schemaType": "Order",
+      "data": {
+        "merchant": "Flipkart",
+        "orderId": "OD4487213099",
+        "items": [
+          {
+            "name": "Bluetooth Speaker",
+            "quantity": 1
+          }
+        ],
+        "total": {
+          "amount": 2199,
+          "currency": "INR",
+          "raw": "₹2,199"
+        },
+        "status": "confirmed",
+        "orderStatus": "https://schema.org/OrderProcessing",
+        "expectedDelivery": "2026-09-28"
+      },
+      "confidence": "high",
+      "missing": []
+    },
+    {
+      "id": "shopping-myntra-clean",
+      "category": "shopping",
+      "schemaType": "Order",
+      "data": {
+        "merchant": "Myntra",
+        "orderId": "MYN88213456",
+        "items": [
+          {
+            "name": "Cotton Shirt",
+            "quantity": 1,
+            "price": {
+              "amount": 1299,
+              "currency": "INR",
+              "raw": "₹1,299"
+            }
+          },
+          {
+            "name": "Denim Jeans",
+            "quantity": 1,
+            "price": {
+              "amount": 1999,
+              "currency": "INR",
+              "raw": "₹1,999"
+            }
+          }
+        ],
+        "total": {
+          "amount": 3298,
+          "currency": "INR",
+          "raw": "₹3,298"
+        },
+        "status": "confirmed",
+        "orderStatus": "https://schema.org/OrderProcessing",
+        "expectedDelivery": "2026-09-25"
+      },
+      "confidence": "high",
+      "missing": []
+    },
+    {
+      "id": "shopping-ajio-messy",
+      "category": "shopping",
+      "schemaType": "Order",
+      "data": {
+        "merchant": "AJIO",
+        "orderId": "AJ7723190",
+        "total": {
+          "amount": 2499,
+          "currency": "INR",
+          "raw": "₹2,499"
+        },
+        "status": "placed",
+        "orderStatus": "https://schema.org/OrderProcessing"
+      },
+      "confidence": "high",
+      "missing": [
+        "items"
+      ]
+    },
+    {
+      "id": "shopping-promo-decoy",
+      "category": "none",
+      "schemaType": null,
+      "data": null,
+      "confidence": "high",
+      "missing": []
+    }
+  ]
+}

@@ -1,0 +1,917 @@
+{
+  "source": "fixtures.travel.json",
+  "today": "2026-09-15",
+  "generatedWith": "rules",
+  "cases": [
+    {
+      "id": "train-irctc-clean",
+      "from": "IRCTC <ticketadmin@irctc.co.in>",
+      "subject": "E-Ticket Booked — PNR 2458109763",
+      "result": {
+        "category": "train",
+        "schemaType": "TrainReservation",
+        "data": {
+          "pnr": "2458109763",
+          "operator": "IRCTC",
+          "trainNumber": "12658",
+          "trainName": "KSR Bengaluru City Express",
+          "departureStation": "KSR Bengaluru",
+          "arrivalStation": "Chennai Central",
+          "departureTime": "2026-09-20T22:40",
+          "arrivalTime": "05:45",
+          "classOfTravel": "3A",
+          "coach": "B4",
+          "berth": "32 Side Lower",
+          "fare": {
+            "amount": 1245,
+            "currency": "INR",
+            "raw": "Rs. 1,245"
+          }
+        },
+        "confidence": "high",
+        "missing": [],
+        "partial": [
+          "arrivalTime"
+        ],
+        "score": 0.838,
+        "provenance": {
+          "pnr": {
+            "source": "text",
+            "quote": "2458109763",
+            "start": 22,
+            "end": 32,
+            "rule": "id.pnr"
+          },
+          "operator": {
+            "source": "sender",
+            "quote": "IRCTC",
+            "start": 0,
+            "end": 5,
+            "rule": "train.operator.sender"
+          },
+          "trainNumber": {
+            "source": "text",
+            "quote": "12658",
+            "start": 100,
+            "end": 105,
+            "rule": "id.trainNumber"
+          },
+          "trainName": {
+            "source": "text",
+            "quote": "KSR Bengaluru City Express",
+            "start": 108,
+            "end": 134,
+            "rule": "train.name.suffixed>clean"
+          },
+          "departureStation": {
+            "source": "text",
+            "quote": "KSR Bengaluru",
+            "start": 180,
+            "end": 193,
+            "rule": "train.from:label(From)>clean"
+          },
+          "arrivalStation": {
+            "source": "text",
+            "quote": "Chennai Central",
+            "start": 198,
+            "end": 213,
+            "rule": "train.to:label(To)>clean"
+          },
+          "departureTime": {
+            "source": "text",
+            "quote": "22:40",
+            "start": 230,
+            "end": 235,
+            "rule": "train.departTime:label(Departure time)>date>train.departureTime",
+            "derived": true
+          },
+          "arrivalTime": {
+            "source": "text",
+            "quote": "05:45",
+            "start": 250,
+            "end": 255,
+            "rule": "train.arriveTime:label(Arrival time)>date>train.arrivalTimeOnly",
+            "derived": true
+          },
+          "classOfTravel": {
+            "source": "text",
+            "quote": "3A",
+            "start": 142,
+            "end": 144,
+            "rule": "train.class:label(Class)>clean"
+          },
+          "coach": {
+            "source": "text",
+            "quote": "B4",
+            "start": 263,
+            "end": 265,
+            "rule": "train.coach"
+          },
+          "berth": {
+            "source": "text",
+            "quote": "32 Side Lower",
+            "start": 273,
+            "end": 286,
+            "rule": "train.berth"
+          },
+          "fare": {
+            "source": "text",
+            "quote": "Rs. 1,245",
+            "start": 299,
+            "end": 308,
+            "rule": "train.fare:label(Total fare)>money"
+          }
+        },
+        "signals": [
+          {
+            "category": "train",
+            "score": 0.633
+          },
+          {
+            "category": "flight",
+            "score": 0.532
+          },
+          {
+            "category": "event",
+            "score": 0.219
+          }
+        ],
+        "method": "rules",
+        "notes": {
+          "arrivalTime": "Arrival clock time precedes departure (overnight journey); the email does not state the arrival date."
+        }
+      }
+    },
+    {
+      "id": "train-irctc-messy",
+      "from": "IRCTC <no-reply@irctc.co.in>",
+      "subject": "Ticket Confirmed",
+      "result": {
+        "category": "train",
+        "schemaType": "TrainReservation",
+        "data": {
+          "pnr": "6821904455",
+          "operator": "IRCTC",
+          "trainNumber": "12622",
+          "trainName": "Tamil Nadu Express",
+          "departureStation": "New Delhi",
+          "arrivalStation": "Chennai Central",
+          "departureTime": "2026-09-05T22:30",
+          "classOfTravel": "Sleeper",
+          "coach": "B2",
+          "berth": "14 Upper",
+          "fare": {
+            "amount": 780,
+            "currency": "INR",
+            "raw": "INR 780"
+          }
+        },
+        "confidence": "high",
+        "missing": [],
+        "score": 0.882,
+        "provenance": {
+          "pnr": {
+            "source": "text",
+            "quote": "6821904455",
+            "start": 23,
+            "end": 33,
+            "rule": "id.pnr"
+          },
+          "operator": {
+            "source": "sender",
+            "quote": "IRCTC",
+            "start": 0,
+            "end": 5,
+            "rule": "train.operator.sender"
+          },
+          "trainNumber": {
+            "source": "text",
+            "quote": "12622",
+            "start": 40,
+            "end": 45,
+            "rule": "id.trainNumber"
+          },
+          "trainName": {
+            "source": "text",
+            "quote": "Tamil Nadu Express",
+            "start": 46,
+            "end": 64,
+            "rule": "train.name.suffixed>clean"
+          },
+          "departureStation": {
+            "source": "text",
+            "quote": "New Delhi",
+            "start": 108,
+            "end": 117,
+            "rule": "train.from:label(Boarding station)>clean"
+          },
+          "arrivalStation": {
+            "source": "text",
+            "quote": "Chennai Central",
+            "start": 139,
+            "end": 154,
+            "rule": "train.to:label(Destination station)>clean"
+          },
+          "departureTime": {
+            "source": "text",
+            "quote": "22:30",
+            "start": 166,
+            "end": 171,
+            "rule": "train.departTime:label(Departure)>date>train.departureTime",
+            "derived": true
+          },
+          "classOfTravel": {
+            "source": "text",
+            "quote": "Sleeper",
+            "start": 214,
+            "end": 221,
+            "rule": "train.class:label(Class of travel)>clean"
+          },
+          "coach": {
+            "source": "text",
+            "quote": "B2",
+            "start": 178,
+            "end": 180,
+            "rule": "train.coach"
+          },
+          "berth": {
+            "source": "text",
+            "quote": "14 Upper",
+            "start": 188,
+            "end": 196,
+            "rule": "train.berth"
+          },
+          "fare": {
+            "source": "text",
+            "quote": "INR 780",
+            "start": 228,
+            "end": 235,
+            "rule": "train.fare:label(Fare)>money"
+          }
+        },
+        "signals": [
+          {
+            "category": "train",
+            "score": 0.607
+          },
+          {
+            "category": "flight",
+            "score": 0.551
+          },
+          {
+            "category": "event",
+            "score": 0.219
+          }
+        ],
+        "method": "rules"
+      }
+    },
+    {
+      "id": "bus-redbus-clean",
+      "from": "redBus <noreply@redbus.in>",
+      "subject": "Booking Confirmed — Ticket ID RB88213401",
+      "result": {
+        "category": "bus",
+        "schemaType": "BusReservation",
+        "data": {
+          "bookingId": "RB88213401",
+          "operator": "Orange Travels",
+          "from": "Bengaluru",
+          "to": "Hyderabad",
+          "departureTime": "2026-09-21T21:30",
+          "arrivalTime": "2026-09-22T06:15",
+          "seats": [
+            "U12",
+            "U13"
+          ],
+          "boardingPoint": "Madiwala, Silk Board",
+          "fare": {
+            "amount": 1450,
+            "currency": "INR",
+            "raw": "Rs. 1,450"
+          }
+        },
+        "confidence": "high",
+        "missing": [],
+        "score": 0.882,
+        "provenance": {
+          "bookingId": {
+            "source": "text",
+            "quote": "RB88213401",
+            "start": 84,
+            "end": 94,
+            "rule": "id.booking"
+          },
+          "operator": {
+            "source": "text",
+            "quote": "Orange Travels",
+            "start": 105,
+            "end": 119,
+            "rule": "bus.operator:label(Operator)>clean"
+          },
+          "from": {
+            "source": "text",
+            "quote": "Bengaluru",
+            "start": 126,
+            "end": 135,
+            "rule": "bus.from:label(From)>clean"
+          },
+          "to": {
+            "source": "text",
+            "quote": "Hyderabad",
+            "start": 140,
+            "end": 149,
+            "rule": "bus.to:label(To)>clean"
+          },
+          "departureTime": {
+            "source": "text",
+            "quote": "21 Sep 2026, 21:30",
+            "start": 161,
+            "end": 179,
+            "rule": "bus.departureTime:label(Departure)>date>bus.departureTime",
+            "derived": true
+          },
+          "arrivalTime": {
+            "source": "text",
+            "quote": "22 Sep 2026, 06:15",
+            "start": 189,
+            "end": 207,
+            "rule": "bus.arrivalTime:label(Arrival)>date>bus.arrivalTime",
+            "derived": true
+          },
+          "seats": {
+            "source": "text",
+            "quote": "U12, U13",
+            "start": 222,
+            "end": 230,
+            "rule": "bus.seats:label(Seat numbers)>bus.seats",
+            "derived": true
+          },
+          "boardingPoint": {
+            "source": "text",
+            "quote": "Madiwala, Silk Board",
+            "start": 247,
+            "end": 267,
+            "rule": "bus.boardingPoint:label(Boarding point)>clean"
+          },
+          "fare": {
+            "source": "text",
+            "quote": "Rs. 1,450",
+            "start": 280,
+            "end": 289,
+            "rule": "bus.fare:label(Total fare)>money"
+          }
+        },
+        "signals": [
+          {
+            "category": "bus",
+            "score": 0.607
+          },
+          {
+            "category": "event",
+            "score": 0.443
+          },
+          {
+            "category": "flight",
+            "score": 0.375
+          }
+        ],
+        "method": "rules"
+      }
+    },
+    {
+      "id": "bus-abhibus-html",
+      "from": "AbhiBus <tickets@abhibus.com>",
+      "subject": "Your ticket for Bengaluru to Chennai",
+      "result": {
+        "category": "bus",
+        "schemaType": "BusReservation",
+        "data": {
+          "bookingId": "AB5521190",
+          "operator": "VRL Travels",
+          "from": "Bengaluru",
+          "to": "Chennai",
+          "departureTime": "2026-09-20T23:00",
+          "boardingPoint": "Anand Rao Circle",
+          "fare": {
+            "amount": 980,
+            "currency": "INR",
+            "raw": "Rs. 980"
+          }
+        },
+        "confidence": "high",
+        "missing": [],
+        "score": 0.857,
+        "provenance": {
+          "bookingId": {
+            "source": "text",
+            "quote": "AB5521190",
+            "start": 49,
+            "end": 58,
+            "rule": "id.booking"
+          },
+          "operator": {
+            "source": "text",
+            "quote": "VRL Travels",
+            "start": 69,
+            "end": 80,
+            "rule": "bus.operator:label(Operator)>clean"
+          },
+          "from": {
+            "source": "text",
+            "quote": "Bengaluru",
+            "start": 87,
+            "end": 96,
+            "rule": "bus.from:label(From)>clean"
+          },
+          "to": {
+            "source": "text",
+            "quote": "Chennai",
+            "start": 101,
+            "end": 108,
+            "rule": "bus.to:label(To)>clean"
+          },
+          "departureTime": {
+            "source": "text",
+            "quote": "20 Sep 2026, 23:00",
+            "start": 120,
+            "end": 138,
+            "rule": "bus.departureTime:label(Departure)>date>bus.departureTime",
+            "derived": true
+          },
+          "boardingPoint": {
+            "source": "text",
+            "quote": "Anand Rao Circle",
+            "start": 155,
+            "end": 171,
+            "rule": "bus.boardingPoint:label(Boarding point)>clean"
+          },
+          "fare": {
+            "source": "text",
+            "quote": "Rs. 980",
+            "start": 178,
+            "end": 185,
+            "rule": "bus.fare:label(Fare)>money"
+          }
+        },
+        "signals": [
+          {
+            "category": "event",
+            "score": 0.519
+          },
+          {
+            "category": "bus",
+            "score": 0.507
+          },
+          {
+            "category": "flight",
+            "score": 0.375
+          }
+        ],
+        "method": "rules"
+      }
+    },
+    {
+      "id": "hotel-makemytrip-clean",
+      "from": "MakeMyTrip <bookings@makemytrip.com>",
+      "subject": "Hotel Booking Confirmed — MMT99871",
+      "result": {
+        "category": "hotel",
+        "schemaType": "LodgingReservation",
+        "data": {
+          "bookingId": "MMT99871",
+          "hotel": "Treebo Trend Grand Palace",
+          "location": "Koramangala, Bengaluru",
+          "checkIn": "2026-10-04",
+          "checkOut": "2026-10-06",
+          "nights": 2,
+          "roomType": "Deluxe Room",
+          "guests": "2 Adults",
+          "total": {
+            "amount": 4200,
+            "currency": "INR",
+            "raw": "Rs. 4,200"
+          }
+        },
+        "confidence": "high",
+        "missing": [],
+        "score": 0.905,
+        "provenance": {
+          "bookingId": {
+            "source": "text",
+            "quote": "MMT99871",
+            "start": 81,
+            "end": 89,
+            "rule": "id.booking"
+          },
+          "hotel": {
+            "source": "text",
+            "quote": "Treebo Trend Grand Palace",
+            "start": 97,
+            "end": 122,
+            "rule": "hotel.name:label(Hotel)>clean"
+          },
+          "location": {
+            "source": "text",
+            "quote": "Koramangala, Bengaluru",
+            "start": 133,
+            "end": 155,
+            "rule": "hotel.location:label(Location)>clean"
+          },
+          "checkIn": {
+            "source": "text",
+            "quote": "04 Oct 2026",
+            "start": 166,
+            "end": 177,
+            "rule": "hotel.checkIn:label(Check-in)>date>hotel.checkIn",
+            "derived": true
+          },
+          "checkOut": {
+            "source": "text",
+            "quote": "06 Oct 2026",
+            "start": 189,
+            "end": 200,
+            "rule": "hotel.checkOut:label(Check-out)>date>hotel.checkOut",
+            "derived": true
+          },
+          "nights": {
+            "source": "text",
+            "quote": "04 Oct 2026\nCheck-out: 06 Oct 2026",
+            "start": 166,
+            "end": 200,
+            "rule": "hotel.checkIn:label(Check-in)>date>hotel.nights",
+            "derived": true
+          },
+          "roomType": {
+            "source": "text",
+            "quote": "Deluxe Room",
+            "start": 212,
+            "end": 223,
+            "rule": "hotel.roomType:label(Room type)>clean"
+          },
+          "guests": {
+            "source": "text",
+            "quote": "2 Adults",
+            "start": 232,
+            "end": 240,
+            "rule": "hotel.guests:label(Guests)>clean"
+          },
+          "total": {
+            "source": "text",
+            "quote": "Rs. 4,200",
+            "start": 255,
+            "end": 264,
+            "rule": "hotel.total:label(Total amount)>money"
+          }
+        },
+        "signals": [
+          {
+            "category": "hotel",
+            "score": 0.7
+          },
+          {
+            "category": "event",
+            "score": 0.444
+          }
+        ],
+        "method": "rules"
+      }
+    },
+    {
+      "id": "hotel-oyo-messy",
+      "from": "OYO Rooms <bookings@oyorooms.com>",
+      "subject": "Your stay is booked!",
+      "result": {
+        "category": "hotel",
+        "schemaType": "LodgingReservation",
+        "data": {
+          "bookingId": "OYO7723145",
+          "checkIn": "2026-12-10",
+          "checkOut": "2026-12-11",
+          "nights": 1,
+          "roomType": "Standard",
+          "total": {
+            "amount": 1899,
+            "currency": "INR",
+            "raw": "Rs. 1,899"
+          }
+        },
+        "confidence": "high",
+        "missing": [
+          "hotel"
+        ],
+        "score": 0.809,
+        "provenance": {
+          "bookingId": {
+            "source": "text",
+            "quote": "OYO7723145",
+            "start": 82,
+            "end": 92,
+            "rule": "id.booking"
+          },
+          "checkIn": {
+            "source": "text",
+            "quote": "10/12/2026",
+            "start": 103,
+            "end": 113,
+            "rule": "hotel.checkIn:label(Check-in)>date>hotel.checkIn",
+            "derived": true
+          },
+          "checkOut": {
+            "source": "text",
+            "quote": "11/12/2026",
+            "start": 125,
+            "end": 135,
+            "rule": "hotel.checkOut:label(Check-out)>date>hotel.checkOut",
+            "derived": true
+          },
+          "nights": {
+            "source": "text",
+            "quote": "10/12/2026\nCheck-out: 11/12/2026",
+            "start": 103,
+            "end": 135,
+            "rule": "hotel.checkIn:label(Check-in)>date>hotel.nights",
+            "derived": true
+          },
+          "roomType": {
+            "source": "text",
+            "quote": "Standard",
+            "start": 151,
+            "end": 159,
+            "rule": "hotel.roomType:label(Room category)>clean"
+          },
+          "total": {
+            "source": "text",
+            "quote": "Rs. 1,899",
+            "start": 173,
+            "end": 182,
+            "rule": "hotel.total:label(Amount paid)>money"
+          }
+        },
+        "signals": [
+          {
+            "category": "hotel",
+            "score": 0.615
+          },
+          {
+            "category": "event",
+            "score": 0.444
+          }
+        ],
+        "method": "rules",
+        "warnings": [
+          "Numeric date could be read day-first or month-first; day-first assumed."
+        ]
+      }
+    },
+    {
+      "id": "hotel-treebo-jsonld",
+      "from": "Treebo <no-reply@treebo.com>",
+      "subject": "Booking confirmed",
+      "result": {
+        "category": "hotel",
+        "schemaType": "LodgingReservation",
+        "data": {
+          "bookingId": "TRB44210",
+          "hotel": "Treebo Trend Grand Palace",
+          "checkIn": "2026-10-04T14:00",
+          "checkOut": "2026-10-06T11:00",
+          "total": {
+            "amount": 4200,
+            "currency": "INR",
+            "raw": "INR 4200"
+          }
+        },
+        "confidence": "high",
+        "missing": [],
+        "score": 0.875,
+        "provenance": {
+          "bookingId": {
+            "source": "jsonld",
+            "quote": "LodgingReservation.bookingId",
+            "start": 0,
+            "end": 0,
+            "rule": "jsonld.map"
+          },
+          "hotel": {
+            "source": "jsonld",
+            "quote": "LodgingReservation.hotel",
+            "start": 0,
+            "end": 0,
+            "rule": "jsonld.map"
+          },
+          "checkIn": {
+            "source": "jsonld",
+            "quote": "LodgingReservation.checkIn",
+            "start": 0,
+            "end": 0,
+            "rule": "jsonld.map"
+          },
+          "checkOut": {
+            "source": "jsonld",
+            "quote": "LodgingReservation.checkOut",
+            "start": 0,
+            "end": 0,
+            "rule": "jsonld.map"
+          },
+          "total": {
+            "source": "jsonld",
+            "quote": "LodgingReservation.total",
+            "start": 0,
+            "end": 0,
+            "rule": "jsonld.map"
+          }
+        },
+        "signals": [],
+        "method": "jsonld"
+      }
+    },
+    {
+      "id": "cab-uber-clean",
+      "from": "Uber Receipts <receipts@uber.com>",
+      "subject": "Your ride is confirmed",
+      "result": {
+        "category": "cab",
+        "schemaType": "RentalCarReservation",
+        "data": {
+          "bookingId": "UBR33871",
+          "provider": "Uber Receipts",
+          "pickup": "Koramangala 5th Block",
+          "drop": "Kempegowda International Airport",
+          "pickupTime": "2026-09-20T05:30",
+          "vehicle": "Sedan",
+          "fare": {
+            "amount": 890,
+            "currency": "INR",
+            "raw": "Rs. 890"
+          }
+        },
+        "confidence": "high",
+        "missing": [],
+        "score": 0.898,
+        "provenance": {
+          "bookingId": {
+            "source": "text",
+            "quote": "UBR33871",
+            "start": 36,
+            "end": 44,
+            "rule": "id.booking"
+          },
+          "provider": {
+            "source": "sender",
+            "quote": "Uber Receipts",
+            "start": 0,
+            "end": 13,
+            "rule": "cab.provider.sender"
+          },
+          "pickup": {
+            "source": "text",
+            "quote": "Koramangala 5th Block",
+            "start": 62,
+            "end": 83,
+            "rule": "cab.pickup:label(Pickup location)>clean"
+          },
+          "drop": {
+            "source": "text",
+            "quote": "Kempegowda International Airport",
+            "start": 99,
+            "end": 131,
+            "rule": "cab.drop:label(Drop location)>clean"
+          },
+          "pickupTime": {
+            "source": "text",
+            "quote": "20 Sep 2026, 05:30",
+            "start": 152,
+            "end": 170,
+            "rule": "cab.when:label(Pickup date & time)>date>cab.pickupTime",
+            "derived": true
+          },
+          "vehicle": {
+            "source": "text",
+            "quote": "Sedan",
+            "start": 180,
+            "end": 185,
+            "rule": "cab.vehicle:label(Vehicle)>clean"
+          },
+          "fare": {
+            "source": "text",
+            "quote": "Rs. 890",
+            "start": 201,
+            "end": 208,
+            "rule": "cab.fare:label(Fare estimate)>money"
+          }
+        },
+        "signals": [
+          {
+            "category": "cab",
+            "score": 0.67
+          },
+          {
+            "category": "event",
+            "score": 0.34
+          }
+        ],
+        "method": "rules"
+      }
+    },
+    {
+      "id": "cab-ola-messy",
+      "from": "Ola <no-reply@olacabs.com>",
+      "subject": "Trip confirmed",
+      "result": {
+        "category": "cab",
+        "schemaType": "RentalCarReservation",
+        "data": {
+          "bookingId": "OLA9812345",
+          "provider": "Ola",
+          "pickup": "Indiranagar",
+          "drop": "Whitefield",
+          "pickupTime": "09:15"
+        },
+        "confidence": "high",
+        "missing": [],
+        "partial": [
+          "pickupTime"
+        ],
+        "score": 0.837,
+        "provenance": {
+          "bookingId": {
+            "source": "text",
+            "quote": "OLA9812345",
+            "start": 51,
+            "end": 61,
+            "rule": "id.booking"
+          },
+          "provider": {
+            "source": "sender",
+            "quote": "Ola",
+            "start": 0,
+            "end": 3,
+            "rule": "cab.provider.sender"
+          },
+          "pickup": {
+            "source": "text",
+            "quote": "Indiranagar",
+            "start": 77,
+            "end": 88,
+            "rule": "cab.pickup:label(Pickup point)>clean"
+          },
+          "drop": {
+            "source": "text",
+            "quote": "Whitefield",
+            "start": 101,
+            "end": 111,
+            "rule": "cab.drop:label(Drop point)>clean"
+          },
+          "pickupTime": {
+            "source": "text",
+            "quote": "09:15",
+            "start": 126,
+            "end": 131,
+            "rule": "cab.when:label(Scheduled at)>date>cab.pickupTime",
+            "derived": true
+          }
+        },
+        "signals": [
+          {
+            "category": "cab",
+            "score": 0.628
+          },
+          {
+            "category": "event",
+            "score": 0.34
+          },
+          {
+            "category": "bus",
+            "score": 0.255
+          }
+        ],
+        "method": "rules",
+        "notes": {
+          "pickupTime": "Pickup time found but no date stated."
+        }
+      }
+    },
+    {
+      "id": "travel-promo-decoy",
+      "from": "MakeMyTrip Offers <offers@makemytrip.com>",
+      "subject": "Flat 40% OFF your next hotel booking!",
+      "result": {
+        "category": "none",
+        "schemaType": null,
+        "data": null,
+        "confidence": "high",
+        "missing": [],
+        "reason": "Marketing markers present (percent-off@subject, flat-discount@subject, use-code, promo-code, tnc-apply). No transactional anchor found — the email carries no booking, order, tracking, appointment or statement identifier, and no amount tied to a due date. Closest category was 'hotel' on wording alone (0.26), but its identifying fields are absent.",
+        "score": 0.95,
+        "signals": [
+          {
+            "category": "hotel",
+            "score": 0.265
+          }
+        ],
+        "method": "none"
+      }
+    }
+  ]
+}

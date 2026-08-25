@@ -1,0 +1,30 @@
+{
+  "_about": "Restaurant category added beyond the original brief. Synthetic emails, multiple vendors including a prose-only messy format, plus one restaurant-family promo decoy. No real user data.",
+  "targetSchemas": {
+    "restaurant": "FoodEstablishmentReservation — { bookingId, restaurant, location, dateTime, partySize, table }",
+    "none": "(not a transaction — e.g. marketing)"
+  },
+  "buildThese": ["restaurant"],
+  "cases": [
+    {
+      "id": "restaurant-dineout-clean",
+      "from": "Zomato Dineout <bookings@dineout.co.in>",
+      "subject": "Table Reserved — Booking ID DO4471293",
+      "body": "Your table reservation is confirmed.\nBooking ID: DO4471293\nRestaurant: Toit Brewpub\nLocation: Indiranagar, Bengaluru\nDate & time: 20 Sep 2026, 20:30\nParty size: 4\nTable: T12"
+    },
+    {
+      "id": "restaurant-eazydiner-messy",
+      "from": "EazyDiner <reservations@eazydiner.com>",
+      "subject": "Reservation confirmed at Truffles",
+      "body": "Your reservation at Truffles is confirmed for 2 guests on 21 Sep 2026 at 19:00.\nBooking reference: ED8871234",
+      "note": "No labels at all — restaurant name, date/time and party size all read from prose."
+    },
+    {
+      "id": "restaurant-promo-decoy",
+      "from": "EazyDiner Offers <offers@eazydiner.com>",
+      "subject": "Flat 30% off your next dine-out!",
+      "body": "Craving something new? Book a table at any partner restaurant and get flat 30% off your bill. Use code DINE30. Limited period offer. T&Cs apply.",
+      "expected": { "category": "none" }
+    }
+  ]
+}

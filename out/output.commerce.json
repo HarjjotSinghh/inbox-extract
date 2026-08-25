@@ -88,6 +88,10 @@
           {
             "category": "flight",
             "score": 0.7
+          },
+          {
+            "category": "train",
+            "score": 0.39
           }
         ],
         "method": "rules"
@@ -292,6 +296,10 @@
           {
             "category": "subscription",
             "score": 0.665
+          },
+          {
+            "category": "insurance",
+            "score": 0.314
           },
           {
             "category": "credit-card",
