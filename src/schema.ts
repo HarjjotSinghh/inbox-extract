@@ -10,6 +10,11 @@
 
 export const SCHEMA = {
   flightReservation: 'FlightReservation',
+  trainReservation: 'TrainReservation',
+  busReservation: 'BusReservation',
+  lodgingReservation: 'LodgingReservation',
+  rentalCarReservation: 'RentalCarReservation',
+  foodEstablishmentReservation: 'FoodEstablishmentReservation',
   eventReservation: 'EventReservation',
   reservation: 'Reservation',
   order: 'Order',
@@ -18,12 +23,18 @@ export const SCHEMA = {
 } as const;
 
 /**
- * No schema.org type models a subscription renewal notice. Rather than bend it
- * into Invoice (which implies an amount already payable) we namespace a local
- * type, so a consumer can never mistake it for standard vocabulary.
+ * No schema.org type models these, or the brief's own name for it
+ * (`MedicalAppointment`) is not real schema.org vocabulary. Rather than bend a
+ * real type to fit (Invoice implies an amount already payable; medical instead
+ * reuses Reservation, which is real) we namespace a local type, so a consumer
+ * can never mistake it for standard vocabulary. See DECISIONS.md for the full
+ * per-category rationale.
  */
 export const LOCAL = {
   subscriptionRenewal: 'inbox:SubscriptionRenewal',
+  loanInstallment: 'inbox:LoanInstallment',
+  insurancePolicy: 'inbox:InsurancePolicy',
+  payslip: 'inbox:Payslip',
 } as const;
 
 export const ORDER_STATUS = {

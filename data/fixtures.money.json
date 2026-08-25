@@ -1,0 +1,65 @@
+{
+  "_about": "Money categories added beyond the original brief: loan, insurance, salary. Synthetic emails, multiple vendors including a messy HTML format, plus two money-family promo decoys — a pre-approved-loan blast and an insurance-renewal offer, the most realistic Indian false positives in this domain. No real user data.",
+  "targetSchemas": {
+    "loan": "inbox:LoanInstallment — { lender, loanAccountId, emiAmount, dueDate, installmentNumber, outstanding, status }",
+    "insurance": "inbox:InsurancePolicy — { insurer, policyNumber, policyType, premium, renewalDate, sumInsured }",
+    "salary": "inbox:Payslip (sensitive) — { employer, payPeriod, netPay, grossPay, deductions, creditDate, payslipId }",
+    "none": "(not a transaction — e.g. marketing)"
+  },
+  "buildThese": ["loan", "insurance", "salary"],
+  "cases": [
+    {
+      "id": "loan-bajaj-clean",
+      "from": "Bajaj Finserv <loans@bajajfinserv.in>",
+      "subject": "EMI Due Reminder — Loan A/c LN88213045",
+      "body": "Dear Customer,\nLender: Bajaj Finserv\nLoan Account Number: LN88213045\nEMI amount: Rs. 8,450\nDue date: 25 Sep 2026\nInstallment no: 14\nOutstanding principal: Rs. 1,25,000"
+    },
+    {
+      "id": "loan-hdfc-messy",
+      "from": "HDFC Bank <loans@hdfcbank.net>",
+      "subject": "Your EMI of Rs. 12,300 is due on 20 Sep 2026",
+      "body": "Your EMI of Rs. 12,300 for Personal Loan is due on 20 Sep 2026.\nLoan Account Number: HDFCPL5521190\nInstallment no: 7",
+      "note": "Due date stated in prose, no label — exercises the generic 'due on' date pattern shared with bill.ts."
+    },
+    {
+      "id": "loan-promo-decoy",
+      "from": "Bajaj Finserv <offers@bajajfinserv.in>",
+      "subject": "Pre-approved personal loan of Rs. 5,00,000 waiting for you!",
+      "body": "Congratulations! You are pre-approved for a personal loan of Rs. 5,00,000 at just 10.5% interest. Apply now and get instant disbursal. T&Cs apply.",
+      "expected": { "category": "none" }
+    },
+    {
+      "id": "insurance-lic-clean",
+      "from": "LIC of India <service@licindia.in>",
+      "subject": "Premium Due — Policy No 998877665544",
+      "body": "Dear Policyholder,\nInsurer: LIC of India\nPolicy number: 998877665544\nThis is a term insurance policy.\nPremium amount: Rs. 24,500\nPolicy renewal date: 30 Sep 2026\nSum insured: Rs. 50,00,000"
+    },
+    {
+      "id": "insurance-hdfcergo-html",
+      "from": "HDFC ERGO <renewals@hdfcergo.com>",
+      "subject": "Renew your motor insurance policy",
+      "body": "<html><body><p>Your motor insurance policy is due for renewal.</p><table><tr><td>Policy No</td><td>HE4487213</td></tr><tr><td>Premium</td><td>Rs. 5,200</td></tr><tr><td>Expiry date</td><td>15 Oct 2026</td></tr></table></body></html>",
+      "note": "HTML table format; policy type read from prose, not a label."
+    },
+    {
+      "id": "insurance-promo-decoy",
+      "from": "Policybazaar <offers@policybazaar.com>",
+      "subject": "Renew your health insurance and get 20% cashback!",
+      "body": "Don't let your health insurance lapse! Renew today and get 20% cashback plus a free health checkup. Limited period offer. T&Cs apply.",
+      "expected": { "category": "none" }
+    },
+    {
+      "id": "salary-payslip-clean",
+      "from": "Acme Corp HR <payroll@acmecorp.in>",
+      "subject": "Payslip for September 2026",
+      "body": "Dear Employee,\nEmployer: Acme Corp\nPay period: September 2026\nGross pay: Rs. 85,000\nTotal deductions: Rs. 12,300\nNet pay: Rs. 72,700\nCredited on: 30 Sep 2026\nPayslip ID: PS-2026-09-4471"
+    },
+    {
+      "id": "salary-messy",
+      "from": "Zenith Technologies <hr@zenithtech.in>",
+      "subject": "Your September Payslip",
+      "body": "Salary for September 2026 has been processed.\nNet salary: Rs. 55,000\nCredited on: 01 Oct 2026\nPayslip no: ZT-9982",
+      "note": "No 'Pay period:' label, only prose — payPeriod expected absent, not fabricated."
+    }
+  ]
+}

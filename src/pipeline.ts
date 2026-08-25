@@ -7,10 +7,16 @@ import { ground } from './ground.ts';
 import { readJsonLd } from './jsonld.ts';
 import { Doc } from './normalize.ts';
 import { DEFAULT_DUE_SOON_DAYS } from './status.ts';
-import type { Category, Email, ExtractOptions, ExtractionResult, Method } from './types.ts';
+import type { Email, ExtractOptions, ExtractionResult, Method } from './types.ts';
 
-/** How many classifier candidates actually get an extractor run. */
-const MAX_CANDIDATES = 3;
+/**
+ * How many classifier candidates actually get an extractor run. Sized for the
+ * largest collision family (travel: flight/train/bus/hotel/cab share PNR and
+ * booking-id vocabulary) plus headroom — extraction disposes, not the
+ * classifier, so a true category outside the top 3 must still get a chance
+ * to prove its anchor.
+ */
+const MAX_CANDIDATES = 6;
 /** Promo score above which a result without a hard identifier is rejected. */
 const PROMO_VETO = 0.6;
 /**
@@ -94,14 +100,14 @@ export function extract(email: Email, options: ExtractOptions = {}): ExtractionR
   attempts.sort((a, b) => b.decision - a.decision);
   const best = attempts[0];
 
-  if (!best) return abstain(doc, ranked, promo.score, promo.promoHits, 'no-anchor');
+  if (!best) return abstain(ranked, promo.score, promo.promoHits, 'no-anchor');
 
   // A blast can occasionally satisfy a soft anchor. A hard identifier is the
   // one thing marketing never carries, so it is what overrides a promo verdict —
   // up to the point where the offer framing is overwhelming, which no amount of
   // anchor rescues.
   if (promo.score >= PROMO_HARD_VETO || (promo.score >= PROMO_VETO && !best.anchorStrong)) {
-    return abstain(doc, ranked, promo.score, promo.promoHits, 'promo-veto');
+    return abstain(ranked, promo.score, promo.promoHits, 'promo-veto');
   }
 
   return assemble(best, promo.score, 'rules', ranked);
@@ -143,7 +149,15 @@ function buildFromSeed(
   ranked: CategoryScore[],
   promoScore: number,
 ): ExtractionResult {
-  const extractor = extractorFor(seed.category);
+  // schema.org's Order has no food-vs-retail split, so jsonld.ts always seeds
+  // 'food' for it. Defer to the classifier's own text signals — already
+  // computed, already passed in — when they clearly favour 'shopping' instead.
+  const category = seed.category === 'food' && (ranked.find((r) => r.category === 'shopping')?.raw ?? 0)
+      > (ranked.find((r) => r.category === 'food')?.raw ?? 0)
+    ? 'shopping'
+    : seed.category;
+
+  const extractor = extractorFor(category);
   const fromText = extractor?.run(ctx) ?? null;
   if (fromText) ground(doc, fromText.data, fromText.provenance);
 
@@ -164,7 +178,7 @@ function buildFromSeed(
   });
 
   return {
-    category: seed.category,
+    category,
     schemaType: seed.schemaType,
     data,
     confidence,
@@ -180,7 +194,6 @@ function buildFromSeed(
 }
 
 function abstain(
-  doc: Doc,
   ranked: CategoryScore[],
   promoScore: number,
   promoHits: string[],

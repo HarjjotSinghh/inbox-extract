@@ -46,6 +46,8 @@ export interface Extractor {
   strongAnchor: AnchorSets;
   /** Enough to build a usable card without a hard identifier. */
   softAnchor: AnchorSets;
+  /** True for categories whose fields are personal, not just transactional (salary). */
+  sensitive?: boolean;
   run(ctx: ExtractorContext): ExtractorOutput | null;
 }
 

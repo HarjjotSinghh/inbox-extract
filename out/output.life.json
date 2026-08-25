@@ -1,0 +1,174 @@
+{
+  "source": "fixtures.life.json",
+  "today": "2026-09-15",
+  "generatedWith": "rules",
+  "cases": [
+    {
+      "id": "restaurant-dineout-clean",
+      "from": "Zomato Dineout <bookings@dineout.co.in>",
+      "subject": "Table Reserved — Booking ID DO4471293",
+      "result": {
+        "category": "restaurant",
+        "schemaType": "FoodEstablishmentReservation",
+        "data": {
+          "bookingId": "DO4471293",
+          "restaurant": "Toit Brewpub",
+          "location": "Indiranagar, Bengaluru",
+          "dateTime": "2026-09-20T20:30",
+          "partySize": 4,
+          "table": "T12"
+        },
+        "confidence": "high",
+        "missing": [],
+        "score": 0.876,
+        "provenance": {
+          "bookingId": {
+            "source": "text",
+            "quote": "DO4471293",
+            "start": 28,
+            "end": 37,
+            "rule": "id.booking"
+          },
+          "restaurant": {
+            "source": "text",
+            "quote": "Toit Brewpub",
+            "start": 110,
+            "end": 122,
+            "rule": "restaurant.name.label:label(Restaurant)>clean"
+          },
+          "location": {
+            "source": "text",
+            "quote": "Indiranagar, Bengaluru",
+            "start": 133,
+            "end": 155,
+            "rule": "restaurant.location:label(Location)>clean"
+          },
+          "dateTime": {
+            "source": "text",
+            "quote": "20 Sep 2026, 20:30",
+            "start": 169,
+            "end": 187,
+            "rule": "restaurant.dateTime:label(Date & time)>date>restaurant.dateTime",
+            "derived": true
+          },
+          "partySize": {
+            "source": "text",
+            "quote": "4",
+            "start": 200,
+            "end": 201,
+            "rule": "restaurant.partySize.label:label(Party size)>restaurant.partySize",
+            "derived": true
+          },
+          "table": {
+            "source": "text",
+            "quote": "T12",
+            "start": 209,
+            "end": 212,
+            "rule": "restaurant.table:label(Table)>clean"
+          }
+        },
+        "signals": [
+          {
+            "category": "restaurant",
+            "score": 0.583
+          },
+          {
+            "category": "event",
+            "score": 0.501
+          },
+          {
+            "category": "food",
+            "score": 0.186
+          }
+        ],
+        "method": "rules"
+      }
+    },
+    {
+      "id": "restaurant-eazydiner-messy",
+      "from": "EazyDiner <reservations@eazydiner.com>",
+      "subject": "Reservation confirmed at Truffles",
+      "result": {
+        "category": "restaurant",
+        "schemaType": "FoodEstablishmentReservation",
+        "data": {
+          "bookingId": "ED8871234",
+          "restaurant": "Truffles",
+          "dateTime": "2026-09-21T19:00",
+          "partySize": 2
+        },
+        "confidence": "high",
+        "missing": [],
+        "score": 0.842,
+        "provenance": {
+          "bookingId": {
+            "source": "text",
+            "quote": "ED8871234",
+            "start": 134,
+            "end": 143,
+            "rule": "id.booking"
+          },
+          "restaurant": {
+            "source": "text",
+            "quote": "Truffles",
+            "start": 55,
+            "end": 63,
+            "rule": "restaurant.name.prose>clean"
+          },
+          "dateTime": {
+            "source": "text",
+            "quote": "21 Sep 2026 at 19:00",
+            "start": 93,
+            "end": 113,
+            "rule": "restaurant.dateTime.on>date>restaurant.dateTime",
+            "derived": true
+          },
+          "partySize": {
+            "source": "text",
+            "quote": "2 guests",
+            "start": 81,
+            "end": 89,
+            "rule": "restaurant.partySize.prose>restaurant.partySize",
+            "derived": true
+          }
+        },
+        "signals": [
+          {
+            "category": "restaurant",
+            "score": 0.448
+          }
+        ],
+        "method": "rules"
+      }
+    },
+    {
+      "id": "restaurant-promo-decoy",
+      "from": "EazyDiner Offers <offers@eazydiner.com>",
+      "subject": "Flat 30% off your next dine-out!",
+      "result": {
+        "category": "none",
+        "schemaType": null,
+        "data": null,
+        "confidence": "high",
+        "missing": [],
+        "reason": "Marketing markers present (percent-off@subject, flat-discount@subject, use-code, tnc-apply, urgency). No transactional anchor found — the email carries no booking, order, tracking, appointment or statement identifier, and no amount tied to a due date. Closest category was 'bill' on wording alone (0.30), but its identifying fields are absent.",
+        "score": 0.95,
+        "signals": [
+          {
+            "category": "bill",
+            "score": 0.3
+          },
+          {
+            "category": "food",
+            "score": 0.186
+          },
+          {
+            "category": "restaurant",
+            "score": 0.167
+          }
+        ],
+        "method": "none"
+      }
+    }
+  ]
+}

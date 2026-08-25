@@ -4,6 +4,10 @@ import { extract } from '../src/index.ts';
 
 const bills = JSON.parse(readFileSync('data/fixtures.bills.json', 'utf8'));
 const commerce = JSON.parse(readFileSync('data/fixtures.commerce.json', 'utf8'));
+const travel = JSON.parse(readFileSync('data/fixtures.travel.json', 'utf8'));
+const shopping = JSON.parse(readFileSync('data/fixtures.shopping.json', 'utf8'));
+const money = JSON.parse(readFileSync('data/fixtures.money.json', 'utf8'));
+const life = JSON.parse(readFileSync('data/fixtures.life.json', 'utf8'));
 const find = (f: any, id: string) => f.cases.find((c: any) => c.id === id);
 const TODAY = '2026-09-15';
 
@@ -54,6 +58,23 @@ describe('marketing must not be extracted as a transaction', () => {
     const decoy = find(commerce, 'promo-decoy');
     const r = extract({ ...decoy, from: 'BookMyShow <tickets@bookmyshow.com>' }, { today: TODAY });
     expect(r.category).toBe('none');
+  });
+
+  /**
+   * The 18-category decoys, one per new fixture family. Loan and insurance
+   * get the realistic Indian phishing shapes (pre-approved loan, renewal
+   * cashback) since those are the categories most exposed to this failure.
+   */
+  it.each([
+    ['travel', travel, 'travel-promo-decoy'],
+    ['shopping', shopping, 'shopping-promo-decoy'],
+    ['money', money, 'loan-promo-decoy'],
+    ['money', money, 'insurance-promo-decoy'],
+    ['life', life, 'restaurant-promo-decoy'],
+  ])('rejects the %s decoy (%s)', (_family, fixture, id) => {
+    const r = extract(find(fixture, id), { today: TODAY });
+    expect(r.category).toBe('none');
+    expect(r.data).toBeNull();
   });
 });
 

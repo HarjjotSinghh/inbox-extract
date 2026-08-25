@@ -1,0 +1,43 @@
+{
+  "_about": "Shopping category added beyond the original brief — same schema.org Order type as food, discriminated by delivery horizon rather than a vendor allowlist. Synthetic emails, multiple retail vendors including a messy HTML format, plus one shopping-family promo decoy. No real user data.",
+  "targetSchemas": {
+    "shopping": "Order — { merchant, orderId, items[], total, status, expectedDelivery }",
+    "none": "(not a transaction — e.g. marketing)"
+  },
+  "buildThese": ["shopping"],
+  "cases": [
+    {
+      "id": "shopping-amazon-clean",
+      "from": "Amazon.in <auto-confirm@amazon.in>",
+      "subject": "Your Amazon.in order of Wireless Mouse and 1 more item",
+      "body": "Your Amazon.in order has been placed.\nOrder ID: 402-1234567-8901234\nItems: 1x Wireless Mouse (₹799), 1x USB-C Cable (₹299)\nOrder total: ₹1,098\nExpected delivery: 22 Sep 2026"
+    },
+    {
+      "id": "shopping-flipkart-html",
+      "from": "Flipkart <noreply@flipkart.com>",
+      "subject": "Order Confirmed — Flipkart",
+      "body": "<html><body><table><tr><td>Order ID</td><td>OD4487213099</td></tr><tr><td>Items</td><td>1x Bluetooth Speaker</td></tr><tr><td>Total amount</td><td>₹2,199</td></tr><tr><td>Expected delivery</td><td>28/09/2026</td></tr></table></body></html>",
+      "note": "HTML table format; numeric date 28/09 is unambiguous (28 cannot be a month)."
+    },
+    {
+      "id": "shopping-myntra-clean",
+      "from": "Myntra <no-reply@myntra.com>",
+      "subject": "Your Myntra order is confirmed!",
+      "body": "Thank you for shopping with Myntra.\nOrder ID: MYN88213456\nItems:\n1x Cotton Shirt (₹1,299)\n1x Denim Jeans (₹1,999)\nOrder total: ₹3,298\nExpected delivery: 25 Sep 2026"
+    },
+    {
+      "id": "shopping-ajio-messy",
+      "from": "AJIO <care@ajio.com>",
+      "subject": "Order placed successfully",
+      "body": "Hey! Thanks for shopping with AJIO. Your order 2 x Running Shoes (₹2,499) has been placed. Order ID AJ7723190. Total: ₹2,499.",
+      "note": "No explicit expected-delivery date stated — expected to be absent, not fabricated."
+    },
+    {
+      "id": "shopping-promo-decoy",
+      "from": "Amazon Deals <deals@amazon.in>",
+      "subject": "Mega Sale: Flat 60% off electronics!",
+      "body": "Our biggest electronics sale is here. Shop now and get flat 60% off. Use code MEGA60. Offer valid till stocks last. T&Cs apply. Unsubscribe.",
+      "expected": { "category": "none" }
+    }
+  ]
+}

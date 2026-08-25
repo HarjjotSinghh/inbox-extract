@@ -69,10 +69,10 @@
      text that value was read from — a field with nothing to highlight cannot be emitted at all.</p>
 </header>
 <div class="metrics">
-  <div class="metric"><b>14</b><span>emails</span></div>
-  <div class="metric"><b>12</b><span>extracted</span></div>
-  <div class="metric"><b>2</b><span>abstained</span></div>
-  <div class="metric"><b>88</b><span>fields, all grounded</span></div>
+  <div class="metric"><b>40</b><span>emails</span></div>
+  <div class="metric"><b>33</b><span>extracted</span></div>
+  <div class="metric"><b>7</b><span>abstained</span></div>
+  <div class="metric"><b>232</b><span>fields, all grounded</span></div>
   <div class="metric"><b>0</b><span>invented fields</span></div>
 </div>
 <section><h2>bills</h2><article class="case" id="flight-ref">
@@ -302,6 +302,428 @@
         <div class="card abstain">
       <div class="card-head"><span class="badge none">none</span><span class="conf high">high</span></div>
       <p class="reason">Marketing markers present (percent-off@subject, flat-discount@subject, get-percent, use-code, tnc-apply). No transactional anchor found — the email carries no booking, order, tracking, appointment or statement identifier, and no amount tied to a due date. Closest category was 'event' on wording alone (0.22), but its identifying fields are absent.</p>
+      <p class="abstain-note">No card is shown because nothing here is a record of a transaction.</p>
+    </div>
+      </div>
+    </article></section><section><h2>travel</h2><article class="case" id="train-irctc-clean">
+      <h3>train-irctc-clean</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="operator">IRCTC</mark> &lt;ticketadmin@irctc.co.in&gt;</div>
+          <div class="body">E-Ticket Booked — PNR <mark data-fields="pnr">2458109763</mark><br><br>Dear Passenger, your booking is confirmed.<br>PNR: 2458109763<br>Train: <mark data-fields="trainNumber">12658</mark> - <mark data-fields="trainName">KSR Bengaluru City Express</mark><br>Class: <mark data-fields="classOfTravel">3A</mark><br>Date of journey: 20 Sep 2026<br>From: <mark data-fields="departureStation">KSR Bengaluru</mark><br>To: <mark data-fields="arrivalStation">Chennai Central</mark><br>Departure time: <mark data-fields="departureTime">22:40</mark><br>Arrival time: <mark data-fields="arrivalTime">05:45</mark><br>Coach: <mark data-fields="coach">B4</mark><br>Berth: <mark data-fields="berth">32 Side Lower</mark><br>Total fare: <mark data-fields="fare">Rs. 1,245</mark></div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge train">train</span>
+      <code class="schema">TrainReservation</code>
+      <span class="conf high">high<em>0.838</em></span>
+    </div>
+    <table><tr data-field="pnr"><th>pnr</th><td>2458109763</td></tr><tr data-field="operator"><th>operator</th><td>IRCTC</td></tr><tr data-field="trainNumber"><th>trainNumber</th><td>12658</td></tr><tr data-field="trainName"><th>trainName</th><td>KSR Bengaluru City Express</td></tr><tr data-field="departureStation"><th>departureStation</th><td>KSR Bengaluru</td></tr><tr data-field="arrivalStation"><th>arrivalStation</th><td>Chennai Central</td></tr><tr data-field="departureTime"><th>departureTime</th><td>2026-09-20T22:40</td></tr><tr data-field="arrivalTime"><th>arrivalTime</th><td>05:45<span class="flag partial" title="Arrival clock time precedes departure (overnight journey); the email does not state the arrival date.">partial</span></td></tr><tr data-field="classOfTravel"><th>classOfTravel</th><td>3A</td></tr><tr data-field="coach"><th>coach</th><td>B4</td></tr><tr data-field="berth"><th>berth</th><td>32 Side Lower</td></tr><tr data-field="fare"><th>fare</th><td><span class="money">₹1,245</span><span class="raw">Rs. 1,245</span></td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="train-irctc-messy">
+      <h3>train-irctc-messy</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="operator">IRCTC</mark> &lt;no-reply@irctc.co.in&gt;</div>
+          <div class="body">Ticket Confirmed<br><br>PNR: <mark data-fields="pnr">6821904455</mark><br>Train <mark data-fields="trainNumber">12622</mark> <mark data-fields="trainName">Tamil Nadu Express</mark><br>Journey date: 05/09/2026<br>Boarding station: <mark data-fields="departureStation">New Delhi</mark><br>Destination station: <mark data-fields="arrivalStation">Chennai Central</mark><br>Departure: <mark data-fields="departureTime">22:30</mark><br>Coach <mark data-fields="coach">B2</mark>, Berth <mark data-fields="berth">14 Upper</mark><br>Class of travel: <mark data-fields="classOfTravel">Sleeper</mark><br>Fare: <mark data-fields="fare">INR 780</mark></div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge train">train</span>
+      <code class="schema">TrainReservation</code>
+      <span class="conf high">high<em>0.882</em></span>
+    </div>
+    <table><tr data-field="pnr"><th>pnr</th><td>6821904455</td></tr><tr data-field="operator"><th>operator</th><td>IRCTC</td></tr><tr data-field="trainNumber"><th>trainNumber</th><td>12622</td></tr><tr data-field="trainName"><th>trainName</th><td>Tamil Nadu Express</td></tr><tr data-field="departureStation"><th>departureStation</th><td>New Delhi</td></tr><tr data-field="arrivalStation"><th>arrivalStation</th><td>Chennai Central</td></tr><tr data-field="departureTime"><th>departureTime</th><td>2026-09-05T22:30</td></tr><tr data-field="classOfTravel"><th>classOfTravel</th><td>Sleeper</td></tr><tr data-field="coach"><th>coach</th><td>B2</td></tr><tr data-field="berth"><th>berth</th><td>14 Upper</td></tr><tr data-field="fare"><th>fare</th><td><span class="money">₹780</span><span class="raw">INR 780</span></td></tr></table>
+    <div class="warn">Numeric date could be read day-first or month-first; day-first assumed.</div>
+  </div>
+      </div>
+    </article><article class="case" id="bus-redbus-clean">
+      <h3>bus-redbus-clean</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from">redBus &lt;noreply@redbus.in&gt;</div>
+          <div class="body">Booking Confirmed — Ticket ID RB88213401<br><br>Your bus ticket is confirmed.<br>Booking ID: <mark data-fields="bookingId">RB88213401</mark><br>Operator: <mark data-fields="operator">Orange Travels</mark><br>From: <mark data-fields="from">Bengaluru</mark><br>To: <mark data-fields="to">Hyderabad</mark><br>Departure: <mark data-fields="departureTime">21 Sep 2026, 21:30</mark><br>Arrival: <mark data-fields="arrivalTime">22 Sep 2026, 06:15</mark><br>Seat numbers: <mark data-fields="seats">U12, U13</mark><br>Boarding point: <mark data-fields="boardingPoint">Madiwala, Silk Board</mark><br>Total fare: <mark data-fields="fare">Rs. 1,450</mark></div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge bus">bus</span>
+      <code class="schema">BusReservation</code>
+      <span class="conf high">high<em>0.895</em></span>
+    </div>
+    <table><tr data-field="bookingId"><th>bookingId</th><td>RB88213401</td></tr><tr data-field="operator"><th>operator</th><td>Orange Travels</td></tr><tr data-field="from"><th>from</th><td>Bengaluru</td></tr><tr data-field="to"><th>to</th><td>Hyderabad</td></tr><tr data-field="departureTime"><th>departureTime</th><td>2026-09-21T21:30</td></tr><tr data-field="arrivalTime"><th>arrivalTime</th><td>2026-09-22T06:15</td></tr><tr data-field="seats"><th>seats</th><td><ul class="list"><li>U12</li><li>U13</li></ul></td></tr><tr data-field="boardingPoint"><th>boardingPoint</th><td>Madiwala, Silk Board</td></tr><tr data-field="fare"><th>fare</th><td><span class="money">₹1,450</span><span class="raw">Rs. 1,450</span></td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="bus-abhibus-html">
+      <h3>bus-abhibus-html</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from">AbhiBus &lt;tickets@abhibus.com&gt;</div>
+          <div class="body">Your ticket for Bengaluru to Chennai<br><br>Booking ID	<mark data-fields="bookingId">AB5521190</mark>	<br>Operator	<mark data-fields="operator">VRL Travels</mark>	<br>From	<mark data-fields="from">Bengaluru</mark>	<br>To	<mark data-fields="to">Chennai</mark>	<br>Departure	<mark data-fields="departureTime">20 Sep 2026, 23:00</mark>	<br>Boarding point	<mark data-fields="boardingPoint">Anand Rao Circle</mark>	<br>Fare	<mark data-fields="fare">Rs. 980</mark>	<br><br>Have a safe journey.</div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge bus">bus</span>
+      <code class="schema">BusReservation</code>
+      <span class="conf high">high<em>0.857</em></span>
+    </div>
+    <table><tr data-field="bookingId"><th>bookingId</th><td>AB5521190</td></tr><tr data-field="operator"><th>operator</th><td>VRL Travels</td></tr><tr data-field="from"><th>from</th><td>Bengaluru</td></tr><tr data-field="to"><th>to</th><td>Chennai</td></tr><tr data-field="departureTime"><th>departureTime</th><td>2026-09-20T23:00</td></tr><tr data-field="boardingPoint"><th>boardingPoint</th><td>Anand Rao Circle</td></tr><tr data-field="fare"><th>fare</th><td><span class="money">₹980</span><span class="raw">Rs. 980</span></td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="hotel-makemytrip-clean">
+      <h3>hotel-makemytrip-clean</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from">MakeMyTrip &lt;bookings@makemytrip.com&gt;</div>
+          <div class="body">Hotel Booking Confirmed — MMT99871<br><br>Your hotel booking is confirmed.<br>Booking ID: <mark data-fields="bookingId">MMT99871</mark><br>Hotel: <mark data-fields="hotel">Treebo Trend Grand Palace</mark><br>Location: <mark data-fields="location">Koramangala, Bengaluru</mark><br>Check-in: <mark data-fields="checkIn nights">04 Oct 2026</mark><mark data-fields="nights"><br>Check-out: </mark><mark data-fields="checkOut nights">06 Oct 2026</mark><br>Room type: <mark data-fields="roomType">Deluxe Room</mark><br>Guests: <mark data-fields="guests">2 Adults</mark><br>Total amount: <mark data-fields="total">Rs. 4,200</mark></div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge hotel">hotel</span>
+      <code class="schema">LodgingReservation</code>
+      <span class="conf high">high<em>0.905</em></span>
+    </div>
+    <table><tr data-field="bookingId"><th>bookingId</th><td>MMT99871</td></tr><tr data-field="hotel"><th>hotel</th><td>Treebo Trend Grand Palace</td></tr><tr data-field="location"><th>location</th><td>Koramangala, Bengaluru</td></tr><tr data-field="checkIn"><th>checkIn</th><td>2026-10-04</td></tr><tr data-field="checkOut"><th>checkOut</th><td>2026-10-06</td></tr><tr data-field="nights"><th>nights</th><td>2</td></tr><tr data-field="roomType"><th>roomType</th><td>Deluxe Room</td></tr><tr data-field="guests"><th>guests</th><td>2 Adults</td></tr><tr data-field="total"><th>total</th><td><span class="money">₹4,200</span><span class="raw">Rs. 4,200</span></td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="hotel-oyo-messy">
+      <h3>hotel-oyo-messy</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from">OYO Rooms &lt;bookings@oyorooms.com&gt;</div>
+          <div class="body">Your stay is booked!<br><br>Booking confirmed at OYO Townhouse Indiranagar.<br>Booking ID: <mark data-fields="bookingId">OYO7723145</mark><br>Check-in: <mark data-fields="checkIn nights">10/12/2026</mark><mark data-fields="nights"><br>Check-out: </mark><mark data-fields="checkOut nights">11/12/2026</mark><br>Room category: <mark data-fields="roomType">Standard</mark><br>Amount paid: <mark data-fields="total">Rs. 1,899</mark></div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge hotel">hotel</span>
+      <code class="schema">LodgingReservation</code>
+      <span class="conf high">high<em>0.809</em></span>
+    </div>
+    <table><tr data-field="bookingId"><th>bookingId</th><td>OYO7723145</td></tr><tr data-field="checkIn"><th>checkIn</th><td>2026-12-10</td></tr><tr data-field="checkOut"><th>checkOut</th><td>2026-12-11</td></tr><tr data-field="nights"><th>nights</th><td>1</td></tr><tr data-field="roomType"><th>roomType</th><td>Standard</td></tr><tr data-field="total"><th>total</th><td><span class="money">₹1,899</span><span class="raw">Rs. 1,899</span></td></tr></table>
+    <div class="missing"><span class="label">missing</span><code>hotel</code><span class="hint">stated nowhere in the email — left empty rather than guessed</span></div><div class="warn">Numeric date could be read day-first or month-first; day-first assumed.</div>
+  </div>
+      </div>
+    </article><article class="case" id="hotel-treebo-jsonld">
+      <h3>hotel-treebo-jsonld</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from">Treebo &lt;no-reply@treebo.com&gt;</div>
+          <div class="body">Booking confirmed<br><br>Your stay is booked.</div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge hotel">hotel</span>
+      <code class="schema">LodgingReservation</code>
+      <span class="conf high">high<em>0.875</em></span>
+    </div>
+    <table><tr data-field="bookingId"><th>bookingId</th><td>TRB44210</td></tr><tr data-field="hotel"><th>hotel</th><td>Treebo Trend Grand Palace</td></tr><tr data-field="checkIn"><th>checkIn</th><td>2026-10-04T14:00</td></tr><tr data-field="checkOut"><th>checkOut</th><td>2026-10-06T11:00</td></tr><tr data-field="total"><th>total</th><td><span class="money">₹4,200</span><span class="raw">INR 4200</span></td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="cab-uber-clean">
+      <h3>cab-uber-clean</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="provider">Uber Receipts</mark> &lt;receipts@uber.com&gt;</div>
+          <div class="body">Your ride is confirmed<br><br>Booking ID: <mark data-fields="bookingId">UBR33871</mark><br>Pickup location: <mark data-fields="pickup">Koramangala 5th Block</mark><br>Drop location: <mark data-fields="drop">Kempegowda International Airport</mark><br>Pickup date &amp; time: <mark data-fields="pickupTime">20 Sep 2026, 05:30</mark><br>Vehicle: <mark data-fields="vehicle">Sedan</mark><br>Fare estimate: <mark data-fields="fare">Rs. 890</mark></div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge cab">cab</span>
+      <code class="schema">RentalCarReservation</code>
+      <span class="conf high">high<em>0.898</em></span>
+    </div>
+    <table><tr data-field="bookingId"><th>bookingId</th><td>UBR33871</td></tr><tr data-field="provider"><th>provider</th><td>Uber Receipts</td></tr><tr data-field="pickup"><th>pickup</th><td>Koramangala 5th Block</td></tr><tr data-field="drop"><th>drop</th><td>Kempegowda International Airport</td></tr><tr data-field="pickupTime"><th>pickupTime</th><td>2026-09-20T05:30</td></tr><tr data-field="vehicle"><th>vehicle</th><td>Sedan</td></tr><tr data-field="fare"><th>fare</th><td><span class="money">₹890</span><span class="raw">Rs. 890</span></td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="cab-ola-messy">
+      <h3>cab-ola-messy</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="provider">Ola</mark> &lt;no-reply@olacabs.com&gt;</div>
+          <div class="body">Trip confirmed<br><br>Your ride is confirmed. Booking ID <mark data-fields="bookingId">OLA9812345</mark>.<br>Pickup point: <mark data-fields="pickup">Indiranagar</mark><br>Drop point: <mark data-fields="drop">Whitefield</mark><br>Scheduled at: <mark data-fields="pickupTime">09:15</mark></div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge cab">cab</span>
+      <code class="schema">RentalCarReservation</code>
+      <span class="conf high">high<em>0.837</em></span>
+    </div>
+    <table><tr data-field="bookingId"><th>bookingId</th><td>OLA9812345</td></tr><tr data-field="provider"><th>provider</th><td>Ola</td></tr><tr data-field="pickup"><th>pickup</th><td>Indiranagar</td></tr><tr data-field="drop"><th>drop</th><td>Whitefield</td></tr><tr data-field="pickupTime"><th>pickupTime</th><td>09:15<span class="flag partial" title="Pickup time found but no date stated.">partial</span></td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="travel-promo-decoy">
+      <h3>travel-promo-decoy</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from">MakeMyTrip Offers &lt;offers@makemytrip.com&gt;</div>
+          <div class="body">Flat 40% OFF your next hotel booking!<br><br>Your next getaway just got cheaper. Book any hotel and get flat 40% off. Use promo code STAYMORE40. Limited time offer, hurry! T&amp;Cs apply. Unsubscribe here.</div>
+        </div>
+        <div class="card abstain">
+      <div class="card-head"><span class="badge none">none</span><span class="conf high">high</span></div>
+      <p class="reason">Marketing markers present (percent-off@subject, flat-discount@subject, use-code, promo-code, tnc-apply). No transactional anchor found — the email carries no booking, order, tracking, appointment or statement identifier, and no amount tied to a due date. Closest category was 'hotel' on wording alone (0.26), but its identifying fields are absent.</p>
+      <p class="abstain-note">No card is shown because nothing here is a record of a transaction.</p>
+    </div>
+      </div>
+    </article></section><section><h2>shopping</h2><article class="case" id="shopping-amazon-clean">
+      <h3>shopping-amazon-clean</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="merchant">Amazon.in</mark> &lt;auto-confirm@amazon.in&gt;</div>
+          <div class="body">Your Amazon.in order of Wireless Mouse and 1 more item<br><br>Your Amazon.in order has been <mark data-fields="orderStatus status">placed</mark>.<br>Order ID: <mark data-fields="orderId">402-1234567-8901234</mark><br>Items: <mark data-fields="items">1x Wireless Mouse (₹799), 1x USB-C Cable (₹299)</mark><br>Order total: <mark data-fields="total">₹1,098</mark><br>Expected delivery: <mark data-fields="expectedDelivery">22 Sep 2026</mark></div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge shopping">shopping</span>
+      <code class="schema">Order</code>
+      <span class="conf high">high<em>0.877</em></span>
+    </div>
+    <table><tr data-field="merchant"><th>merchant</th><td>Amazon.in</td></tr><tr data-field="orderId"><th>orderId</th><td>402-1234567-8901234</td></tr><tr data-field="items"><th>items</th><td><ul class="list"><li><span class="qty">1×</span>Wireless Mouse <span class="money">₹799</span><span class="raw">₹799</span></li><li><span class="qty">1×</span>USB-C Cable <span class="money">₹299</span><span class="raw">₹299</span></li></ul></td></tr><tr data-field="total"><th>total</th><td><span class="money">₹1,098</span><span class="raw">₹1,098</span></td></tr><tr data-field="status"><th>status</th><td>placed</td></tr><tr data-field="orderStatus"><th>orderStatus</th><td><code class="enum">OrderProcessing</code></td></tr><tr data-field="expectedDelivery"><th>expectedDelivery</th><td>2026-09-22</td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="shopping-flipkart-html">
+      <h3>shopping-flipkart-html</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="merchant">Flipkart</mark> &lt;noreply@flipkart.com&gt;</div>
+          <div class="body">Order <mark data-fields="orderStatus status">Confirmed</mark> — Flipkart<br><br>Order ID	<mark data-fields="orderId">OD4487213099</mark>	<br>Items	<mark data-fields="items">1x Bluetooth Speaker</mark>	<br>Total amount	<mark data-fields="total">₹2,199</mark>	<br>Expected delivery	<mark data-fields="expectedDelivery">28/09/2026</mark></div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge shopping">shopping</span>
+      <code class="schema">Order</code>
+      <span class="conf high">high<em>0.877</em></span>
+    </div>
+    <table><tr data-field="merchant"><th>merchant</th><td>Flipkart</td></tr><tr data-field="orderId"><th>orderId</th><td>OD4487213099</td></tr><tr data-field="items"><th>items</th><td><ul class="list"><li><span class="qty">1×</span>Bluetooth Speaker </li></ul></td></tr><tr data-field="total"><th>total</th><td><span class="money">₹2,199</span><span class="raw">₹2,199</span></td></tr><tr data-field="status"><th>status</th><td>confirmed</td></tr><tr data-field="orderStatus"><th>orderStatus</th><td><code class="enum">OrderProcessing</code></td></tr><tr data-field="expectedDelivery"><th>expectedDelivery</th><td>2026-09-28</td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="shopping-myntra-clean">
+      <h3>shopping-myntra-clean</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="merchant">Myntra</mark> &lt;no-reply@myntra.com&gt;</div>
+          <div class="body">Your Myntra order is <mark data-fields="orderStatus status">confirmed</mark>!<br><br>Thank you for shopping with Myntra.<br>Order ID: <mark data-fields="orderId">MYN88213456</mark><br>Items:<br><mark data-fields="items">1x Cotton Shirt (₹1,299)<br>1x Denim Jeans (₹1,999)</mark><br>Order total: <mark data-fields="total">₹3,298</mark><br>Expected delivery: <mark data-fields="expectedDelivery">25 Sep 2026</mark></div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge shopping">shopping</span>
+      <code class="schema">Order</code>
+      <span class="conf high">high<em>0.877</em></span>
+    </div>
+    <table><tr data-field="merchant"><th>merchant</th><td>Myntra</td></tr><tr data-field="orderId"><th>orderId</th><td>MYN88213456</td></tr><tr data-field="items"><th>items</th><td><ul class="list"><li><span class="qty">1×</span>Cotton Shirt <span class="money">₹1,299</span><span class="raw">₹1,299</span></li><li><span class="qty">1×</span>Denim Jeans <span class="money">₹1,999</span><span class="raw">₹1,999</span></li></ul></td></tr><tr data-field="total"><th>total</th><td><span class="money">₹3,298</span><span class="raw">₹3,298</span></td></tr><tr data-field="status"><th>status</th><td>confirmed</td></tr><tr data-field="orderStatus"><th>orderStatus</th><td><code class="enum">OrderProcessing</code></td></tr><tr data-field="expectedDelivery"><th>expectedDelivery</th><td>2026-09-25</td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="shopping-ajio-messy">
+      <h3>shopping-ajio-messy</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="merchant">AJIO</mark> &lt;care@ajio.com&gt;</div>
+          <div class="body">Order <mark data-fields="orderStatus status">placed</mark> successfully<br><br>Hey! Thanks for shopping with AJIO. Your order 2 x Running Shoes (₹2,499) has been placed. Order ID <mark data-fields="orderId">AJ7723190</mark>. Total: <mark data-fields="total">₹2,499</mark>.</div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge shopping">shopping</span>
+      <code class="schema">Order</code>
+      <span class="conf high">high<em>0.781</em></span>
+    </div>
+    <table><tr data-field="merchant"><th>merchant</th><td>AJIO</td></tr><tr data-field="orderId"><th>orderId</th><td>AJ7723190</td></tr><tr data-field="total"><th>total</th><td><span class="money">₹2,499</span><span class="raw">₹2,499</span></td></tr><tr data-field="status"><th>status</th><td>placed</td></tr><tr data-field="orderStatus"><th>orderStatus</th><td><code class="enum">OrderProcessing</code></td></tr></table>
+    <div class="missing"><span class="label">missing</span><code>items</code><span class="hint">stated nowhere in the email — left empty rather than guessed</span></div>
+  </div>
+      </div>
+    </article><article class="case" id="shopping-promo-decoy">
+      <h3>shopping-promo-decoy</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from">Amazon Deals &lt;deals@amazon.in&gt;</div>
+          <div class="body">Mega Sale: Flat 60% off electronics!<br><br>Our biggest electronics sale is here. Shop now and get flat 60% off. Use code MEGA60. Offer valid till stocks last. T&amp;Cs apply. Unsubscribe.</div>
+        </div>
+        <div class="card abstain">
+      <div class="card-head"><span class="badge none">none</span><span class="conf high">high</span></div>
+      <p class="reason">Marketing markers present (percent-off@subject, flat-discount@subject, use-code, tnc-apply, cta-now). No transactional anchor found — the email carries no booking, order, tracking, appointment or statement identifier, and no amount tied to a due date. No category signals matched.</p>
+      <p class="abstain-note">No card is shown because nothing here is a record of a transaction.</p>
+    </div>
+      </div>
+    </article></section><section><h2>money</h2><article class="case" id="loan-bajaj-clean">
+      <h3>loan-bajaj-clean</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from">Bajaj Finserv &lt;loans@bajajfinserv.in&gt;</div>
+          <div class="body">EMI Due Reminder — Loan A/c LN88213045<br><br>Dear Customer,<br>Lender: <mark data-fields="lender">Bajaj Finserv</mark><br>Loan Account Number: <mark data-fields="loanAccountId">LN88213045</mark><br>EMI amount: <mark data-fields="emiAmount">Rs. 8,450</mark><br>Due date: <mark data-fields="dueDate paymentStatus status">25 Sep 2026</mark><br>Installment no: <mark data-fields="installmentNumber">14</mark><br>Outstanding principal: <mark data-fields="outstanding">Rs. 1,25,000</mark></div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge loan">loan</span>
+      <code class="schema">inbox:LoanInstallment</code>
+      <span class="conf high">high<em>0.918</em></span>
+    </div>
+    <table><tr data-field="lender"><th>lender</th><td>Bajaj Finserv</td></tr><tr data-field="loanAccountId"><th>loanAccountId</th><td>LN88213045</td></tr><tr data-field="emiAmount"><th>emiAmount</th><td><span class="money">₹8,450</span><span class="raw">Rs. 8,450</span></td></tr><tr data-field="dueDate"><th>dueDate</th><td>2026-09-25</td></tr><tr data-field="status"><th>status</th><td>upcoming</td></tr><tr data-field="paymentStatus"><th>paymentStatus</th><td><code class="enum">PaymentDue</code></td></tr><tr data-field="installmentNumber"><th>installmentNumber</th><td>14</td></tr><tr data-field="outstanding"><th>outstanding</th><td><span class="money">₹1,25,000</span><span class="raw">Rs. 1,25,000</span></td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="loan-hdfc-messy">
+      <h3>loan-hdfc-messy</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="lender">HDFC Bank</mark> &lt;loans@hdfcbank.net&gt;</div>
+          <div class="body">Your EMI of <mark data-fields="emiAmount">Rs. 12,300</mark> is due on <mark data-fields="dueDate paymentStatus status">20 Sep 2026</mark><br><br>Your EMI of Rs. 12,300 for Personal Loan is due on 20 Sep 2026.<br>Loan Account Number: <mark data-fields="loanAccountId">HDFCPL5521190</mark><br>Installment no: <mark data-fields="installmentNumber">7</mark></div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge loan">loan</span>
+      <code class="schema">inbox:LoanInstallment</code>
+      <span class="conf high">high<em>0.898</em></span>
+    </div>
+    <table><tr data-field="lender"><th>lender</th><td>HDFC Bank</td></tr><tr data-field="loanAccountId"><th>loanAccountId</th><td>HDFCPL5521190</td></tr><tr data-field="emiAmount"><th>emiAmount</th><td><span class="money">₹12,300</span><span class="raw">Rs. 12,300</span></td></tr><tr data-field="dueDate"><th>dueDate</th><td>2026-09-20</td></tr><tr data-field="status"><th>status</th><td>upcoming</td></tr><tr data-field="paymentStatus"><th>paymentStatus</th><td><code class="enum">PaymentDue</code></td></tr><tr data-field="installmentNumber"><th>installmentNumber</th><td>7</td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="loan-promo-decoy">
+      <h3>loan-promo-decoy</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from">Bajaj Finserv &lt;offers@bajajfinserv.in&gt;</div>
+          <div class="body">Pre-approved personal loan of Rs. 5,00,000 waiting for you!<br><br>Congratulations! You are pre-approved for a personal loan of Rs. 5,00,000 at just 10.5% interest. Apply now and get instant disbursal. T&amp;Cs apply.</div>
+        </div>
+        <div class="card abstain">
+      <div class="card-head"><span class="badge none">none</span><span class="conf high">high</span></div>
+      <p class="reason">Marketing markers present (tnc-apply, pre-approved@subject, cta-now, sender:promo-mailbox). No transactional anchor found — the email carries no booking, order, tracking, appointment or statement identifier, and no amount tied to a due date. No category signals matched.</p>
+      <p class="abstain-note">No card is shown because nothing here is a record of a transaction.</p>
+    </div>
+      </div>
+    </article><article class="case" id="insurance-lic-clean">
+      <h3>insurance-lic-clean</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from">LIC of India &lt;service@licindia.in&gt;</div>
+          <div class="body">Premium Due — Policy No <mark data-fields="policyNumber">998877665544</mark><br><br>Dear Policyholder,<br>Insurer: <mark data-fields="insurer">LIC of India</mark><br>Policy number: 998877665544<br>This is a <mark data-fields="policyType">term</mark> insurance policy.<br>Premium amount: <mark data-fields="premium">Rs. 24,500</mark><br>Policy renewal date: <mark data-fields="renewalDate">30 Sep 2026</mark><br>Sum insured: <mark data-fields="sumInsured">Rs. 50,00,000</mark></div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge insurance">insurance</span>
+      <code class="schema">inbox:InsurancePolicy</code>
+      <span class="conf high">high<em>0.912</em></span>
+    </div>
+    <table><tr data-field="insurer"><th>insurer</th><td>LIC of India</td></tr><tr data-field="policyNumber"><th>policyNumber</th><td>998877665544</td></tr><tr data-field="policyType"><th>policyType</th><td>term</td></tr><tr data-field="premium"><th>premium</th><td><span class="money">₹24,500</span><span class="raw">Rs. 24,500</span></td></tr><tr data-field="renewalDate"><th>renewalDate</th><td>2026-09-30</td></tr><tr data-field="sumInsured"><th>sumInsured</th><td><span class="money">₹50,00,000</span><span class="raw">Rs. 50,00,000</span></td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="insurance-hdfcergo-html">
+      <h3>insurance-hdfcergo-html</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="insurer">HDFC ERGO</mark> &lt;renewals@hdfcergo.com&gt;</div>
+          <div class="body">Renew your <mark data-fields="policyType">motor</mark> insurance policy<br><br>Your motor insurance policy is due for renewal.<br>Policy No	<mark data-fields="policyNumber">HE4487213</mark>	<br>Premium	<mark data-fields="premium">Rs. 5,200</mark>	<br>Expiry date	<mark data-fields="renewalDate">15 Oct 2026</mark></div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge insurance">insurance</span>
+      <code class="schema">inbox:InsurancePolicy</code>
+      <span class="conf high">high<em>0.872</em></span>
+    </div>
+    <table><tr data-field="insurer"><th>insurer</th><td>HDFC ERGO</td></tr><tr data-field="policyNumber"><th>policyNumber</th><td>HE4487213</td></tr><tr data-field="policyType"><th>policyType</th><td>motor</td></tr><tr data-field="premium"><th>premium</th><td><span class="money">₹5,200</span><span class="raw">Rs. 5,200</span></td></tr><tr data-field="renewalDate"><th>renewalDate</th><td>2026-10-15</td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="insurance-promo-decoy">
+      <h3>insurance-promo-decoy</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from">Policybazaar &lt;offers@policybazaar.com&gt;</div>
+          <div class="body">Renew your health insurance and get 20% cashback!<br><br>Don't let your health insurance lapse! Renew today and get 20% cashback plus a free health checkup. Limited period offer. T&amp;Cs apply.</div>
+        </div>
+        <div class="card abstain">
+      <div class="card-head"><span class="badge none">none</span><span class="conf high">high</span></div>
+      <p class="reason">Marketing markers present (get-percent@subject, tnc-apply, urgency, sender:promo-mailbox). No transactional anchor found — the email carries no booking, order, tracking, appointment or statement identifier, and no amount tied to a due date. Closest category was 'subscription' on wording alone (0.42), but its identifying fields are absent.</p>
+      <p class="abstain-note">No card is shown because nothing here is a record of a transaction.</p>
+    </div>
+      </div>
+    </article><article class="case" id="salary-payslip-clean">
+      <h3>salary-payslip-clean</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from">Acme Corp HR &lt;payroll@acmecorp.in&gt;</div>
+          <div class="body">Payslip for September 2026<br><br>Dear Employee,<br>Employer: <mark data-fields="employer">Acme Corp</mark><br>Pay period: <mark data-fields="payPeriod">September 2026</mark><br>Gross pay: <mark data-fields="grossPay">Rs. 85,000</mark><br>Total deductions: <mark data-fields="deductions">Rs. 12,300</mark><br>Net pay: <mark data-fields="netPay">Rs. 72,700</mark><br>Credited on: <mark data-fields="creditDate">30 Sep 2026</mark><br>Payslip ID: <mark data-fields="payslipId">PS-2026-09-4471</mark></div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge salary">salary</span>
+      <code class="schema">inbox:Payslip</code>
+      <span class="conf high">high<em>0.905</em></span>
+    </div>
+    <table><tr data-field="employer"><th>employer</th><td>Acme Corp</td></tr><tr data-field="payPeriod"><th>payPeriod</th><td>September 2026</td></tr><tr data-field="netPay"><th>netPay</th><td><span class="money">₹72,700</span><span class="raw">Rs. 72,700</span></td></tr><tr data-field="grossPay"><th>grossPay</th><td><span class="money">₹85,000</span><span class="raw">Rs. 85,000</span></td></tr><tr data-field="deductions"><th>deductions</th><td><span class="money">₹12,300</span><span class="raw">Rs. 12,300</span></td></tr><tr data-field="creditDate"><th>creditDate</th><td>2026-09-30</td></tr><tr data-field="payslipId"><th>payslipId</th><td>PS-2026-09-4471</td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="salary-messy">
+      <h3>salary-messy</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from"><mark data-fields="employer">Zenith Technologies</mark> &lt;hr@zenithtech.in&gt;</div>
+          <div class="body">Your September Payslip<br><br>Salary for September 2026 has been processed.<br>Net salary: <mark data-fields="netPay">Rs. 55,000</mark><br>Credited on: <mark data-fields="creditDate">01 Oct 2026</mark><br>Payslip no: <mark data-fields="payslipId">ZT-9982</mark></div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge salary">salary</span>
+      <code class="schema">inbox:Payslip</code>
+      <span class="conf high">high<em>0.786</em></span>
+    </div>
+    <table><tr data-field="employer"><th>employer</th><td>Zenith Technologies</td></tr><tr data-field="netPay"><th>netPay</th><td><span class="money">₹55,000</span><span class="raw">Rs. 55,000</span></td></tr><tr data-field="creditDate"><th>creditDate</th><td>2026-10-01</td></tr><tr data-field="payslipId"><th>payslipId</th><td>ZT-9982</td></tr></table>
+    <div class="missing"><span class="label">missing</span><code>payPeriod</code><span class="hint">stated nowhere in the email — left empty rather than guessed</span></div>
+  </div>
+      </div>
+    </article></section><section><h2>life</h2><article class="case" id="restaurant-dineout-clean">
+      <h3>restaurant-dineout-clean</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from">Zomato Dineout &lt;bookings@dineout.co.in&gt;</div>
+          <div class="body">Table Reserved — Booking ID <mark data-fields="bookingId">DO4471293</mark><br><br>Your table reservation is confirmed.<br>Booking ID: DO4471293<br>Restaurant: <mark data-fields="restaurant">Toit Brewpub</mark><br>Location: <mark data-fields="location">Indiranagar, Bengaluru</mark><br>Date &amp; time: <mark data-fields="dateTime">20 Sep 2026, 20:30</mark><br>Party size: <mark data-fields="partySize">4</mark><br>Table: <mark data-fields="table">T12</mark></div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge restaurant">restaurant</span>
+      <code class="schema">FoodEstablishmentReservation</code>
+      <span class="conf high">high<em>0.876</em></span>
+    </div>
+    <table><tr data-field="bookingId"><th>bookingId</th><td>DO4471293</td></tr><tr data-field="restaurant"><th>restaurant</th><td>Toit Brewpub</td></tr><tr data-field="location"><th>location</th><td>Indiranagar, Bengaluru</td></tr><tr data-field="dateTime"><th>dateTime</th><td>2026-09-20T20:30</td></tr><tr data-field="partySize"><th>partySize</th><td>4</td></tr><tr data-field="table"><th>table</th><td>T12</td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="restaurant-eazydiner-messy">
+      <h3>restaurant-eazydiner-messy</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from">EazyDiner &lt;reservations@eazydiner.com&gt;</div>
+          <div class="body">Reservation confirmed at Truffles<br><br>Your reservation at <mark data-fields="restaurant">Truffles</mark> is confirmed for <mark data-fields="partySize">2 guests</mark> on <mark data-fields="dateTime">21 Sep 2026 at 19:00</mark>.<br>Booking reference: <mark data-fields="bookingId">ED8871234</mark></div>
+        </div>
+        <div class="card">
+    <div class="card-head">
+      <span class="badge restaurant">restaurant</span>
+      <code class="schema">FoodEstablishmentReservation</code>
+      <span class="conf high">high<em>0.842</em></span>
+    </div>
+    <table><tr data-field="bookingId"><th>bookingId</th><td>ED8871234</td></tr><tr data-field="restaurant"><th>restaurant</th><td>Truffles</td></tr><tr data-field="dateTime"><th>dateTime</th><td>2026-09-21T19:00</td></tr><tr data-field="partySize"><th>partySize</th><td>2</td></tr></table>
+    
+  </div>
+      </div>
+    </article><article class="case" id="restaurant-promo-decoy">
+      <h3>restaurant-promo-decoy</h3>
+      <div class="split">
+        <div class="email">
+          <div class="from">EazyDiner Offers &lt;offers@eazydiner.com&gt;</div>
+          <div class="body">Flat 30% off your next dine-out!<br><br>Craving something new? Book a table at any partner restaurant and get flat 30% off your bill. Use code DINE30. Limited period offer. T&amp;Cs apply.</div>
+        </div>
+        <div class="card abstain">
+      <div class="card-head"><span class="badge none">none</span><span class="conf high">high</span></div>
+      <p class="reason">Marketing markers present (percent-off@subject, flat-discount@subject, use-code, tnc-apply, urgency). No transactional anchor found — the email carries no booking, order, tracking, appointment or statement identifier, and no amount tied to a due date. Closest category was 'bill' on wording alone (0.30), but its identifying fields are absent.</p>
       <p class="abstain-note">No card is shown because nothing here is a record of a transaction.</p>
     </div>
       </div>

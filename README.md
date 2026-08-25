@@ -2,7 +2,7 @@
 
 Structured extraction from transactional email — the thing Gmail does when it turns a booking confirmation into a card.
 
-The brief named five categories. The second attached fixture (`data/fixtures.bills.json`) asked for three more — credit-card, bill, shipment — so this repo covers those eight, plus `flight` (the worked example) and `none`.
+The take-home named five categories; the second attachment asked for three more. The category-rework brief then asked for all 18 transactional categories a Gmail-style inbox extractor should cover, at production standard — this repo covers all 18, plus `none`.
 
 ```
 extract(email) -> { category, schemaType, data, confidence, missing }
@@ -23,12 +23,12 @@ Needs **Node 22.6+** (24 recommended) and nothing else. The extractor has **zero
 
 ```bash
 git clone https://github.com/HarjjotSinghh/inbox-extract.git && cd inbox-extract
-node --experimental-strip-types src/cli.ts data/fixtures.bills.json data/fixtures.commerce.json --today 2026-09-15
+node --experimental-strip-types src/cli.ts data/fixtures.*.json --today 2026-09-15
 ```
 
 That prints a summary and writes results to `out/`. No `npm install` required — Node runs the TypeScript directly. On Node 22.x you will also see `ExperimentalWarning: Type Stripping`; that is Node reporting its own flag, not a problem with the run. Verified on v22.6.0 and v24.18.0.
 
-`data/fixtures.commerce.json` is the attached `emails.json` (food, subscription, event, refund, medical, plus the flight reference and the movie-ticket promo). `data/fixtures.bills.json` is the second attachment (credit-card, bill, shipment). Output for both is in `out/`. Always pass `--today 2026-09-15` (or `--out` to a scratch dir) so a trial run does not overwrite the committed artifacts with your machine's date.
+`data/fixtures.commerce.json` and `fixtures.bills.json` are the original take-home's two attachments (food, subscription, event, refund, medical, credit-card, bill, shipment, plus the flight reference and both movie-ticket/bank-offer promos). `fixtures.travel.json`, `fixtures.shopping.json`, `fixtures.money.json` and `fixtures.life.json` are my own sample emails for the nine categories added in the rework. Output for all six is in `out/`. Always pass `--today 2026-09-15` (or `--out` to a scratch dir) so a trial run does not overwrite the committed artifacts with your machine's date.
 
 To also run the tests and the scored evaluation:
 
@@ -42,7 +42,7 @@ npm install && npm run verify
 |---|---|
 | `npm run extract -- <file.json>` | run the extractor over a fixture file |
 | `npm run eval` | score against `data/gold.json`; exits non-zero on a misfiled promo or an ungrounded field |
-| `npm test` | 78 tests: contract, abstention, vendor variation, parsers, adversarial regressions, LLM trust boundary |
+| `npm test` | 98 tests: contract, abstention, vendor variation, parsers, adversarial regressions, LLM trust boundary |
 | `npm run demo` | rebuild `demo/index.html` |
 | `npm run typecheck` | `tsc --noEmit` |
 
@@ -52,24 +52,24 @@ Open **`demo/index.html`** — every fixture email on the left, its card on the 
 
 ### Output
 
-- `out/output.bills.json`, `out/output.commerce.json` — full results, including provenance
+- `out/output.<fixture>.json` — full results per fixture file, including provenance
 - `out/output.*.slim.json` — only the five keys the brief specifies
 - `out/output.all.json` — everything combined
 
 ---
 
-## Results on the supplied fixtures
+## Results on the supplied and own fixtures
 
 ```
-cases                        14        promoRejection      100.0% (2/2)
+cases                        40        promoRejection      100.0% (7/7)
 categoryAccuracy             100.0%    falsePositives      0
 fieldRecall                  100.0%    hallucinatedFields  0
 fieldPrecision               100.0%    perfectCards        100.0%
 ```
 
-Both promo decoys return `none`. `flight-ref` reproduces the reference output in the brief exactly — that is asserted as a test, not eyeballed.
+All seven promo decoys return `none` — the original two plus five more written for the rework, including the two most realistic Indian false positives in this domain (a pre-approved-loan blast, a health-insurance renewal offer). `flight-ref` reproduces the reference output in the brief exactly — that is asserted as a test, not eyeballed.
 
-Fourteen scored cases over 13 distinct emails (the flight reference appears in both fixture files) is a smoke test, not an evaluation; see the last section of [DECISIONS.md](DECISIONS.md).
+Forty scored cases across all 18 categories is still a smoke test, not an evaluation; see the last section of [DECISIONS.md](DECISIONS.md).
 
 **Scaling to senders I have never seen:** extraction is generic and verification is strict — a vendor-agnostic label layer plus an LLM fallback both feed the same gate that deletes any field it cannot find verbatim in the email, so an unfamiliar sender costs recall, never precision.
 
@@ -77,20 +77,46 @@ Fourteen scored cases over 13 distinct emails (the flight reference appears in b
 
 ## Categories
 
+**Travel**
+
 | category | schema.org type | key fields |
 |---|---|---|
 | `flight` | `FlightReservation` | reservationId, flightNumber, airports, times, seat |
+| `train` | `TrainReservation` | pnr, operator, trainNumber, stations, times, classOfTravel, coach, berth, fare |
+| `bus` | `BusReservation` | bookingId, operator, from, to, times, seats[], boardingPoint, fare |
+| `hotel` | `LodgingReservation` | bookingId, hotel, location, checkIn, checkOut, nights, roomType, guests, total |
+| `cab` | `RentalCarReservation` | bookingId, provider, pickup, drop, pickupTime, vehicle, fare |
+
+**Food & shopping**
+
+| category | schema.org type | key fields |
+|---|---|---|
 | `food` | `Order` | merchant, orderId, items[], total, status, eta |
+| `shopping` | `Order` | merchant, orderId, items[], total, status, expectedDelivery |
 | `subscription` | `inbox:SubscriptionRenewal` | service, plan, amount, renewalDate, status |
-| `event` | `EventReservation` | reservationId, eventName, location, startDateTime, seats[], amount |
 | `refund` | `Order` (`OrderReturned` / `OrderCancelled`) | merchant, orderId, item, amount, status, eta |
-| `medical` | `Reservation` | provider, specialty, location, dateTime, appointmentId |
-| `credit-card` | `Invoice` | issuer, cardLast4, statementDate, dueDate, totalDue, minDue, status |
-| `bill` | `Invoice` | biller, account, amount, dueDate, status |
 | `shipment` | `ParcelDelivery` | carrier, trackingId, item, expectedDelivery, orderId |
+
+**Money**
+
+| category | schema.org type | key fields |
+|---|---|---|
+| `bill` | `Invoice` | biller, account, amount, dueDate, status |
+| `credit-card` | `Invoice` | issuer, cardLast4, statementDate, dueDate, totalDue, minDue, status |
+| `loan` | `inbox:LoanInstallment` | lender, loanAccountId, emiAmount, dueDate, installmentNumber, outstanding, status |
+| `insurance` | `inbox:InsurancePolicy` | insurer, policyNumber, policyType, premium, renewalDate, sumInsured |
+| `salary` | `inbox:Payslip` (sensitive) | employer, payPeriod, netPay, grossPay, deductions, creditDate, payslipId |
+
+**Life**
+
+| category | schema.org type | key fields |
+|---|---|---|
+| `event` | `EventReservation` | reservationId, eventName, location, startDateTime, seats[], amount |
+| `medical` | `Reservation` | provider, specialty, location, dateTime, appointmentId |
+| `restaurant` | `FoodEstablishmentReservation` | bookingId, restaurant, location, dateTime, partySize, table |
 | `none` | — | not a transaction |
 
-`bill` covers bills, bills-due and bills-overdue: one extractor, with `status` computed from the due date against `--today`.
+`bill` covers bills, bills-due and bills-overdue: one extractor, with `status` computed from the due date against `--today`. `shopping` and `food` share the `Order` type and are told apart by delivery horizon, not a vendor list — see [DECISIONS.md](DECISIONS.md#nine-more-categories).
 
 ---
 
@@ -143,7 +169,7 @@ For a promo:
 email
   └─ normalise ......... HTML → text, entities, sender split, JSON-LD lifted out
   └─ classify .......... weighted wording signals → ranked candidate categories
-  └─ extract ........... top 3 candidates each run their own extractor
+  └─ extract ........... top candidates each run their own extractor
   └─ anchor gate ....... a category is only assigned if its defining field was found
   └─ ground ............ every field re-checked against the email; failures deleted
   └─ score ............. confidence from anchor strength, field coverage, method

@@ -13,6 +13,10 @@ const TODAY = '2026-09-15';
 const FIXTURES: Array<[string, string]> = [
   ['bills', 'data/fixtures.bills.json'],
   ['commerce', 'data/fixtures.commerce.json'],
+  ['travel', 'data/fixtures.travel.json'],
+  ['shopping', 'data/fixtures.shopping.json'],
+  ['money', 'data/fixtures.money.json'],
+  ['life', 'data/fixtures.life.json'],
 ];
 
 const esc = (s: string) =>

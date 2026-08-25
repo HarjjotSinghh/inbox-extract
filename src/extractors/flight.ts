@@ -67,7 +67,7 @@ export const flight: Extractor = {
 
     if (travelDate && arr?.value.kind === 'time') {
       const depTime = dep?.value.kind === 'time' ? dep.value.value : null;
-      if (!depTime || arr.value.value >= depTime) {
+      if (depTime && arr.value.value >= depTime) {
         const union = spanUnion(doc.text, dateHit, arr);
         d.derive(
           'arrivalTime',
@@ -76,10 +76,13 @@ export const flight: Extractor = {
           'flight.arrivalTime',
         );
       } else {
-        // Arrival earlier than departure means an overnight leg. The email does
-        // not say which date it lands on, so we refuse to add a day.
+        // Same-day arrival can only be asserted once departure's own clock
+        // time is known and precedes it. An unknown departure time does not
+        // imply same-day either, so we refuse to add a day either way.
         d.derive('arrivalTime', arr.value.value, arr, 'flight.arrivalTimeOnly');
-        d.markPartial('arrivalTime', 'Arrival clock time precedes departure (overnight leg); the email does not state the arrival date.');
+        d.markPartial('arrivalTime', depTime
+          ? 'Arrival clock time precedes departure (overnight leg); the email does not state the arrival date.'
+          : 'Arrival time found but no departure clock time stated, so whether it falls on the departure date or the next day cannot be determined.');
       }
     }
 

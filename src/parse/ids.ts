@@ -112,6 +112,29 @@ export function accountNumber(doc: Doc): Found<string> | null {
   ], (s) => /[0-9]/.test(s));
 }
 
+export function trainNumber(doc: Doc): Found<string> | null {
+  return firstValid(doc, 'id.trainNumber', [
+    /\btrain\s*(?:no\.?|number|#)?\s*[:#]?\s*(\d{4,5})\b/i,
+    // "12658 - Chennai Mail" / "12658 Chennai Mail Express" — the number leads
+    // the name and is followed by an IRCTC train-class word somewhere close by.
+    // The lookbehind rejects a money figure ("fare: Rs 45000 for the Rajdhani
+    // Express upgrade") that happens to sit near a class word.
+    /(?<!(?:₹|rs\.?|inr)\s{0,3})\b(\d{5})\b(?=[^.\n]{0,40}\b(?:express|mail|superfast|duronto|shatabdi|rajdhani|garib\s*rath|passenger|exp)\b)/i,
+  ], hasDigit);
+}
+
+export function policyNumber(doc: Doc): Found<string> | null {
+  return firstValid(doc, 'id.policyNumber', [
+    /\bpolicy\s*(?:no\.?|number)\s*[:#]?\s*([A-Z0-9][A-Z0-9\-/]{3,})/i,
+  ]);
+}
+
+export function payslipId(doc: Doc): Found<string> | null {
+  return firstValid(doc, 'id.payslipId', [
+    /\bpayslip\s*(?:id|no\.?|number|reference)\s*[:#]?\s*([A-Z0-9][A-Z0-9\-/]{3,})/i,
+  ]);
+}
+
 export function flightNumber(doc: Doc): Found<string> | null {
   const hit = firstValid(doc, 'id.flightNumber', [
     /\bflight\s*(?:no\.?|number)?\s*[:#]?\s*([A-Z0-9]{2}[\s-]?\d{1,4})\b/i,

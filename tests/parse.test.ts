@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Doc, extract, parseSender } from '../src/index.ts';
 import { findDateTime, to24h } from '../src/parse/datetime.ts';
+import { parseItems } from '../src/parse/items.ts';
 import { findMoney, parseAmount } from '../src/parse/money.ts';
 import { labelValue, valueEnd } from '../src/parse/text.ts';
 
@@ -78,6 +79,34 @@ describe('label scanning', () => {
 
   it('runs a value to the end of the text when nothing terminates it', () => {
     expect(valueEnd('Total: 380', 7)).toBe(10);
+  });
+});
+
+describe('HTML table cells (added for the 18-category rework)', () => {
+  it('collapse() preserves a tab as the cell separator instead of folding it into a space', () => {
+    const doc = new Doc({ body: '<table><tr><td>Due Date</td><td>20 Sep 2026</td></tr></table>' });
+    expect(labelValue(doc, 't', ['Due Date'])?.value).toBe('20 Sep 2026');
+  });
+
+  it('a multiline label stops at the next table row, not the whole table', () => {
+    // Before the fix, valueEndMultiline only recognised ':' as a new-label
+    // boundary, so a tab-separated row after a multiline field was swallowed
+    // into the same value.
+    const doc = new Doc({
+      body: '<table><tr><td>Items</td><td>1x Widget</td></tr><tr><td>Total</td><td>Rs. 199</td></tr></table>',
+    });
+    const items = labelValue(doc, 't', ['Items'], { multiline: true });
+    expect(items?.value).toBe('1x Widget');
+  });
+});
+
+describe('line-item splitting (added for the 18-category rework)', () => {
+  it('does not split a comma inside a parenthesised price', () => {
+    const span = { value: '1x Cotton Shirt (₹1,299), 1x Denim Jeans (₹1,999)', quote: 'x', start: 0, end: 1, source: 'text' as const, rule: 't' };
+    const items = parseItems(span);
+    expect(items?.value).toHaveLength(2);
+    expect(items?.value[0]).toMatchObject({ name: 'Cotton Shirt', price: { amount: 1299 } });
+    expect(items?.value[1]).toMatchObject({ name: 'Denim Jeans', price: { amount: 1999 } });
   });
 });
 

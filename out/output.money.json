@@ -1,0 +1,546 @@
+{
+  "source": "fixtures.money.json",
+  "today": "2026-09-15",
+  "generatedWith": "rules",
+  "cases": [
+    {
+      "id": "loan-bajaj-clean",
+      "from": "Bajaj Finserv <loans@bajajfinserv.in>",
+      "subject": "EMI Due Reminder — Loan A/c LN88213045",
+      "result": {
+        "category": "loan",
+        "schemaType": "inbox:LoanInstallment",
+        "data": {
+          "lender": "Bajaj Finserv",
+          "loanAccountId": "LN88213045",
+          "emiAmount": {
+            "amount": 8450,
+            "currency": "INR",
+            "raw": "Rs. 8,450"
+          },
+          "dueDate": "2026-09-25",
+          "status": "upcoming",
+          "paymentStatus": "https://schema.org/PaymentDue",
+          "installmentNumber": "14",
+          "outstanding": {
+            "amount": 125000,
+            "currency": "INR",
+            "raw": "Rs. 1,25,000"
+          }
+        },
+        "confidence": "high",
+        "missing": [],
+        "score": 0.918,
+        "provenance": {
+          "lender": {
+            "source": "text",
+            "quote": "Bajaj Finserv",
+            "start": 63,
+            "end": 76,
+            "rule": "loan.lender:label(Lender)>clean"
+          },
+          "loanAccountId": {
+            "source": "text",
+            "quote": "LN88213045",
+            "start": 98,
+            "end": 108,
+            "rule": "id.account"
+          },
+          "emiAmount": {
+            "source": "text",
+            "quote": "Rs. 8,450",
+            "start": 121,
+            "end": 130,
+            "rule": "loan.emiAmount:label(EMI amount)>money"
+          },
+          "dueDate": {
+            "source": "text",
+            "quote": "25 Sep 2026",
+            "start": 141,
+            "end": 152,
+            "rule": "loan.dueDate:label(Due date)>date>loan.dueDate",
+            "derived": true
+          },
+          "status": {
+            "source": "text",
+            "quote": "25 Sep 2026",
+            "start": 141,
+            "end": 152,
+            "rule": "loan.dueDate:label(Due date)>date>loan.status(today=2026-09-15,dueSoonDays=3)",
+            "derived": true
+          },
+          "paymentStatus": {
+            "source": "text",
+            "quote": "25 Sep 2026",
+            "start": 141,
+            "end": 152,
+            "rule": "loan.dueDate:label(Due date)>date>loan.paymentStatus",
+            "derived": true
+          },
+          "installmentNumber": {
+            "source": "text",
+            "quote": "14",
+            "start": 169,
+            "end": 171,
+            "rule": "loan.installmentNumber:label(Installment no)>clean"
+          },
+          "outstanding": {
+            "source": "text",
+            "quote": "Rs. 1,25,000",
+            "start": 195,
+            "end": 207,
+            "rule": "loan.outstanding:label(Outstanding principal)>money"
+          }
+        },
+        "signals": [
+          {
+            "category": "loan",
+            "score": 0.752
+          },
+          {
+            "category": "bill",
+            "score": 0.34
+          }
+        ],
+        "method": "rules"
+      }
+    },
+    {
+      "id": "loan-hdfc-messy",
+      "from": "HDFC Bank <loans@hdfcbank.net>",
+      "subject": "Your EMI of Rs. 12,300 is due on 20 Sep 2026",
+      "result": {
+        "category": "loan",
+        "schemaType": "inbox:LoanInstallment",
+        "data": {
+          "lender": "HDFC Bank",
+          "loanAccountId": "HDFCPL5521190",
+          "emiAmount": {
+            "amount": 12300,
+            "currency": "INR",
+            "raw": "Rs. 12,300"
+          },
+          "dueDate": "2026-09-20",
+          "status": "upcoming",
+          "paymentStatus": "https://schema.org/PaymentDue",
+          "installmentNumber": "7"
+        },
+        "confidence": "high",
+        "missing": [],
+        "score": 0.898,
+        "provenance": {
+          "lender": {
+            "source": "sender",
+            "quote": "HDFC Bank",
+            "start": 0,
+            "end": 9,
+            "rule": "loan.lender.sender"
+          },
+          "loanAccountId": {
+            "source": "text",
+            "quote": "HDFCPL5521190",
+            "start": 131,
+            "end": 144,
+            "rule": "id.account"
+          },
+          "emiAmount": {
+            "source": "text",
+            "quote": "Rs. 12,300",
+            "start": 12,
+            "end": 22,
+            "rule": "loan.emiAmount.of>money"
+          },
+          "dueDate": {
+            "source": "text",
+            "quote": "20 Sep 2026",
+            "start": 33,
+            "end": 44,
+            "rule": "loan.dueDate.was>date>loan.dueDate",
+            "derived": true
+          },
+          "status": {
+            "source": "text",
+            "quote": "20 Sep 2026",
+            "start": 33,
+            "end": 44,
+            "rule": "loan.dueDate.was>date>loan.status(today=2026-09-15,dueSoonDays=3)",
+            "derived": true
+          },
+          "paymentStatus": {
+            "source": "text",
+            "quote": "20 Sep 2026",
+            "start": 33,
+            "end": 44,
+            "rule": "loan.dueDate.was>date>loan.paymentStatus",
+            "derived": true
+          },
+          "installmentNumber": {
+            "source": "text",
+            "quote": "7",
+            "start": 161,
+            "end": 162,
+            "rule": "loan.installmentNumber:label(Installment no)>clean"
+          }
+        },
+        "signals": [
+          {
+            "category": "loan",
+            "score": 0.673
+          },
+          {
+            "category": "bill",
+            "score": 0.419
+          }
+        ],
+        "method": "rules"
+      }
+    },
+    {
+      "id": "loan-promo-decoy",
+      "from": "Bajaj Finserv <offers@bajajfinserv.in>",
+      "subject": "Pre-approved personal loan of Rs. 5,00,000 waiting for you!",
+      "result": {
+        "category": "none",
+        "schemaType": null,
+        "data": null,
+        "confidence": "high",
+        "missing": [],
+        "reason": "Marketing markers present (tnc-apply, pre-approved@subject, cta-now, sender:promo-mailbox). No transactional anchor found — the email carries no booking, order, tracking, appointment or statement identifier, and no amount tied to a due date. No category signals matched.",
+        "score": 1,
+        "signals": [],
+        "method": "none"
+      }
+    },
+    {
+      "id": "insurance-lic-clean",
+      "from": "LIC of India <service@licindia.in>",
+      "subject": "Premium Due — Policy No 998877665544",
+      "result": {
+        "category": "insurance",
+        "schemaType": "inbox:InsurancePolicy",
+        "data": {
+          "insurer": "LIC of India",
+          "policyNumber": "998877665544",
+          "policyType": "term",
+          "premium": {
+            "amount": 24500,
+            "currency": "INR",
+            "raw": "Rs. 24,500"
+          },
+          "renewalDate": "2026-09-30",
+          "sumInsured": {
+            "amount": 5000000,
+            "currency": "INR",
+            "raw": "Rs. 50,00,000"
+          }
+        },
+        "confidence": "high",
+        "missing": [],
+        "score": 0.912,
+        "provenance": {
+          "insurer": {
+            "source": "text",
+            "quote": "LIC of India",
+            "start": 66,
+            "end": 78,
+            "rule": "insurance.insurer:label(Insurer)>clean"
+          },
+          "policyNumber": {
+            "source": "text",
+            "quote": "998877665544",
+            "start": 24,
+            "end": 36,
+            "rule": "id.policyNumber"
+          },
+          "policyType": {
+            "source": "text",
+            "quote": "term",
+            "start": 117,
+            "end": 121,
+            "rule": "insurance.policyType>lower"
+          },
+          "premium": {
+            "source": "text",
+            "quote": "Rs. 24,500",
+            "start": 156,
+            "end": 166,
+            "rule": "insurance.premium:label(Premium amount)>money"
+          },
+          "renewalDate": {
+            "source": "text",
+            "quote": "30 Sep 2026",
+            "start": 188,
+            "end": 199,
+            "rule": "insurance.renewalDate:label(Renewal date)>date>insurance.renewalDate",
+            "derived": true
+          },
+          "sumInsured": {
+            "source": "text",
+            "quote": "Rs. 50,00,000",
+            "start": 213,
+            "end": 226,
+            "rule": "insurance.sumInsured:label(Sum insured)>money"
+          }
+        },
+        "signals": [
+          {
+            "category": "insurance",
+            "score": 0.727
+          },
+          {
+            "category": "subscription",
+            "score": 0.34
+          }
+        ],
+        "method": "rules"
+      }
+    },
+    {
+      "id": "insurance-hdfcergo-html",
+      "from": "HDFC ERGO <renewals@hdfcergo.com>",
+      "subject": "Renew your motor insurance policy",
+      "result": {
+        "category": "insurance",
+        "schemaType": "inbox:InsurancePolicy",
+        "data": {
+          "insurer": "HDFC ERGO",
+          "policyNumber": "HE4487213",
+          "policyType": "motor",
+          "premium": {
+            "amount": 5200,
+            "currency": "INR",
+            "raw": "Rs. 5,200"
+          },
+          "renewalDate": "2026-10-15"
+        },
+        "confidence": "high",
+        "missing": [],
+        "score": 0.872,
+        "provenance": {
+          "insurer": {
+            "source": "sender",
+            "quote": "HDFC ERGO",
+            "start": 0,
+            "end": 9,
+            "rule": "insurance.insurer.sender"
+          },
+          "policyNumber": {
+            "source": "text",
+            "quote": "HE4487213",
+            "start": 93,
+            "end": 102,
+            "rule": "id.policyNumber"
+          },
+          "policyType": {
+            "source": "text",
+            "quote": "motor",
+            "start": 11,
+            "end": 16,
+            "rule": "insurance.policyType>lower"
+          },
+          "premium": {
+            "source": "text",
+            "quote": "Rs. 5,200",
+            "start": 112,
+            "end": 121,
+            "rule": "insurance.premium:label(Premium)>money"
+          },
+          "renewalDate": {
+            "source": "text",
+            "quote": "15 Oct 2026",
+            "start": 135,
+            "end": 146,
+            "rule": "insurance.renewalDate:label(Expiry date)>date>insurance.renewalDate",
+            "derived": true
+          }
+        },
+        "signals": [
+          {
+            "category": "insurance",
+            "score": 0.568
+          },
+          {
+            "category": "subscription",
+            "score": 0.419
+          }
+        ],
+        "method": "rules"
+      }
+    },
+    {
+      "id": "insurance-promo-decoy",
+      "from": "Policybazaar <offers@policybazaar.com>",
+      "subject": "Renew your health insurance and get 20% cashback!",
+      "result": {
+        "category": "none",
+        "schemaType": null,
+        "data": null,
+        "confidence": "high",
+        "missing": [],
+        "reason": "Marketing markers present (get-percent@subject, tnc-apply, urgency, sender:promo-mailbox). No transactional anchor found — the email carries no booking, order, tracking, appointment or statement identifier, and no amount tied to a due date. Closest category was 'subscription' on wording alone (0.42), but its identifying fields are absent.",
+        "score": 0.95,
+        "signals": [
+          {
+            "category": "subscription",
+            "score": 0.419
+          }
+        ],
+        "method": "none"
+      }
+    },
+    {
+      "id": "salary-payslip-clean",
+      "from": "Acme Corp HR <payroll@acmecorp.in>",
+      "subject": "Payslip for September 2026",
+      "result": {
+        "category": "salary",
+        "schemaType": "inbox:Payslip",
+        "data": {
+          "employer": "Acme Corp",
+          "payPeriod": "September 2026",
+          "netPay": {
+            "amount": 72700,
+            "currency": "INR",
+            "raw": "Rs. 72,700"
+          },
+          "grossPay": {
+            "amount": 85000,
+            "currency": "INR",
+            "raw": "Rs. 85,000"
+          },
+          "deductions": {
+            "amount": 12300,
+            "currency": "INR",
+            "raw": "Rs. 12,300"
+          },
+          "creditDate": "2026-09-30",
+          "payslipId": "PS-2026-09-4471"
+        },
+        "confidence": "high",
+        "missing": [],
+        "score": 0.905,
+        "provenance": {
+          "employer": {
+            "source": "text",
+            "quote": "Acme Corp",
+            "start": 53,
+            "end": 62,
+            "rule": "salary.employer:label(Employer)>clean"
+          },
+          "payPeriod": {
+            "source": "text",
+            "quote": "September 2026",
+            "start": 75,
+            "end": 89,
+            "rule": "salary.payPeriod:label(Pay period)>clean"
+          },
+          "netPay": {
+            "source": "text",
+            "quote": "Rs. 72,700",
+            "start": 150,
+            "end": 160,
+            "rule": "salary.netPay:label(Net pay)>money"
+          },
+          "grossPay": {
+            "source": "text",
+            "quote": "Rs. 85,000",
+            "start": 101,
+            "end": 111,
+            "rule": "salary.grossPay:label(Gross pay)>money"
+          },
+          "deductions": {
+            "source": "text",
+            "quote": "Rs. 12,300",
+            "start": 130,
+            "end": 140,
+            "rule": "salary.deductions:label(Total deductions)>money"
+          },
+          "creditDate": {
+            "source": "text",
+            "quote": "30 Sep 2026",
+            "start": 174,
+            "end": 185,
+            "rule": "salary.creditDate:label(Credited on)>date>salary.creditDate",
+            "derived": true
+          },
+          "payslipId": {
+            "source": "text",
+            "quote": "PS-2026-09-4471",
+            "start": 198,
+            "end": 213,
+            "rule": "id.payslipId"
+          }
+        },
+        "signals": [
+          {
+            "category": "salary",
+            "score": 0.701
+          }
+        ],
+        "method": "rules"
+      }
+    },
+    {
+      "id": "salary-messy",
+      "from": "Zenith Technologies <hr@zenithtech.in>",
+      "subject": "Your September Payslip",
+      "result": {
+        "category": "salary",
+        "schemaType": "inbox:Payslip",
+        "data": {
+          "employer": "Zenith Technologies",
+          "netPay": {
+            "amount": 55000,
+            "currency": "INR",
+            "raw": "Rs. 55,000"
+          },
+          "creditDate": "2026-10-01",
+          "payslipId": "ZT-9982"
+        },
+        "confidence": "high",
+        "missing": [
+          "payPeriod"
+        ],
+        "score": 0.786,
+        "provenance": {
+          "employer": {
+            "source": "sender",
+            "quote": "Zenith Technologies",
+            "start": 0,
+            "end": 19,
+            "rule": "salary.employer.sender"
+          },
+          "netPay": {
+            "source": "text",
+            "quote": "Rs. 55,000",
+            "start": 82,
+            "end": 92,
+            "rule": "salary.netPay:label(Net salary)>money"
+          },
+          "creditDate": {
+            "source": "text",
+            "quote": "01 Oct 2026",
+            "start": 106,
+            "end": 117,
+            "rule": "salary.creditDate:label(Credited on)>date>salary.creditDate",
+            "derived": true
+          },
+          "payslipId": {
+            "source": "text",
+            "quote": "ZT-9982",
+            "start": 130,
+            "end": 137,
+            "rule": "id.payslipId"
+          }
+        },
+        "signals": [
+          {
+            "category": "salary",
+            "score": 0.624
+          }
+        ],
+        "method": "rules"
+      }
+    }
+  ]
+}

@@ -17,7 +17,10 @@ const ABBREV =
 export function valueEnd(text: string, from: number): number {
   for (let i = from; i < text.length; i++) {
     const c = text[i];
-    if (c === '\n') return i;
+    // \t is the HTML-table-cell separator (see normalize.ts:collapse); a
+    // non-multiline value must stop there too, or a 3+-column row bleeds
+    // across cells instead of stopping at the second one.
+    if (c === '\n' || c === '\t') return i;
     if (c !== '.' && c !== '!' && c !== '?') continue;
 
     const rest = text.slice(i + 1);
@@ -42,7 +45,10 @@ export function valueEndMultiline(text: string, from: number): number {
     const nl = text.indexOf('\n', lineStart);
     const line = text.slice(lineStart, nl < 0 ? text.length : nl);
     if (!line.trim()) break;
-    if (/^\s*[A-Z][\w &/'-]{1,24}\s*:/.test(line)) break;
+    // \t is the HTML-table-cell separator (see normalize.ts:collapse); without
+    // it here, a multiline label greedily swallows every row after it in a
+    // table with no colons.
+    if (/^\s*[A-Z][\w &/'-]{1,24}\s*(?::|\t)/.test(line)) break;
     end = valueEnd(text, lineStart);
   }
   return end;
@@ -105,8 +111,11 @@ export function labelValue(
   const blocked = opts.notPartOf?.length ? coveredSpans(doc.text, opts.notPartOf) : [];
 
   for (const label of labels) {
+    // \t is a stand-in separator for an HTML table cell boundary (see
+    // normalize.ts:collapse); listing it here lets the engine backtrack the
+    // leading \s* to it when there is no colon, e.g. "Due Date\t20 Sep 2026".
     const re = new RegExp(
-      `(?:^|[\\n.;!?()]\\s*|\\s)(${labelPattern(label)})\\s*(?::|-|–|—|\\bis\\b)\\s*`,
+      `(?:^|[\\n.;!?()]\\s*|\\s)(${labelPattern(label)})\\s*(?::|-|–|—|\\bis\\b|\\t)\\s*`,
       'gi',
     );
     for (const m of doc.text.matchAll(re)) {

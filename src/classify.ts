@@ -168,6 +168,83 @@ const CATEGORY_SIGNALS: Record<Exclude<Category, 'none'>, Signal[]> = {
     { re: /\b(?:delhivery|blue\s*dart|bluedart|dtdc|fedex|ups|dhl|ecom\s*express|xpressbees|shadowfax|india\s*post|aramex)\b/i, w: 1.6, label: 'carrier-brand' },
     { re: /\bvia\s+[A-Z][a-z]+\b/, w: 0.7, label: 'via-carrier' },
   ],
+  train: [
+    { re: /\bPNR\b/i, w: 1.6, label: 'pnr' },
+    { re: /\btrain\s*(?:no\.?|number)?\s*[:#]?\s*\d{4,5}\b/i, w: 2.2, label: 'train-number' },
+    { re: /\bIRCTC\b/i, w: 1.8, label: 'irctc' },
+    { re: /\b(?:coach|berth)\b/i, w: 1.6, label: 'coach-berth' },
+    { re: /\b(?:sleeper|3A|2A|1A|AC\s*chair\s*car|general)\s+class\b/i, w: 1.2, label: 'travel-class' },
+    { re: /\bchart\s+(?:has\s+been\s+)?prepared\b/i, w: 1.4, label: 'chart-prepared' },
+    { re: /\b(?:railway\s+station|platform\s+no\.?)\b/i, w: 1.1, label: 'station-word' },
+  ],
+  bus: [
+    { re: /\bboarding\s+point\b/i, w: 2.0, label: 'boarding-point' },
+    { re: /\bbus\s*(?:ticket|booking|operator)\b/i, w: 1.8, label: 'bus-word' },
+    { re: /\b(?:redbus|abhibus|intrcity|zingbus|orange\s*travels|vrl|srs\s*travels)\b/i, w: 1.6, label: 'bus-brand' },
+    { re: /\b(?:sleeper|semi-?sleeper|volvo|AC)\s+bus\b/i, w: 1.4, label: 'bus-type' },
+    { re: /\bdrop(?:ping)?\s+point\b/i, w: 1.2, label: 'drop-point' },
+    { re: /\bseat\s+(?:no\.?)?\s*\d{1,2}\b/i, w: 0.8, label: 'bus-seat' },
+    // A generic "Booking ID" + "ticket" alone reads as event on wording (both
+    // are common to event/hotel/cab too); an explicit "Operator:" label is a
+    // travel-vendor-specific cue that a bus confirmation carries even without
+    // "boarding point" phrasing.
+    { re: /\boperator\s*:/i, w: 1.4, label: 'operator-label' },
+  ],
+  hotel: [
+    { re: /\bcheck-?in\b/i, w: 2.0, label: 'check-in' },
+    { re: /\bcheck-?out\b/i, w: 2.0, label: 'check-out' },
+    { re: /\b\d+\s+nights?\b/i, w: 1.4, label: 'nights' },
+    { re: /\broom\s+type\b|\bguests?\s+per\s+room\b/i, w: 1.3, label: 'room-word' },
+    { re: /\b(?:makemytrip|goibibo|booking\.com|agoda|oyo|treebo|fabhotels|airbnb)\b/i, w: 1.6, label: 'hotel-brand' },
+    { re: /\bhotel\b/i, w: 0.9, label: 'hotel-word' },
+  ],
+  cab: [
+    { re: /\bpickup\s+(?:location|point)\b/i, w: 1.8, label: 'pickup-location' },
+    { re: /\bdrop(?:-off)?\s+(?:location|point)\b/i, w: 1.6, label: 'drop-location' },
+    { re: /\b(?:your\s+)?(?:ride|trip|cab)\s+(?:is\s+)?(?:confirmed|booked)\b/i, w: 1.8, label: 'ride-confirmed' },
+    { re: /\bdriver\s+details\b/i, w: 1.3, label: 'driver-details' },
+    { re: /\b(?:uber|ola|zoomcar|rapido|meru|blu\s*smart)\b/i, w: 1.6, label: 'cab-brand' },
+    { re: /\bfare\s+estimate\b|\btrip\s+fare\b/i, w: 1.2, label: 'fare-estimate' },
+  ],
+  shopping: [
+    // Deliberately no generic "order confirmed/placed" signal: that phrasing
+    // is equally common in food-delivery mail and would out-compete `food` on
+    // wording alone. Multi-day delivery language and a retail brand are the
+    // things a food order never carries.
+    { re: /\bexpected\s+delivery\b|\barriving\s+(?:on|by)\s+\w+\s+\d/i, w: 1.5, label: 'multi-day-eta' },
+    { re: /\b(?:amazon|flipkart|myntra|ajio|nykaa|meesho|snapdeal|tatacliq)\b/i, w: 1.8, label: 'shopping-brand' },
+    { re: /\border\s+(?:id|no\.?|number)\b/i, w: 1.0, label: 'order-id-word' },
+    { re: /\bitems?\s+ordered\b/i, w: 1.0, label: 'items-ordered' },
+  ],
+  loan: [
+    { re: /\bEMI\b/i, w: 2.0, label: 'emi' },
+    { re: /\b(?:installment|instalment)\b/i, w: 1.6, label: 'installment' },
+    { re: /\bloan\s+(?:account|a\/c)\b/i, w: 1.8, label: 'loan-account' },
+    { re: /\boutstanding\s+(?:principal|balance|amount)\b/i, w: 1.4, label: 'outstanding' },
+    { re: /\b(?:bajaj\s*finserv|muthoot|iifl|home\s*credit|tata\s*capital)\b/i, w: 1.3, label: 'lender-brand' },
+  ],
+  insurance: [
+    { re: /\bpolicy\s*(?:no\.?|number)\b/i, w: 2.0, label: 'policy-number' },
+    { re: /\bpremium\b/i, w: 1.6, label: 'premium' },
+    { re: /\bsum\s+(?:insured|assured)\b/i, w: 1.6, label: 'sum-insured' },
+    { re: /\bpolicy\s+(?:renewal|expiry)\b/i, w: 1.4, label: 'policy-renewal' },
+    { re: /\b(?:lic|hdfc\s*ergo|icici\s*lombard|star\s*health|bajaj\s*allianz|policybazaar|tata\s*aig)\b/i, w: 1.3, label: 'insurer-brand' },
+  ],
+  salary: [
+    { re: /\bpayslip\b/i, w: 2.0, label: 'payslip' },
+    { re: /\bnet\s+pay\b|\bnet\s+salary\b|\btake-?home\b/i, w: 1.8, label: 'net-pay' },
+    { re: /\bgross\s+(?:pay|salary|earnings)\b/i, w: 1.4, label: 'gross-pay' },
+    { re: /\bCTC\b/i, w: 1.2, label: 'ctc' },
+    { re: /\bdeductions?\b/i, w: 1.0, label: 'deductions' },
+    { re: /\b(?:zoho\s*payroll|keka|greythr|adp)\b/i, w: 1.2, label: 'payroll-brand' },
+  ],
+  restaurant: [
+    { re: /\btable\s+(?:for|no\.?|number|reserved)\b/i, w: 2.0, label: 'table' },
+    { re: /\breservation\s+(?:confirmed|for)\b/i, w: 1.6, label: 'reservation-confirmed' },
+    { re: /\bparty\s+size\b|\bcovers\b|\bpax\b/i, w: 1.4, label: 'party-size' },
+    { re: /\b(?:dineout|eazydiner|opentable)\b/i, w: 1.3, label: 'dining-brand' },
+    { re: /\brestaurant\b/i, w: 0.7, label: 'restaurant-word' },
+  ],
 };
 
 /** Weak priors from the sending address. Never sufficient on their own. */
@@ -183,6 +260,10 @@ const SENDER_CATEGORY: Array<{ re: RegExp; category: Exclude<Category, 'none'>; 
   { re: /^(?:cards?|statements?)\b/i, category: 'credit-card', w: 1.0 },
   { re: /^(?:bill-?alert|billing|bills?)\b/i, category: 'bill', w: 1.0 },
   { re: /^(?:orders?|order-update)\b/i, category: 'food', w: 0.6 },
+  { re: /^(?:loans?|emi)\b/i, category: 'loan', w: 1.0 },
+  { re: /^(?:policy|insurance|renewals?)\b/i, category: 'insurance', w: 1.0 },
+  { re: /^(?:payroll|payslips?|hr)\b/i, category: 'salary', w: 1.2 },
+  { re: /^(?:reservations?)\b/i, category: 'restaurant', w: 0.6 },
 ];
 
 const SUBJECT_MULTIPLIER = 1.4;

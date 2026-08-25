@@ -1,0 +1,42 @@
+{
+  "source": "fixtures.life.json",
+  "today": "2026-09-15",
+  "cases": [
+    {
+      "id": "restaurant-dineout-clean",
+      "category": "restaurant",
+      "schemaType": "FoodEstablishmentReservation",
+      "data": {
+        "bookingId": "DO4471293",
+        "restaurant": "Toit Brewpub",
+        "location": "Indiranagar, Bengaluru",
+        "dateTime": "2026-09-20T20:30",
+        "partySize": 4,
+        "table": "T12"
+      },
+      "confidence": "high",
+      "missing": []
+    },
+    {
+      "id": "restaurant-eazydiner-messy",
+      "category": "restaurant",
+      "schemaType": "FoodEstablishmentReservation",
+      "data": {
+        "bookingId": "ED8871234",
+        "restaurant": "Truffles",
+        "dateTime": "2026-09-21T19:00",
+        "partySize": 2
+      },
+      "confidence": "high",
+      "missing": []
+    },
+    {
+      "id": "restaurant-promo-decoy",
+      "category": "none",
+      "schemaType": null,
+      "data": null,
+      "confidence": "high",
+      "missing": []
+    }
+  ]
+}

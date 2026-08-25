@@ -1,4 +1,6 @@
+import { EXTRACTORS } from '../extractors/registry.ts';
 import type { Doc } from '../normalize.ts';
+import type { Category } from '../types.ts';
 
 export const SYSTEM = `You extract structured data from a single transactional email.
 
@@ -25,7 +27,9 @@ export const TOOL = {
     properties: {
       category: {
         type: 'string',
-        enum: ['flight', 'food', 'subscription', 'event', 'refund', 'medical', 'credit-card', 'bill', 'shipment', 'none'],
+        // Derived from the registry so this can never drift from the categories
+        // that actually have an extractor behind them.
+        enum: [...Object.keys(EXTRACTORS), 'none'],
       },
       fields: {
         type: 'array',
@@ -46,15 +50,27 @@ export const TOOL = {
   },
 };
 
-export const TARGET_FIELDS: Record<string, string[]> = {
+// Exhaustive over Category (minus 'none') so tsc refuses to compile until a
+// new extractor's entry lands here too — the same forcing function already
+// used for EXTRACTORS and CATEGORY_SIGNALS.
+export const TARGET_FIELDS: Record<Exclude<Category, 'none'>, string[]> = {
   flight: ['reservationId', 'airline', 'flightNumber', 'departureAirport', 'arrivalAirport', 'departureTime', 'arrivalTime', 'seat'],
+  train: ['pnr', 'operator', 'trainNumber', 'trainName', 'departureStation', 'arrivalStation', 'departureTime', 'arrivalTime', 'classOfTravel', 'coach', 'berth', 'fare'],
+  bus: ['bookingId', 'operator', 'from', 'to', 'departureTime', 'arrivalTime', 'seats', 'boardingPoint', 'fare'],
+  hotel: ['bookingId', 'hotel', 'location', 'checkIn', 'checkOut', 'nights', 'roomType', 'guests', 'total'],
+  cab: ['bookingId', 'provider', 'pickup', 'drop', 'pickupTime', 'vehicle', 'fare'],
   food: ['merchant', 'orderId', 'items', 'total', 'status', 'eta', 'deliveryAddress'],
+  shopping: ['merchant', 'orderId', 'items', 'total', 'status', 'expectedDelivery'],
   subscription: ['service', 'plan', 'amount', 'renewalDate', 'status'],
   event: ['reservationId', 'eventName', 'location', 'startDateTime', 'seats', 'amount'],
   refund: ['merchant', 'orderId', 'item', 'amount', 'status', 'eta'],
   medical: ['provider', 'specialty', 'location', 'dateTime', 'appointmentId'],
   'credit-card': ['issuer', 'cardLast4', 'statementDate', 'dueDate', 'totalDue', 'minDue'],
   bill: ['biller', 'account', 'amount', 'dueDate'],
+  loan: ['lender', 'loanAccountId', 'emiAmount', 'dueDate', 'installmentNumber', 'outstanding', 'status'],
+  insurance: ['insurer', 'policyNumber', 'policyType', 'premium', 'renewalDate', 'sumInsured'],
+  salary: ['employer', 'payPeriod', 'netPay', 'grossPay', 'deductions', 'creditDate', 'payslipId'],
+  restaurant: ['bookingId', 'restaurant', 'location', 'dateTime', 'partySize', 'table'],
   shipment: ['carrier', 'trackingId', 'item', 'expectedDelivery', 'orderId'],
 };
 
