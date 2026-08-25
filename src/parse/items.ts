@@ -34,10 +34,32 @@ function parseOneItem(segment: string): LineItem | null {
   return { name: cleaned, ...(quantity ? { quantity } : {}), ...(price ? { price } : {}) };
 }
 
+/**
+ * Split on comma/semicolon/newline, but not a comma inside parentheses — a
+ * naive split turned "1x Cotton Shirt (₹1,299)" into two fake items at the
+ * thousands-separator comma.
+ */
+function splitSegments(text: string): string[] {
+  const segments: string[] = [];
+  let depth = 0;
+  let current = '';
+  for (const ch of text) {
+    if (ch === '(') depth++;
+    else if (ch === ')') depth = Math.max(0, depth - 1);
+    if (ch === '\n' || ch === ';' || (ch === ',' && depth === 0)) {
+      segments.push(current);
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  segments.push(current);
+  return segments;
+}
+
 export function parseItems(span: Found<string> | null): Found<LineItem[]> | null {
   if (!span) return null;
-  const items = span.value
-    .split(/\s*[,;\n]\s*/)
+  const items = splitSegments(span.value)
     .map((seg) => seg.trim())
     .filter(Boolean)
     .map(parseOneItem)

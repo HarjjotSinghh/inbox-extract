@@ -38,7 +38,7 @@ export const shopping: Extractor = {
       }),
     ));
 
-    const statusHit = doc.match('shopping.status', /\b(order\s+placed|confirmed|packed|shipped|dispatched|out\s+for\s+delivery|delivered|cancell?ed)\b/i);
+    const statusHit = doc.match('shopping.status', /\b(placed|confirmed|packed|shipped|dispatched|out\s+for\s+delivery|delivered|cancell?ed)\b/i);
     if (statusHit) {
       d.derive('status', statusHit.value.toLowerCase().replace(/\s+/g, '-'), statusHit, 'shopping.status');
       const v = statusHit.value.toLowerCase();

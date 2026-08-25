@@ -34,7 +34,7 @@ export const food: Extractor = {
       }),
     ));
 
-    const statusHit = doc.match('food.status', /\b(on\s+the\s+way|out\s+for\s+delivery|being\s+prepared|preparing|delivered|order\s+placed|confirmed|cancell?ed)\b/i);
+    const statusHit = doc.match('food.status', /\b(on\s+the\s+way|out\s+for\s+delivery|being\s+prepared|preparing|delivered|placed|confirmed|cancell?ed)\b/i);
     if (statusHit) {
       d.derive('status', statusHit.value.toLowerCase().replace(/\s+/g, '-'), statusHit, 'food.status');
       const v = statusHit.value.toLowerCase();

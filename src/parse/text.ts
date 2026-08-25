@@ -42,7 +42,10 @@ export function valueEndMultiline(text: string, from: number): number {
     const nl = text.indexOf('\n', lineStart);
     const line = text.slice(lineStart, nl < 0 ? text.length : nl);
     if (!line.trim()) break;
-    if (/^\s*[A-Z][\w &/'-]{1,24}\s*:/.test(line)) break;
+    // \t is the HTML-table-cell separator (see normalize.ts:collapse); without
+    // it here, a multiline label greedily swallows every row after it in a
+    // table with no colons.
+    if (/^\s*[A-Z][\w &/'-]{1,24}\s*(?::|\t)/.test(line)) break;
     end = valueEnd(text, lineStart);
   }
   return end;
