@@ -98,9 +98,22 @@ export function extract(email: Email, options: ExtractOptions = {}): ExtractionR
   }
 
   attempts.sort((a, b) => b.decision - a.decision);
-  const best = attempts[0];
+  let best = attempts[0];
 
   if (!best) return abstain(ranked, promo.score, promo.promoHits, 'no-anchor');
+
+  // Same deferral buildFromSeed applies to JSON-LD Orders: 'food' strong-anchors
+  // on a bare order id, which any retail parcel also carries. When the wording
+  // itself ranked a parcel category above food, the food win is the anchor
+  // bonus talking, not the email — hand the verdict to that attempt.
+  if (best.candidate.category === 'food') {
+    const parcel = attempts.find(
+      (a) =>
+        (a.candidate.category === 'shopping' || a.candidate.category === 'shipment') &&
+        a.candidate.raw > best.candidate.raw,
+    );
+    if (parcel) best = parcel;
+  }
 
   // A blast can occasionally satisfy a soft anchor. A hard identifier is the
   // one thing marketing never carries, so it is what overrides a promo verdict —

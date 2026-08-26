@@ -167,6 +167,11 @@ const CATEGORY_SIGNALS: Record<Exclude<Category, 'none'>, Signal[]> = {
     { re: /\b(?:package|parcel|consignment)\b/i, w: 1.3, label: 'package-word' },
     { re: /\b(?:delhivery|blue\s*dart|bluedart|dtdc|fedex|ups|dhl|ecom\s*express|xpressbees|shadowfax|india\s*post|aramex)\b/i, w: 1.6, label: 'carrier-brand' },
     { re: /\bvia\s+[A-Z][a-z]+\b/, w: 0.7, label: 'via-carrier' },
+    // "Your package has left the warehouse" — parcel-lifecycle wording that no
+    // food order carries (a real Perfora oral-care order classified as 'food'
+    // without it; see tests/realworld.test.ts).
+    { re: /\b(?:left|leaves|leaving|departed)\s+(?:the\s+|our\s+)?warehouse\b|\bpicked\s+up\s+by\s+(?:the\s+)?(?:courier|carrier|delivery\s+partner)\b/i, w: 1.8, label: 'warehouse-departure' },
+    { re: /\btrack\s+your\s+(?:package|parcel|shipment|order)\b/i, w: 1.2, label: 'track-cta' },
   ],
   train: [
     { re: /\bPNR\b/i, w: 1.6, label: 'pnr' },
@@ -215,6 +220,9 @@ const CATEGORY_SIGNALS: Record<Exclude<Category, 'none'>, Signal[]> = {
     { re: /\b(?:amazon|flipkart|myntra|ajio|nykaa|meesho|snapdeal|tatacliq)\b/i, w: 1.8, label: 'shopping-brand' },
     { re: /\border\s+(?:id|no\.?|number)\b/i, w: 1.0, label: 'order-id-word' },
     { re: /\bitems?\s+ordered\b/i, w: 1.0, label: 'items-ordered' },
+    // Warehouse language belongs to the same food-never family as multi-day
+    // delivery — kitchens don't have warehouses.
+    { re: /\bwarehouse\b/i, w: 1.2, label: 'warehouse' },
   ],
   loan: [
     { re: /\bEMI\b/i, w: 2.0, label: 'emi' },
