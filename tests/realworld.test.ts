@@ -74,6 +74,37 @@ describe('a shipped retail order is not food either', () => {
   });
 });
 
+describe('an appointment is not automatically medical', () => {
+  it('an Apple carry-in repair booking abstains from medical', () => {
+    const r = extract(
+      {
+        from: 'Apple Support <no_reply@email.apple.com>',
+        subject: 'Your carry-in appointment at Future World Retail Pvt Ltd has been scheduled.',
+        body:
+          'Appointment scheduled. Your carry-in appointment for your iPhone has been scheduled at ' +
+          'Future World Retail Pvt Ltd, Koramangala, Bengaluru on 28 Aug 2026, 11:30 AM. ' +
+          'Case ID: 102938475. Please bring your device and proof of purchase.',
+      },
+      { today: TODAY },
+    );
+    expect(r.category).not.toBe('medical');
+  });
+
+  it('a genuine doctor appointment still wins medical', () => {
+    const r = extract(
+      {
+        from: 'Practo <appointments@practo.com>',
+        subject: 'Appointment confirmed with Dr. Anita Rao',
+        body:
+          'Your appointment is confirmed. Doctor: Dr. Anita Rao (Dermatologist). Clinic: Skin & You, ' +
+          'Indiranagar, Bengaluru. Date & time: Mon, 22 Sep 2026, 11:00 AM. Appointment ID: PR-448291.',
+      },
+      { today: TODAY },
+    );
+    expect(r.category).toBe('medical');
+  });
+});
+
 describe('a failed payment is not a refund', () => {
   it('a dunning notice abstains', () => {
     const r = extract(
