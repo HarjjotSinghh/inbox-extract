@@ -170,8 +170,11 @@ const CATEGORY_SIGNALS: Record<Exclude<Category, 'none'>, Signal[]> = {
     // "Your package has left the warehouse" — parcel-lifecycle wording that no
     // food order carries (a real Perfora oral-care order classified as 'food'
     // without it; see tests/realworld.test.ts).
-    { re: /\b(?:left|leaves|leaving|departed)\s+(?:the\s+|our\s+)?warehouse\b|\bpicked\s+up\s+by\s+(?:the\s+)?(?:courier|carrier|delivery\s+partner)\b/i, w: 1.8, label: 'warehouse-departure' },
+    { re: /\b(?:left|leaves|leaving|departed|dispatched\s+from)\s+(?:the\s+|our\s+)?warehouse\b|\bpicked\s+up\s+by\s+(?:the\s+)?(?:courier|carrier|delivery\s+partner)\b/i, w: 1.8, label: 'warehouse-departure' },
     { re: /\btrack\s+your\s+(?:package|parcel|shipment|order)\b/i, w: 1.2, label: 'track-cta' },
+    // "Tracking Details for your order" — a tracking id is not always labelled
+    // as one (a real Capes India shipped-order notice classified as 'food').
+    { re: /\btracking\s+(?:details|info(?:rmation)?|link)\b/i, w: 1.4, label: 'tracking-details' },
   ],
   train: [
     { re: /\bPNR\b/i, w: 1.6, label: 'pnr' },
@@ -223,6 +226,8 @@ const CATEGORY_SIGNALS: Record<Exclude<Category, 'none'>, Signal[]> = {
     // Warehouse language belongs to the same food-never family as multi-day
     // delivery — kitchens don't have warehouses.
     { re: /\bwarehouse\b/i, w: 1.2, label: 'warehouse' },
+    // Same family: kitchens deliver, they don't ship or dispatch.
+    { re: /\b(?:has\s+been|was)\s+(?:shipped|dispatched)\b/i, w: 1.5, label: 'order-shipped' },
   ],
   loan: [
     { re: /\bEMI\b/i, w: 2.0, label: 'emi' },

@@ -52,3 +52,41 @@ describe('a card charge receipt is not a card statement', () => {
     expect(r.category).toBe('none');
   });
 });
+
+describe('a shipped retail order is not food either', () => {
+  // A real Capes India (phone-case) shipping notice extracted as 'food':
+  // subject wording is all parcel ("shipped", "Tracking Details"), but food's
+  // bare-order-id anchor plus its higher lexical rank won the day.
+  it('a phone-case shipping notice lands on a parcel category', () => {
+    const r = extract(
+      {
+        from: 'Capes India <hello@capesindia.com>',
+        subject: 'Your order has been shipped, Tracking Details for your order #C394447.',
+        body:
+          'Your order is on the way & has been dispatched from our warehouse in Mumbai. ' +
+          'Order #C394447. iPhone 16 Pro Max Transparent Clear Armour Anti-Yellow MagSafe Case. ' +
+          'Track your package for delivery updates.',
+      },
+      { today: TODAY },
+    );
+    expect(r.category).not.toBe('food');
+    expect(['shipment', 'shopping']).toContain(r.category);
+  });
+});
+
+describe('a failed payment is not a refund', () => {
+  it('a dunning notice abstains', () => {
+    const r = extract(
+      {
+        from: 'Payments <payments@razorpay.com>',
+        subject: 'Payment failed for Hostinger',
+        body:
+          'Hostinger ₹2500.00 Payment Failed. In case your money was debited, it will be ' +
+          'automatically refunded to your original payment method within 5-7 business days. ' +
+          'Please retry the payment to keep your services active.',
+      },
+      { today: TODAY },
+    );
+    expect(r.category).toBe('none');
+  });
+});
