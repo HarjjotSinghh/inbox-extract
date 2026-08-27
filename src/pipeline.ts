@@ -109,19 +109,24 @@ export function extract(email: Email, options: ExtractOptions = {}): ExtractionR
 
   // Same deferral buildFromSeed applies to JSON-LD Orders: 'food' strong-anchors
   // on a bare order id, which any retail parcel also carries. When the wording
-  // itself ranked a parcel category above food, the food win is the anchor
-  // bonus talking, not the email — hand the verdict to a parcel attempt,
-  // running one on the spot if the candidate cut excluded it.
+  // itself CLEARLY ranked a parcel category above food, the food win is the
+  // anchor bonus talking, not the email — hand the verdict to a parcel attempt,
+  // running one on the spot if the candidate cut excluded it. The 1.2× margin
+  // matters: a Blinkit grocery run ("dispatched", "arriving in 9 minutes")
+  // edges food on raw wording by a hair, and a hair is not a reason to
+  // overrule an anchored food order.
+  const PARCEL_DEFERRAL_MARGIN = 1.2;
   if (best.candidate.category === 'food') {
+    const bar = best.candidate.raw * PARCEL_DEFERRAL_MARGIN;
     let parcel =
       attempts.find(
         (a) =>
           (a.candidate.category === 'shopping' || a.candidate.category === 'shipment') &&
-          a.candidate.raw > best.candidate.raw,
+          a.candidate.raw > bar,
       ) ?? null;
     if (!parcel) {
       for (const r of ranked) {
-        if ((r.category === 'shopping' || r.category === 'shipment') && r.raw > best.candidate.raw) {
+        if ((r.category === 'shopping' || r.category === 'shipment') && r.raw > bar) {
           parcel = tryCandidate(r);
           if (parcel) break;
         }

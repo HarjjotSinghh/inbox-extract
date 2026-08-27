@@ -105,6 +105,52 @@ describe('an appointment is not automatically medical', () => {
   });
 });
 
+// From the Codex review of PR #2: each guard added above must not cost the
+// genuine case it sits next to.
+describe('review follow-ups: the guards keep their genuine neighbours', () => {
+  it('a health-platform template with generic labels is still medical', () => {
+    const r = extract(
+      {
+        from: 'Practo <appointments@practo.com>',
+        subject: 'Your appointment is confirmed',
+        body:
+          'Provider: Anita Rao. Location: Indiranagar, Bengaluru. ' +
+          'Date & time: Mon, 22 Sep 2026, 11:00 AM. Appointment ID: PR-990011.',
+      },
+      { today: TODAY },
+    );
+    expect(r.category).toBe('medical');
+  });
+
+  it('a failure email that states an initiated refund is still a refund', () => {
+    const r = extract(
+      {
+        from: 'Amazon.in <order-update@amazon.in>',
+        subject: 'Payment failed — refund initiated for order #402-9911',
+        body:
+          'Your payment for order #402-9911 failed. We have initiated a refund of ₹1,299 to your ' +
+          'original payment method. It will reflect in 3-5 business days.',
+      },
+      { today: TODAY },
+    );
+    expect(r.category).toBe('refund');
+  });
+
+  it('a dispatched quick-commerce grocery order is still food', () => {
+    const r = extract(
+      {
+        from: 'Blinkit <no-reply@blinkit.com>',
+        subject: 'Your order has been dispatched',
+        body:
+          'Your Blinkit order is on the way! Order ID: BLK4455667. Items: 1x Milk 1L, 1x Bread. ' +
+          'Total: ₹98. Arriving in 9 minutes.',
+      },
+      { today: TODAY },
+    );
+    expect(r.category).toBe('food');
+  });
+});
+
 describe('a failed payment is not a refund', () => {
   it('a dunning notice abstains', () => {
     const r = extract(

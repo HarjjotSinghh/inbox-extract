@@ -11,9 +11,11 @@ const SPECIALTY =
 
 // "Appointment" alone is not medical: an Apple carry-in repair booking and a
 // DocuSign "Appointment Letter & NDA" both extracted as 'medical' on a real
-// inbox. The category only exists where some medical context does.
+// inbox. The category only exists where some medical context does — including
+// the sender, so a Practo/1mg template with generic labels ("Provider: …")
+// still counts as medical even when the body never says doctor or clinic.
 const MEDICAL_CONTEXT =
-  /\bdoctor\b|\bdr\.?\s+[A-Z]|\bclinic\b|\bhospital\b|\bmedical\b|\bdental\b|\bpatient\b|\bdiagnos\w*\b|\blab\s+(?:test|report)\b|\bhealth\s*(?:care|check|checkup)?\b|\bwellness\b|\btherap\w*\b|\bconsultation\b|\bteleconsult\w*\b/i;
+  /\bdoctor\b|\bdr\.?\s+[A-Z]|\bclinic\b|\bhospital\b|\bmedical\b|\bdental\b|\bpatient\b|\bdiagnos\w*\b|\blab\s+(?:test|report)\b|\bhealth\s*(?:care|check|checkup)?\b|\bwellness\b|\btherap\w*\b|\bconsultation\b|\bteleconsult\w*\b|\b(?:practo|1mg|pharmeasy|netmeds|medplus|apollo|fortis|manipal|medanta|maxhealth)\b/i;
 
 export const medical: Extractor = {
   category: 'medical',
@@ -23,7 +25,8 @@ export const medical: Extractor = {
   softAnchor: [['appointmentId'], ['provider', 'dateTime']],
 
   run({ doc }: ExtractorContext) {
-    if (!MEDICAL_CONTEXT.test(doc.text) && !SPECIALTY.test(doc.text)) return null;
+    const hay = `${doc.sender.raw} ${doc.text}`;
+    if (!MEDICAL_CONTEXT.test(hay) && !SPECIALTY.test(hay)) return null;
 
     const d = new Draft();
 

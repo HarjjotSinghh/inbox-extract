@@ -31,7 +31,7 @@ export const refund: Extractor = {
     // email extracted as a refund). A failure frame only counts as a refund
     // when the email states one actually happened.
     const failureFrame = /\bpayment\s+(?:has\s+)?fail(?:ed|ure)\b|\btransaction\s+(?:has\s+)?failed\b|\bpayment\s+(?:was\s+)?declined\b|\bretry\s+the\s+payment\b/i.test(doc.text);
-    const settledRefund = /\brefund\s+(?:has\s+been\s+|was\s+)?(?:initiated|processed|issued|completed|credited)\b|\b(?:has|have)\s+been\s+refunded\b|\bwe(?:'| ha)ve\s+(?:processed|issued)\s+(?:a|your)\s+refund\b/i.test(doc.text);
+    const settledRefund = /\brefund\s+(?:has\s+been\s+|was\s+)?(?:initiated|processed|issued|completed|credited)\b|\b(?:has|have)\s+been\s+refunded\b|\bwe(?:'| ha)ve\s+(?:processed|issued|initiated|completed)\s+(?:a|the|your)\s+refund\b/i.test(doc.text);
     if (failureFrame && !settledRefund) return null;
 
     const d = new Draft();

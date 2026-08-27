@@ -228,8 +228,11 @@ const CATEGORY_SIGNALS: Record<Exclude<Category, 'none'>, Signal[]> = {
     // Warehouse language belongs to the same food-never family as multi-day
     // delivery — kitchens don't have warehouses.
     { re: /\bwarehouse\b/i, w: 1.2, label: 'warehouse' },
-    // Same family: kitchens deliver, they don't ship or dispatch.
-    { re: /\b(?:has\s+been|was)\s+(?:shipped|dispatched)\b/i, w: 1.5, label: 'order-shipped' },
+    // Same family: kitchens deliver, they don't ship. "Dispatched" is
+    // deliberately excluded — quick-commerce grocery orders (Blinkit, Zepto)
+    // say "your order has been dispatched" with a clock-time ETA, and those
+    // are food.
+    { re: /\b(?:has\s+been|was)\s+shipped\b/i, w: 1.5, label: 'order-shipped' },
   ],
   loan: [
     { re: /\bEMI\b/i, w: 2.0, label: 'emi' },
