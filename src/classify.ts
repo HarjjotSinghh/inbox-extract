@@ -99,7 +99,7 @@ const CATEGORY_SIGNALS: Record<Exclude<Category, 'none'>, Signal[]> = {
     { re: /\bestimated\s+(?:delivery|arrival)\b|\bdelivery\s+time\b|\bETA\b/i, w: 1.3, label: 'eta' },
     { re: /\bitems?\s*:/i, w: 1.0, label: 'items-label' },
     { re: /\bdelivering\s+to\b/i, w: 1.2, label: 'delivering-to' },
-    { re: /\b(?:zomato|swiggy|ubereats|uber\s*eats|doordash|dominos|blinkit|instamart|bigbasket|zepto|dunzo|grofers|licious)\b/i, w: 1.6, label: 'food-brand' },
+    { re: /\b(?:zomato|swiggy|ubereats|uber\s*eats|doordash|dominos|blinkit|instamart|bigbasket|zepto|dunzo|grofers|licious|eatclub|box8|faasos)\b/i, w: 1.6, label: 'food-brand' },
     { re: /\b(?:restaurant|kitchen|grocery|groceries)\b/i, w: 0.8, label: 'food-word' },
   ],
   subscription: [
@@ -167,6 +167,16 @@ const CATEGORY_SIGNALS: Record<Exclude<Category, 'none'>, Signal[]> = {
     { re: /\b(?:package|parcel|consignment)\b/i, w: 1.3, label: 'package-word' },
     { re: /\b(?:delhivery|blue\s*dart|bluedart|dtdc|fedex|ups|dhl|ecom\s*express|xpressbees|shadowfax|india\s*post|aramex)\b/i, w: 1.6, label: 'carrier-brand' },
     { re: /\bvia\s+[A-Z][a-z]+\b/, w: 0.7, label: 'via-carrier' },
+    // "Your package has left the warehouse" — parcel-lifecycle wording that no
+    // food order carries (a real Perfora oral-care order classified as 'food'
+    // without it; see tests/realworld.test.ts).
+    { re: /\b(?:left|leaves|leaving|departed|dispatched\s+from)\s+(?:the\s+|our\s+)?warehouse\b|\bpicked\s+up\s+by\s+(?:the\s+)?(?:courier|carrier|delivery\s+partner)\b/i, w: 1.8, label: 'warehouse-departure' },
+    // NOT "track your order" — every food app says that too (a real EatClub
+    // delivered-meal email leaned shipment on it).
+    { re: /\btrack\s+your\s+(?:package|parcel|shipment)\b/i, w: 1.2, label: 'track-cta' },
+    // "Tracking Details for your order" — a tracking id is not always labelled
+    // as one (a real Capes India shipped-order notice classified as 'food').
+    { re: /\btracking\s+(?:details|info(?:rmation)?|link)\b/i, w: 1.4, label: 'tracking-details' },
   ],
   train: [
     { re: /\bPNR\b/i, w: 1.6, label: 'pnr' },
@@ -215,6 +225,11 @@ const CATEGORY_SIGNALS: Record<Exclude<Category, 'none'>, Signal[]> = {
     { re: /\b(?:amazon|flipkart|myntra|ajio|nykaa|meesho|snapdeal|tatacliq)\b/i, w: 1.8, label: 'shopping-brand' },
     { re: /\border\s+(?:id|no\.?|number)\b/i, w: 1.0, label: 'order-id-word' },
     { re: /\bitems?\s+ordered\b/i, w: 1.0, label: 'items-ordered' },
+    // Warehouse language belongs to the same food-never family as multi-day
+    // delivery — kitchens don't have warehouses.
+    { re: /\bwarehouse\b/i, w: 1.2, label: 'warehouse' },
+    // Same family: kitchens deliver, they don't ship or dispatch.
+    { re: /\b(?:has\s+been|was)\s+(?:shipped|dispatched)\b/i, w: 1.5, label: 'order-shipped' },
   ],
   loan: [
     { re: /\bEMI\b/i, w: 2.0, label: 'emi' },

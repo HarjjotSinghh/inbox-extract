@@ -9,6 +9,12 @@ const REQUIRED = ['provider', 'specialty', 'location', 'dateTime', 'appointmentI
 const SPECIALTY =
   /\b(dermatolog\w*|cardiolog\w*|dent(?:ist|al)\w*|orthop(?:a)?edic\w*|p(?:a)?ediatric\w*|gyn(?:a)?ecolog\w*|neurolog\w*|ophthalmolog\w*|psychiatr\w*|psycholog\w*|physiotherap\w*|radiolog\w*|oncolog\w*|urolog\w*|endocrinolog\w*|gastroenterolog\w*|pulmonolog\w*|nephrolog\w*|rheumatolog\w*|ENT|general\s+physician|general\s+practitioner)\b/i;
 
+// "Appointment" alone is not medical: an Apple carry-in repair booking and a
+// DocuSign "Appointment Letter & NDA" both extracted as 'medical' on a real
+// inbox. The category only exists where some medical context does.
+const MEDICAL_CONTEXT =
+  /\bdoctor\b|\bdr\.?\s+[A-Z]|\bclinic\b|\bhospital\b|\bmedical\b|\bdental\b|\bpatient\b|\bdiagnos\w*\b|\blab\s+(?:test|report)\b|\bhealth\s*(?:care|check|checkup)?\b|\bwellness\b|\btherap\w*\b|\bconsultation\b|\bteleconsult\w*\b/i;
+
 export const medical: Extractor = {
   category: 'medical',
   schemaType: SCHEMA.reservation,
@@ -17,6 +23,8 @@ export const medical: Extractor = {
   softAnchor: [['appointmentId'], ['provider', 'dateTime']],
 
   run({ doc }: ExtractorContext) {
+    if (!MEDICAL_CONTEXT.test(doc.text) && !SPECIALTY.test(doc.text)) return null;
+
     const d = new Draft();
 
     const providerLabel = labelValue(doc, 'medical.provider', [

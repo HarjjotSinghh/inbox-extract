@@ -60,6 +60,11 @@ export function orderId(doc: Doc): Found<string> | null {
   return firstValid(doc, 'id.order', [
     /\border\s*(?:id|no\.?|number)?\s*[:#]\s*([A-Z0-9][A-Z0-9\-/]{3,})/i,
     /\border\s*(?:id|no\.?|number)\s*[:#]?\s*([A-Z0-9][A-Z0-9\-/]{3,})/i,
+    // "Your Eatclub order [VO4ABEN] has been delivered" / "your order 3GWBT2Q":
+    // an inline code right after "order", bracketed or bare. The bare form
+    // requires a digit so "your order will" can never bind.
+    /\border\s*[\[(]([A-Z0-9][A-Z0-9\-/]{3,})[\])]/i,
+    /\border\s+((?=[A-Z0-9-]*\d)[A-Z0-9][A-Z0-9-]{4,})(?=\s|[.,!]|$)/,
   ]);
 }
 

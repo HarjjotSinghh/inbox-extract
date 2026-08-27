@@ -72,11 +72,11 @@ export function extract(email: Email, options: ExtractOptions = {}): ExtractionR
   const candidates = ranked.filter((r) => r.raw >= CANDIDATE_FLOOR).slice(0, MAX_CANDIDATES);
   const attempts: Attempt[] = [];
 
-  for (const candidate of candidates) {
+  const tryCandidate = (candidate: CategoryScore): Attempt | null => {
     const extractor = extractorFor(candidate.category);
-    if (!extractor) continue;
+    if (!extractor) return null;
     const output = extractor.run(ctx);
-    if (!output) continue;
+    if (!output) return null;
 
     const report = ground(doc, output.data, output.provenance);
     // Grounding can delete fields, so everything derived from `data` — the
@@ -85,22 +85,50 @@ export function extract(email: Email, options: ExtractOptions = {}): ExtractionR
     const requiredFound = extractor.required.length - missing.length;
     output.missing = missing;
 
-    if (!hasAnchor(output.data, extractor.softAnchor)) continue;
+    if (!hasAnchor(output.data, extractor.softAnchor)) return null;
     const anchorStrong = hasAnchor(output.data, extractor.strongAnchor);
 
-    attempts.push({
+    return {
       candidate,
       output: { ...output, requiredFound },
       anchorStrong,
       droppedCount: report.dropped.length,
       decision: candidate.score + (anchorStrong ? 1 : 0.35) + requiredFound * 0.05,
-    });
+    };
+  };
+
+  for (const candidate of candidates) {
+    const attempt = tryCandidate(candidate);
+    if (attempt) attempts.push(attempt);
   }
 
   attempts.sort((a, b) => b.decision - a.decision);
-  const best = attempts[0];
+  let best = attempts[0];
 
   if (!best) return abstain(ranked, promo.score, promo.promoHits, 'no-anchor');
+
+  // Same deferral buildFromSeed applies to JSON-LD Orders: 'food' strong-anchors
+  // on a bare order id, which any retail parcel also carries. When the wording
+  // itself ranked a parcel category above food, the food win is the anchor
+  // bonus talking, not the email — hand the verdict to a parcel attempt,
+  // running one on the spot if the candidate cut excluded it.
+  if (best.candidate.category === 'food') {
+    let parcel =
+      attempts.find(
+        (a) =>
+          (a.candidate.category === 'shopping' || a.candidate.category === 'shipment') &&
+          a.candidate.raw > best.candidate.raw,
+      ) ?? null;
+    if (!parcel) {
+      for (const r of ranked) {
+        if ((r.category === 'shopping' || r.category === 'shipment') && r.raw > best.candidate.raw) {
+          parcel = tryCandidate(r);
+          if (parcel) break;
+        }
+      }
+    }
+    if (parcel) best = parcel;
+  }
 
   // A blast can occasionally satisfy a soft anchor. A hard identifier is the
   // one thing marketing never carries, so it is what overrides a promo verdict —
