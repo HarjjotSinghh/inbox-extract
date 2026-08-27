@@ -225,6 +225,12 @@ const CATEGORY_SIGNALS: Record<Exclude<Category, 'none'>, Signal[]> = {
     { re: /\b(?:amazon|flipkart|myntra|ajio|nykaa|meesho|snapdeal|tatacliq)\b/i, w: 1.8, label: 'shopping-brand' },
     { re: /\border\s+(?:id|no\.?|number)\b/i, w: 1.0, label: 'order-id-word' },
     { re: /\bitems?\s+ordered\b/i, w: 1.0, label: 'items-ordered' },
+    // The thanks-for-purchase frame is retail's, not food delivery's: food
+    // apps narrate the order journey ("placed", "on the way", "delivered"),
+    // they don't thank you for a purchase. Live inbox: a Perfora "Order #…
+    // confirmed — thank you for your purchase" and a Porkbun "Thank You -
+    // <order id>" both sat chipless while their whole shipment chain chipped.
+    { re: /\bthank\s+you\s+for\s+your\s+(?:purchase|order)\b/i, w: 1.7, label: 'purchase-thanks' },
     // Warehouse language belongs to the same food-never family as multi-day
     // delivery — kitchens don't have warehouses.
     { re: /\bwarehouse\b/i, w: 1.2, label: 'warehouse' },

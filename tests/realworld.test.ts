@@ -151,6 +151,27 @@ describe('review follow-ups: the guards keep their genuine neighbours', () => {
   });
 });
 
+describe('the thanks-for-purchase frame is retail', () => {
+  // Live-QA (2026-08-28): an order confirmation with an order id and
+  // "thank you for your purchase" sat uncategorised while its own shipment
+  // chain was recognised. Food apps narrate the journey; they don't thank
+  // you for a purchase — so the frame is a shopping signal.
+  it('an order confirmation with purchase thanks lands on shopping', () => {
+    const r = extract(
+      {
+        from: 'Perfora - Oral Care Solutions <care@perfora.in>',
+        subject: 'Order #P20211168842 confirmed',
+        body:
+          'Order #P20211168842. Thank you for your purchase! Hi Harjot, your order has been ' +
+          'confirmed and is being processed. Items: 1x Mint Fresh Toothpaste, 1x Tongue Cleaner. ' +
+          'Order total: ₹517. We will notify you as soon as it ships.',
+      },
+      { today: TODAY },
+    );
+    expect(r.category).toBe('shopping');
+  });
+});
+
 describe('a failed payment is not a refund', () => {
   it('a dunning notice abstains', () => {
     const r = extract(
